@@ -1,18 +1,5 @@
-## I. Mô tả hệ thống:
-Hệ thống được xây dựng là một website đọc sách và truyện trực tuyến, cho phép người dùng truy cập thông qua internet để tìm kiếm, đọc và quản lý các nội dung sách, truyện một cách thuận tiện.
 
-Hệ thống cung cấp một nền tảng giúp người dùng tiếp cận với nhiều loại nội dung như tiểu thuyết, truyện tranh, truyện ngắn, sách kỹ năng,… với giao diện thân thiện, dễ sử dụng và hỗ trợ trên nhiều thiết bị.
-## 1. Đối tượng sử dụng
-
-Hệ thống phục vụ 3 nhóm người dùng chính:
-
-Khách (Guest):
-Có thể truy cập hệ thống để xem danh sách sách/truyện, tìm kiếm và đọc nội dung cơ bản mà không cần đăng nhập
-Người dùng (User):
-Sau khi đăng nhập có thể sử dụng thêm các chức năng nâng cao như lưu nội dung yêu thích, đánh dấu chương đã đọc, bình luận và quản lý tài khoản cá nhân
-Quản trị viên (Admin):
-Có quyền quản lý toàn bộ hệ thống bao gồm thêm, sửa, xóa sách/truyện, quản lý chương, người dùng và kiểm duyệt nội dung
-## 2. Chức năng chính của hệ thống:
+## 1. Chức năng chính của hệ thống:
 - Tìm kiếm sách/truyện theo tên, thể loại
 - Xem thông tin chi tiết sách/truyện
 - Đọc nội dung theo từng chương hoặc phần
@@ -21,11 +8,11 @@ Có quyền quản lý toàn bộ hệ thống bao gồm thêm, sửa, xóa sác
 - Bình luận và đánh giá nội dung
 - Quản lý tài khoản cá nhân
 - Quản lý nội dung và người dùng (Admin)
-## 3. Môi trường hoạt động
+## 2. Môi trường hoạt động
 Hệ thống hoạt động trên đa nền tảng
-## 4.Bảo mật
+## 3.Bảo mật
 Đảo bảo bảo mật thông tin người dùng
-## II. Xác định actor
+## Xác định actor
 1. Guest (Khách chưa đăng nhập)
 - Đặc điểm:
 
