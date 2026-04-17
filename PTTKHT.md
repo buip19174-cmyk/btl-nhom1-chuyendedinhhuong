@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 # I. Giới thiệu hệ thống
 Tên hệ thống: Website đọc sách, truyện online
 Mục tiêu:
@@ -121,3 +123,4 @@ Hệ thống đảm bảo:
 Đầy đủ chức năng đọc truyện
 Dễ mở rộng
 Phù hợp triển khai thực tế
+>>>>>>> e066d26c1290a9bdffed82c99550b495c0cc30c7
