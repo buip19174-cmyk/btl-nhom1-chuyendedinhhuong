@@ -20,4 +20,4 @@
     - Lưu lịch sử đọc
     - Xem lịch sử đọc
 
-!(./images/UC_user.png)
+![UC_user](./images/UC_user.png)
