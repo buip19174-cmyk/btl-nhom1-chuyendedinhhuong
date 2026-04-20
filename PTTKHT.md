@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 3.Xác định các thực thể chính, xác định usecase
 -Các thực thể chính
@@ -24,6 +25,8 @@ Theo dõi thống kê
 Quản lý người dùng
 Quản lý nội dung
 Quản lý thể loại truyện
+=======
+>>>>>>> lamnguyen
 =======
 >>>>>>> lamnguyen
 =======

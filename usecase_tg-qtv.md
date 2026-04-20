@@ -1,40 +1,27 @@
+###  Tác giả (Author)
+Tác giả là người sáng tạo nội dung, có quyền quản lý các tác phẩm cá nhân và theo dõi hiệu quả của truyện.
+* **Nhóm Quản lý truyện cá nhân:**
+    - Đăng truyện mới
+    - Chỉnh sửa thông tin truyện (Tên, mô tả, ảnh bìa)
+    - Thêm chương mới / Sửa chương
+    - Xóa chương / Ẩn truyện
+* **Nhóm Thống kê:**
+    - Xem thống kê lượt đọc theo ngày/tháng
+    - Theo dõi số lượng người theo dõi (Followers)
+    - Xem báo cáo thu nhập (nếu có hệ thống trả phí)
 
-usecaseDiagram
-    actor "Độc giả" as Reader
-    actor "Tác giả" as Author
-    actor "Quản trị viên" as Admin
+### Quản trị viên (Admin)
+Admin có quyền cao nhất, chịu trách nhiệm vận hành hệ thống và kiểm soát nội dung.
+* **Nhóm Quản lý người dùng:**
+    - Xem danh sách thành viên
+    - Khóa/Mở khóa tài khoản vi phạm
+    - Phân quyền (Thăng cấp lên Tác giả hoặc Mod)
+* **Nhóm Quản lý nội dung:**
+    - Duyệt truyện mới đăng
+    - Xóa truyện/Chương vi phạm tiêu chuẩn cộng đồng
+    - Quản lý bình luận (Xóa bình luận spam)
+* **Nhóm Quản lý hệ thống:**
+    - Quản lý danh mục thể loại truyện
+    - Cấu hình các thông số website
 
-    package "Hệ thống Website Đọc Truyện" {
-        %% Nhóm Độc giả
-        usecase "Xem danh sách truyện" as UC_View
-        usecase "Tìm kiếm truyện" as UC_Search
-        usecase "Đọc truyện" as UC_Read
-        usecase "Đăng ký / Đăng nhập" as UC_Auth
-        usecase "Tương tác (Bình luận/Yêu thích)" as UC_Interact
-        usecase "Lưu lịch sử đọc" as UC_History
-
-        %% Nhóm Tác giả
-        usecase "Đăng truyện mới / Chương mới" as UC_Upload
-        usecase "Theo dõi thống kê lượt đọc" as UC_Stats
-
-        %% Nhóm Admin
-        usecase "Quản lý người dùng" as UC_User_Mgmt
-        usecase "Quản lý nội dung (Duyệt/Xóa)" as UC_Content_Mgmt
-        usecase "Quản lý thể loại truyện" as UC_Cat_Mgmt
-    }
-
-    %% Liên kết các Actor
-    Reader -- UC_View
-    Reader -- UC_Search
-    Reader -- UC_Read
-    Reader -- UC_Auth
-    Reader -- UC_Interact
-    Reader -- UC_History
-
-    Author -- UC_Upload
-    Author -- UC_Stats
-    Author -- UC_Read
-
-    Admin -- UC_User_Mgmt
-    Admin -- UC_Content_Mgmt
-    Admin -- UC_Cat_Mgmt
+    ![](image.png)
