@@ -1,3 +1,35 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+3.Xác định các thực thể chính, xác định usecase
+-Các thực thể chính
++Người dùng
++Truyện
++Chương
++Thể loại
++Bình luận
++Lịch sử/ Yêu thích
+-Các usecase
++Độc giả
+Xem danh sách truyện
+Tìm kiếm truyện
+Đọc truyện
+Đăng kí đăng nhâpk
+Tương tác
+Lưu lịch sử
++Tác giả
+Đăng truyện mới/Chương mới
+Theo dõi thống kê
++Quản trị viên
+Quản lý người dùng
+Quản lý nội dung
+Quản lý thể loại truyện
+=======
+>>>>>>> lamnguyen
+=======
+>>>>>>> lamnguyen
+=======
 # I. Giới thiệu hệ thống
 Tên hệ thống: Website đọc sách, truyện online
 Mục tiêu:
@@ -121,3 +153,4 @@ Hệ thống đảm bảo:
 Đầy đủ chức năng đọc truyện
 Dễ mở rộng
 Phù hợp triển khai thực tế
+>>>>>>> e066d26c1290a9bdffed82c99550b495c0cc30c7
