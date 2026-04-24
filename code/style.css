@@ -1,0 +1,123 @@
+/* === PHẠM VI MODAL (Chỉ ảnh hưởng khi nằm trong class .modal) === */
+
+.modal {
+    display: flex;
+    position: fixed; 
+    z-index: 10000; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8); /* Làm tối nền hơn để nổi bật form */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Tối ưu để không đè CSS của Home: Dùng .modal trước mọi selector */
+
+.modal form {
+    background: #1d1919;
+    padding: 35px 40px;
+    width: 420px;
+    border-radius: 16px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.6);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: auto; /* Căn giữa trong flex */
+}
+
+.modal h2 {
+    text-align: center;
+    margin-bottom: 5px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #fff !important; /* Ép màu trắng cho tiêu đề form */
+}
+
+.modal .input-group {
+    position: relative;
+    width: 100%;
+}
+
+.modal input {
+    width: 100%;
+    padding: 14px 15px;
+    border: 1.5px solid #776E6E;
+    background: transparent;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #fff;
+    outline: none;
+    transition: 0.25s;
+}
+
+.modal input:focus {
+    border-color: #49c5aa;
+    box-shadow: 0 0 5px rgba(72,197,170,0.5);
+}
+
+.modal .note {
+    opacity: 0.7;
+    font-size: 13px;
+    margin-top: -10px;
+    color: #c3c1bd;
+    text-align: left; /* Ghi chú căn trái */
+}
+
+.modal button[type="submit"] {
+    width: 100%;
+    padding: 14px;
+    background: #14604C;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: 0.25s;
+}
+
+.modal button[type="submit"]:hover {
+    background: #1a7a61;
+}
+
+.modal p {
+    font-size: 14px;
+    text-align: center;
+    color: #ddd;
+    margin: 5px 0;
+}
+
+.modal a {
+    color: #49c5aa;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.modal a:hover {
+    text-decoration: underline;
+}
+
+/* Nút đóng X */
+.modal .close-btn {
+    color: #fff;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 30px;
+}
+
+/* Icon trong input password */
+.modal .input-group i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #c3c1bd;
+}
