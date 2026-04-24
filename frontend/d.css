@@ -1,0 +1,161 @@
+/* Reset cơ bản */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #222;
+    padding: 0 6px;
+    height: 80px;
+    color: #fff;
+    border-radius: 10px;
+}
+
+
+.logo a {
+    color: #0f9d58;
+    font-size: 22px;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 20px;
+    margin:auto;
+
+
+}
+a {
+    text-decoration: none; /* bỏ gạch chân */
+}
+/* Menu */
+nav{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 40px;
+}
+
+nav ul li {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+  padding: 5px 5px;
+  border-radius: 5px;
+  transition: background 0.3s;
+  font-size: 20px;
+}
+
+/* Hover menu */
+nav ul li:hover {
+    background: #726f70;
+    border-radius: 5px;
+}
+
+/* Dropdown */
+.mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 100%;
+    transform: translateX(-30%);
+    width: 650px;
+    background: rgba(114, 111, 111, 0.9);
+    color: #e0d8d8;
+    padding: 20px;
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    border-radius: 10px;
+    z-index: 9999;
+}
+
+.mega-menu a {
+    color: white;
+    padding: 10px;
+    display: block;
+}
+
+.mega-menu a:hover {
+    background: #1f1b1b;
+}
+
+/* Hiện mega-menu khi hover */
+nav ul li:hover .mega-menu {
+    display: block;
+}
+
+/* Search */
+.buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.buttons input {
+    padding: 6px;
+    border: none;
+    border-radius: 5px;
+}
+
+.buttons button {
+    padding: 6px 10px;
+    border: none;
+    background: #0fcd64;
+    color: rgb(235, 242, 236);
+    border-radius: 0 3px 3px 0;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.buttons button:hover {
+    background: #d35400;
+}
+
+/* Content */
+.content {
+    width: 100%;
+    padding: 20px;
+}
+
+/* Book box */
+.container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+}
+
+.book {
+    text-align: center;
+   
+}
+
+.book img {
+    width: 100%;
+    border-radius: 10px;
+    transition: 0.3s;
+
+    
+}
+
+.book img:hover {
+    transform: scale(1.05);
+}
+
+.title {
+    margin-top: 10px;
+    font-weight: bold;
+}
