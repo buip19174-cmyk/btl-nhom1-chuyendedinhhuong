@@ -1,7 +1,7 @@
 CREATE TABLE chapters (
     id INT AUTO_INCREMENT PRIMARY KEY,
     story_id INT NOT NULL,
-    chapter_number FLOAT NOT NULL, -- Dùng FLOAT để hỗ trợ chương phụ (VD: Chương 1.5)
+    chapter_number FLOAT NOT NULL, 
     title VARCHAR(255),
     content LONGTEXT NOT NULL,
     view_count INT DEFAULT 0,

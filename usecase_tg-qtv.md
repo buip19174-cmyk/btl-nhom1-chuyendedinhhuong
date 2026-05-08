@@ -24,4 +24,4 @@ Admin có quyền cao nhất, chịu trách nhiệm vận hành hệ thống và
     - Quản lý danh mục thể loại truyện
     - Cấu hình các thông số website
 
-    ![](image.png)
+  
