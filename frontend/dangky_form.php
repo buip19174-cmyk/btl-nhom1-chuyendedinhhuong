@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="style.css">
 <div id="registerModal" class="modal"> 
     <div>
-        <form method="POST"> 
+        <form method="POST" action="home.php"> 
             <h2>Đăng kí tài khoản</h2>
             <input type="number" name="sdt" placeholder="Số điện thoại" required >
             <input type="text" name="username" placeholder="Tên đăng nhập" required>

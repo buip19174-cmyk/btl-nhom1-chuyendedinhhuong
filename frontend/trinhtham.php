@@ -1,24 +1,17 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-
+    <title>Tài Chính Cá Nhân</title>
     <link rel="stylesheet" href="d.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
-    <!-- thêm icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
-
-<header>
-    <div class="logo"><a href="home.php">KEWE</a></div>
-
-    <nav>
+    <header>
+        <div class="logo"><a href="home.php">KEWE</a></div>
+           <nav>
         <ul>
             <li>
                 <a href="#">Sách</a>
@@ -59,52 +52,44 @@
             
         </ul>
     </nav>
+            <div class="buttons">
+                <input type="text" placeholder="Search...">
+                <button type="submit">Tìm Kiếm</button>
+                <button type="button">Đăng nhập</button>
+                <button type="button">Đăng kí</button>  
 
-    <div class="buttons">
-
-        <form action="timkiem.php" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="Tìm tên truyện..." required>
-            <button type="submit" class="btn-timkiem">
-                <i class="fas fa-search"></i> Tìm kiếm
-            </button>
-        </form>
-
-        <?php if (isset($_SESSION['user'])): ?>
-            <span>Xin chào <?= $_SESSION['user'] ?></span>
-        <?php else: ?>
-            <button class="btn-dangky" id="openRegisterModal">Đăng ký</button> 
-            <button class="btn-dangnhap" id="openRegisterModal2">Đăng nhập</button> 
-        <?php endif; ?>
-
-    </div>
-</header>
-
-<!-- banner -->
-<section class="banner">
-    <div class="swiper bannerSwiper">
-        <div class="swiper-wrapper">
-
-            <div class="swiper-slide">
-                <img src="ba2.webp">
-            </div>
-
-            <div class="swiper-slide">
-                <img src="ba.webp">
-            </div>
-
-            <div class="swiper-slide">
-                <img src="sach2.jpg">
             </div>
 
         </div>
+    </header>
+    <section class="hero">
+    <div class="hero-left">
+        <p class="tag">WEKE ĐỀ XUẤT</p>
+        <h1>Tự do tài chính từ bên trong</h1>
+        <p class="desc">
+            Học cách quản lý tiền bạc, kiểm soát tài chính cá nhân và sống thoải mái hơn.
+        </p>
+        <button class="read-btn">📖 Đọc sách</button>
     </div>
+
+    < class="swiper mySwiper">
+    <div class="swiper-wrapper">
+
+        <?php foreach ($books as $book): ?>
+            <div class="swiper-slide">
+                <a href="read_story.php?story_id=<?= $book['id'] ?>">
+                    <img src="<?= $book['cover'] ?>" 
+                         alt="<?= htmlspecialchars($book['title']) ?>">
+                </a>
+            </div>
+        <?php endforeach; ?>
+
+    </div>
+</div>
 </section>
-
-<!-- content -->
 <section class="content">
-    <h2>Tất cả sách</h2>
-
     <div class="welcome">
+           <div class="welcome">
         <div class="container">
 
             <?php if (!empty($books)): ?>
@@ -135,39 +120,25 @@
             <?php else: ?>
                 <p>Không có truyện</p>
             <?php endif; ?>
-
         </div>
     </div>
 </section>
-
-<!-- footer -->
-<footer>
-    <div class="footer-top">
-        <div class="footer-logo">
-            <h2>WEKE</h2>
-            <p>Công ty cổ phần sách điện tử Weke</p>
-            <p><i class="fa fa-phone"></i> 0877736289</p>
-            <p><i class="fa fa-envelope"></i> Support@weke.vn</p>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        Công ty Cổ phần Sách điện tử Weke – Hà Nội
-    </div>
-</footer>
-
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
 <script>
-const bannerSwiper = new Swiper(".bannerSwiper", {
+const swiper = new Swiper(".mySwiper", {
+    slidesPerView: 3,
+    centeredSlides: true,
     loop: true,
-    autoplay: {
-        delay: 3000,
-        disableOnInteraction: false,
+    spaceBetween: 30,
+    effect: "coverflow",
+    coverflowEffect: {
+        rotate: 0,
+        stretch: 0,
+        depth: 100,
+        modifier: 2,
+        slideShadows: false,
     },
-    speed: 800,
 });
 </script>
-
 </body>
 </html>
