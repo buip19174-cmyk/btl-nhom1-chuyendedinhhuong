@@ -72,17 +72,24 @@
         <button class="read-btn">📖 Đọc sách</button>
     </div>
 
-    < class="swiper mySwiper">
+    <div class="swiper mySwiper">
     <div class="swiper-wrapper">
 
-        <?php foreach ($books as $book): ?>
-            <div class="swiper-slide">
-                <a href="read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="<?= $book['cover'] ?>" 
-                         alt="<?= htmlspecialchars($book['title']) ?>">
-                </a>
-            </div>
-        <?php endforeach; ?>
+        <div class="swiper-slide">
+            <img src="sach2.jpg">
+        </div>
+
+        <div class="swiper-slide">
+            <img src="sach2.jpg">
+        </div>
+
+        <div class="swiper-slide">
+            <img src="sach2.jpg">
+        </div>
+
+        <div class="swiper-slide">
+            <img src="sach2.jpg">
+        </div>
 
     </div>
 </div>
