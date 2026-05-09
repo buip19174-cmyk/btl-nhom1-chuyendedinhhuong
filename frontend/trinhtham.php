@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tài Chính Cá Nhân</title>
+    <title>Chứng Khoán - BĐS - Đầu Tư</title>
     <link rel="stylesheet" href="css/d.css">
+    <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 </head>
 <body>
@@ -52,15 +53,46 @@
             
         </ul>
     </nav>
-            <div class="buttons">
-                <input type="text" placeholder="Search...">
-                <button type="submit">Tìm Kiếm</button>
-                <button type="button">Đăng nhập</button>
-                <button type="button">Đăng kí</button>  
-
+              <div class="buttons">
+    <form action="timkiem.php" method="GET" class="search-form">
+        <input type="text" name="q" placeholder="Tìm tên truyện..." required>
+        <button type="submit" class="btn-timkiem">
+            <i class="fas fa-search"></i> Tìm kiếm
+        </button>
+    </form>
+</div>
+<div class="user-area">
+    <?php if (isset($_SESSION['username'])): ?>
+        <div class="user-profile" id="userProfile">
+            
+            <i class="fas fa-caret-down"></i>
+                 <i class="fa-solid fa-user"></i>
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-info">
+                    <div class="info-text">
+                        <strong><?php echo $_SESSION['username']; ?></strong>
+                        
+                    </div>
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                
+                
+                <ul class="dropdown-menu-list">
+                    <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i>  Tài khoản</a></li>
+                    <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                    <hr>
+                    <li>
+                    <a href="dangxuat.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                    </li>
+                </ul>
             </div>
-
         </div>
+    <?php else: ?>
+      <button class="btn-dangky" id="openRegisterModal">Đăng ký</button> 
+        
+      <button class="btn-dangnhap" id="openRegisterModal2">Đăng nhập</button> 
+    <?php endif; ?>
+</div>
     </header>
     <section class="hero">
     <div class="hero-left">
@@ -140,5 +172,20 @@ const swiper = new Swiper(".mySwiper", {
     },
 });
 </script>
+<div id="registerModal" class="modal" style="display: none;"> 
+    <?php include 'dangky_form.php'; ?> 
+</div>
+
+<div id="loginModal" class="modal" style="display: none;"> 
+    <?php include 'dangnhap_form.php'; ?> 
+</div>
+
+<?php if (!empty($message)): ?>
+    <script>
+        alert("<?php echo addslashes($message); ?>");
+    </script>
+<?php endif; ?>
+
+<script src="../backend/script.js"></script>
 </body>
 </html>

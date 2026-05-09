@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="style.css">
+
 <div id="loginModal" class="modal"> 
     <div class="modal-content-inner">
         <span class="close-btn">&times;</span> 
