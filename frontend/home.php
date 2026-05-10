@@ -1,4 +1,20 @@
+<?php
+session_start();
+include '../backend/dangky_logic.php';
+include '../backend/dangnhap_logic.php';
 
+// LẤY DANH SÁCH TRUYỆN
+$sql = "SELECT id, title, cover 
+        FROM stories
+        WHERE description = 'home'
+        LIMIT 18";
+$result = mysqli_query($con, $sql);
+
+$books = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $books[] = $row;
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -108,15 +124,15 @@
         <div class="swiper-wrapper">
 
             <div class="swiper-slide">
-                <img src="ba2.webp">
+                <img src="img/ba1.webp">
             </div>
 
             <div class="swiper-slide">
-                <img src="ba.webp">
+                <img src="img/ba2.webp">
             </div>
 
             <div class="swiper-slide">
-                <img src="sach2.jpg">
+                <img src="img/sach2.jpg">
             </div>
 
         </div>
@@ -136,8 +152,8 @@
                     <div class="book">
 
                         <!-- link đọc -->
-                        <a href="read_story.php?story_id=<?= $book['id'] ?>">
-                            <img src="<?= $book['cover'] ?>">
+                            <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
+                            <img src="../code/images/<?= $book['cover'] ?>">
                             <div class="title">
                                 <?= htmlspecialchars($book['title']) ?>
                             </div>

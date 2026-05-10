@@ -1,5 +1,5 @@
 <?php
-include 'db_connect.php';
+include_once '../database/connect.php';
 
 if (!isset($_GET['chapter_id'])) {
     die("Thiếu ID chương");
@@ -145,7 +145,7 @@ $next_chap = mysqli_fetch_assoc($next_q);
 <body>
 
 <nav class="navbar">
-    <a href="home.php"><i class="fa-solid fa-house"></i> Trang chủ</a>
+    <a href="../frontend/home.php" title="Trang chủ"><i class="fa-solid fa-house"></i> Trang chủ</a>
     <span>/</span>
     <a href="read_story.php?story_id=<?php echo $chapter['story_id']; ?>"><?php echo $chapter['story_title']; ?></a>
 </nav>

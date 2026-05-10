@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db_connect.php';
+include_once '../database/connect.php';
 
 /* Chưa đăng nhập → quay về home */
 if (!isset($_SESSION['username'])) {
