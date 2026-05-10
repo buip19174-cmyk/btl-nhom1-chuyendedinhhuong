@@ -2,7 +2,7 @@
 // dangky_logic.php
 
 // 1. Phải nạp file kết nối ngay tại đây để biến $con có hiệu lực
-include_once 'db_connect.php'; 
+include_once '../database/connect.php';
 $message = ''; // Khởi tạo biến message để tránh lỗi undefined
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -1,4 +1,21 @@
 
+<?php
+session_start();
+include '../backend/dangky_logic.php';
+include '../backend/dangnhap_logic.php';
+require '../database/connect.php'; // file kết nối DB
+
+// LẤY DANH SÁCH TRUYỆN
+$sql = "SELECT id, title, cover FROM stories 
+        WHERE description = 'marketing_banhang'
+        LIMIT 6";
+$result = mysqli_query($con, $sql);
+
+$books = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $books[] = $row;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +24,8 @@
     <title>Marketing - Bán hàng</title>
     <link rel="stylesheet" href="css/d.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -52,15 +71,46 @@
             
         </ul>
     </nav>
-            <div class="buttons">
-                <input type="text" placeholder="Search...">
-                <button type="submit">Tìm Kiếm</button>
-                <button type="button">Đăng nhập</button>
-                <button type="button">Đăng kí</button>  
-
+              <div class="buttons">
+    <form action="timkiem.php" method="GET" class="search-form">
+        <input type="text" name="q" placeholder="Tìm tên truyện..." required>
+        <button type="submit" class="btn-timkiem">
+            <i class="fas fa-search"></i> Tìm kiếm
+        </button>
+    </form>
+</div>
+<div class="user-area">
+    <?php if (isset($_SESSION['username'])): ?>
+        <div class="user-profile" id="userProfile">
+            
+            <i class="fas fa-caret-down"></i>
+                 <i class="fa-solid fa-user"></i>
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-info">
+                    <div class="info-text">
+                        <strong><?php echo $_SESSION['username']; ?></strong>
+                        
+                    </div>
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                
+                
+                <ul class="dropdown-menu-list">
+                    <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i>  Tài khoản</a></li>
+                    <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                    <hr>
+                    <li>
+                    <a href="dangxuat.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                    </li>
+                </ul>
             </div>
-
         </div>
+    <?php else: ?>
+      <button class="btn-dangky" id="openRegisterModal">Đăng ký</button> 
+        
+      <button class="btn-dangnhap" id="openRegisterModal2">Đăng nhập</button> 
+    <?php endif; ?>
+</div>
     </header>
     <section class="hero">
     <div class="hero-left">
@@ -75,21 +125,14 @@
     <div class="swiper mySwiper">
     <div class="swiper-wrapper">
 
-        <div class="swiper-slide">
-            <img src="sach2.jpg">
-        </div>
+        <?php foreach ($books as $book): ?>
+            <div class="swiper-slide">
+                <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
+                            <img src="../code/images/<?= $book['cover'] ?>">
 
-        <div class="swiper-slide">
-            <img src="sach2.jpg">
-        </div>
-
-        <div class="swiper-slide">
-            <img src="sach2.jpg">
-        </div>
-
-        <div class="swiper-slide">
-            <img src="sach2.jpg">
-        </div>
+                </a>
+            </div>
+        <?php endforeach; ?>
 
     </div>
 </div>
@@ -105,8 +148,8 @@
                     <div class="book">
 
                         <!-- link đọc -->
-                        <a href="read_story.php?story_id=<?= $book['id'] ?>">
-                            <img src="<?= $book['cover'] ?>">
+                            <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
+                            <img src="../code/images/<?= $book['cover'] ?>">
                             <div class="title">
                                 <?= htmlspecialchars($book['title']) ?>
                             </div>
@@ -137,7 +180,15 @@ const swiper = new Swiper(".mySwiper", {
     centeredSlides: true,
     loop: true,
     spaceBetween: 30,
+
+    autoplay: {
+        delay: 2000,
+        disableOnInteraction: false,
+    },
+
     effect: "coverflow",
+    grabCursor: true,
+
     coverflowEffect: {
         rotate: 0,
         stretch: 0,
@@ -147,5 +198,20 @@ const swiper = new Swiper(".mySwiper", {
     },
 });
 </script>
+<div id="registerModal" class="modal" style="display: none;"> 
+    <?php include 'dangky_form.php'; ?> 
+</div>
+
+<div id="loginModal" class="modal" style="display: none;"> 
+    <?php include 'dangnhap_form.php'; ?> 
+</div>
+
+<?php if (!empty($message)): ?>
+    <script>
+        alert("<?php echo addslashes($message); ?>");
+    </script>
+<?php endif; ?>
+
+<script src="../backend/script.js"></script>
 </body>
 </html>
