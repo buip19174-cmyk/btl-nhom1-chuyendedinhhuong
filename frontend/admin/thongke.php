@@ -9,20 +9,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>Quản Trị</h2>
-        <ul class="menu">
-            <li>Tổng Quan</li>
-            <li>Người Dùng</li>
-            <li>Truyện</li>
-            <li>Chương</li>
-            <li>Bình Luận</li>
-            <li class="active-menu">
-                Thống Kê
-            </li>
-            <li>Cài Đặt</li>
-        </ul>
-    </div>
+    <?php include 'sidebar.php'; ?>
 
     <!-- Main -->
     <div class="main">

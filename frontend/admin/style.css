@@ -53,12 +53,23 @@ body {
     transition: 0.3s;
     color: #d1d5db;
 }
+.menu li a {
+    text-decoration: none;
+    color: #d1d5db; /* Màu chữ mặc định */
+    display: block; 
+    width: 100%;
+}
 
 .menu li:hover {
     background: #1f2937;
     color: white;
 }
-
+.menu li:hover {
+    background: #1f2937;
+}
+.menu li:hover a {
+    color: white;
+}
 .active-menu {
     background: black;
     color: white !important;
@@ -346,13 +357,6 @@ table th {
             object-fit:cover;
         }
 
-        .status{
-            padding:5px 10px;
-            border-radius:20px;
-            font-size:14px;
-            display:inline-block;
-        }
-
         .active{
             background:#dcfce7;
             color:#166534;
@@ -363,21 +367,6 @@ table th {
             color:#991b1b;
         }
 
-        .btn{
-            padding:8px 14px;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            margin-right:5px;
-        }
-
-        .edit{
-            background:#dbeafe;
-        }
-
-        .delete{
-            background:#fee2e2;
-        }
 
 .add-btn{
             background:black;

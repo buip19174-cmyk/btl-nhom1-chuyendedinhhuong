@@ -1,3 +1,4 @@
+
 <?php
 // Lấy tên file hiện tại (ví dụ: index.php)
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -5,7 +6,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <!-- Sidebar -->
   <div class="sidebar">
-    <h2>Trang Quản trị</h2>
+    <h2>Trang Quản Trị</h2>
 
     <ul class="menu">
         <li class="<?php echo ($current_page == 'index.php') ? 'active-menu' : ''; ?>">

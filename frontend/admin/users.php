@@ -8,24 +8,8 @@
     
 </head>
 <body>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-
-        <h2>Trang Quản Trị</h2>
-
-        <ul class="menu">
-            <li>Tổng Quan</li>
-            <li class="active-menu"\>Người Dùng</li>
-            <li>Truyện</li>
-            <li>Bình Luận</li>
-            <li>Báo Cáo</li>
-            <li>Thông Báo</li>
-            <li>Cài Đặt</li>
-        </ul>
-
-    </div>
-
+    <?php include 'sidebar.php'; ?>
+    
     <!-- Main -->
     <div class="main">
 
