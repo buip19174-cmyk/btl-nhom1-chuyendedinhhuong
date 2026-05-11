@@ -1,13 +1,31 @@
 
+<?php
+session_start();
+include '../backend/dangky_logic.php';
+include '../backend/dangnhap_logic.php';
+require '../database/connect.php'; // file kết nối DB
+
+// LẤY DANH SÁCH TRUYỆN
+$sql = "SELECT id, title, cover FROM stories 
+        WHERE description = 'phattrien'
+        LIMIT 6";
+$result = mysqli_query($con, $sql);
+
+$books = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $books[] = $row;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chứng Khoán - BĐS - Đầu Tư</title>
+    <title>Phát triển cá nhân</title>
     <link rel="stylesheet" href="css/d.css">
-    <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -104,14 +122,14 @@
         <button class="read-btn">📖 Đọc sách</button>
     </div>
 
-    < class="swiper mySwiper">
+    <div class="swiper mySwiper">
     <div class="swiper-wrapper">
 
         <?php foreach ($books as $book): ?>
             <div class="swiper-slide">
-                <a href="read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="<?= $book['cover'] ?>" 
-                         alt="<?= htmlspecialchars($book['title']) ?>">
+                <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
+                            <img src="../code/images/<?= $book['cover'] ?>">
+
                 </a>
             </div>
         <?php endforeach; ?>
@@ -130,8 +148,8 @@
                     <div class="book">
 
                         <!-- link đọc -->
-                        <a href="read_story.php?story_id=<?= $book['id'] ?>">
-                            <img src="<?= $book['cover'] ?>">
+                            <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
+                            <img src="../code/images/<?= $book['cover'] ?>">
                             <div class="title">
                                 <?= htmlspecialchars($book['title']) ?>
                             </div>
@@ -162,7 +180,15 @@ const swiper = new Swiper(".mySwiper", {
     centeredSlides: true,
     loop: true,
     spaceBetween: 30,
+
+    autoplay: {
+        delay: 2000,
+        disableOnInteraction: false,
+    },
+
     effect: "coverflow",
+    grabCursor: true,
+
     coverflowEffect: {
         rotate: 0,
         stretch: 0,

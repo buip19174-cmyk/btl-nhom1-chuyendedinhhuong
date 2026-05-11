@@ -1,5 +1,5 @@
 <?php
-$con = mysqli_connect("localhost", "root", "", "db_");
+$con = mysqli_connect("localhost", "root", "", "db_BTL5");
 $keyword = isset($_GET['q']) ? mysqli_real_escape_string($con, $_GET['q']) : '';
 
 // Truy vấn
@@ -13,7 +13,7 @@ $count = mysqli_num_rows($result);
 <head>
     <meta charset="UTF-8">
     <title>Tìm kiếm: <?php echo htmlspecialchars($keyword); ?></title>
-    <link rel="stylesheet" href="search.css"> </head>
+    <link rel="stylesheet" href="css/search.css"> </head>
 <body>
 
 <div class="container">
@@ -39,8 +39,9 @@ $count = mysqli_num_rows($result);
             <?php while($row = mysqli_fetch_assoc($result)): ?>
                 <div class="story-card">
                     <div class="cover-wrapper">
-                        <img src="<?php echo $row['cover']; ?>" alt="Cover">
-                        
+                        <a href="../backend/read_story.php?story_id=<?= $row['id'] ?>">
+                            <img src="../code/images/<?= $row['cover'] ?>">
+                        </a>
                     </div>
                     <div class="story-title">
                         <?php echo $row['title']; ?>
