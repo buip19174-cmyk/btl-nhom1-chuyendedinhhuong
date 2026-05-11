@@ -1,3 +1,10 @@
+<?php
+include '../../backend/connect.php';
+
+$sql = "SELECT * FROM users";
+$users = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -46,7 +53,7 @@
 
             </div>
 
-            <button class="add-btn">+ Thêm Người Dùng</button>
+            <button class="add-btn" onclick="add_user(<?= $s['id'] ?>)">+ Thêm Người Dùng</button>
 
         </div>
 
@@ -69,65 +76,44 @@
 
                 <tbody>
 
-                    <tr>
-                        <td>1</td>
+<?php while($row = $users->fetch_assoc()): ?>
 
-                        <td>
-                            <img class="avatar"
-                            src="https://i.pravatar.cc/100?img=1">
-                        </td>
+<tr>
+    <td><?= $row['id'] ?></td>
 
-                        <td>Nguyễn Văn A</td>
-                        <td>a@gmail.com</td>
-                        <td>Admin</td>
+    <td>
+        <img class="avatar"
+             src="https://i.pravatar.cc/100?img=<?= $row['id'] ?>">
+    </td>
 
-                        <td>
-                            <span class="status active">
-                                Hoạt động
-                            </span>
-                        </td>
+    <td><?= $row['username'] ?></td>
+    <td><?= $row['email'] ?></td>
+    <td><?= $row['role'] ?></td>
 
-                        <td>
-                            <button class="btn edit">
-                                Sửa
-                            </button>
+    <td>
+        <?php if($row['status'] == 'active'): ?>
+            <span class="status active">Hoạt động</span>
+        <?php else: ?>
+            <span class="status banned">Đã khoá</span>
+        <?php endif; ?>
+    </td>
 
-                            <button class="btn delete">
-                                Xoá
-                            </button>
-                        </td>
-                    </tr>
+    <td>
+        <button class="btn edit"
+                onclick="edit_user(<?= $row['id'] ?>)">
+            Sửa
+        </button>
 
-                    <tr>
-                        <td>2</td>
+        <button class="btn delete"
+                onclick="delete_user(<?= $row['id'] ?>)">
+            Xoá
+        </button>
+    </td>
+</tr>
 
-                        <td>
-                            <img class="avatar"
-                            src="https://i.pravatar.cc/100?img=2">
-                        </td>
+<?php endwhile; ?>
 
-                        <td>Trần Thị B</td>
-                        <td>b@gmail.com</td>
-                        <td>Thành viên</td>
-
-                        <td>
-                            <span class="status banned">
-                                Đã khoá
-                            </span>
-                        </td>
-
-                        <td>
-                            <button class="btn edit">
-                                Sửa
-                            </button>
-
-                            <button class="btn delete">
-                                Xoá
-                            </button>
-                        </td>
-                    </tr>
-
-                </tbody>
+</tbody>
 
             </table>
 

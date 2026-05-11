@@ -1,5 +1,5 @@
 <?php
-require 'db_connect.php';
+require 'connect.php';
 
 $id = $_POST['id'] ?? '';
 

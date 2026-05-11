@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include('db_connect.php'); // Hoặc include('connect.php') nếu bạn dùng biến $conn
+include('connect.php'); // Hoặc include('connect.php') nếu bạn dùng biến $conn
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // LẤY DỮ LIỆU TỪ FORM

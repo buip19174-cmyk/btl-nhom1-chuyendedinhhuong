@@ -18,9 +18,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <li class="<?php echo ($current_page == 'stories.php') ? 'active-menu' : ''; ?>">
             <a href="stories.php">Truyện</a>
         </li>
-        <li class="<?php echo ($current_page == 'report.php') ? 'active-menu' : ''; ?>">
-          <a href="report.php">Báo cáo</a>
-        </li>
         <li class="<?php echo ($current_page == 'thongke.php') ? 'active-menu' : ''; ?>">
           <a href="thongke.php">Thống kê</a>
         </li>

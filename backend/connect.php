@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$db   = 'webdoctruyen';
+$db   = 'db_BTL5';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -14,15 +14,18 @@ if ($conn->connect_error) {
     die("LỖI KẾT NỐI DATABASE: " . $conn->connect_error);
 }
 
+// Thiết lập tiếng Việt
+$conn->set_charset($charset);
+
 // Tạo database nếu chưa có
 $sql = "CREATE DATABASE IF NOT EXISTS $dbname CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
-mysqli_query($con, $sql);
+mysqli_query($conn, $sql);
 
 // Chọn database
-mysqli_select_db($con, $dbname);
+mysqli_select_db($conn, $dbname);
 
 // Tạo bảng users
-mysqli_query($con, "CREATE TABLE IF NOT EXISTS users (
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50),
     sdt VARCHAR(20),
@@ -31,7 +34,7 @@ mysqli_query($con, "CREATE TABLE IF NOT EXISTS users (
 )ENGINE=InnoDB");
 
 // Tạo bảng stories
-mysqli_query($con, "CREATE TABLE IF NOT EXISTS stories (
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS stories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255),
     description TEXT,
@@ -40,7 +43,7 @@ mysqli_query($con, "CREATE TABLE IF NOT EXISTS stories (
 )ENGINE=InnoDB");
 
 // Tạo bảng chapters
-mysqli_query($con, "CREATE TABLE IF NOT EXISTS chapters (
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS chapters (
     id INT AUTO_INCREMENT PRIMARY KEY,
     story_id INT,
     title VARCHAR(255),
@@ -49,7 +52,7 @@ mysqli_query($con, "CREATE TABLE IF NOT EXISTS chapters (
 )");
 
 // Tạo bảng user_stories
-mysqli_query($con, "CREATE TABLE IF NOT EXISTS user_stories (
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS user_stories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     story_id INT NOT NULL,
@@ -58,9 +61,6 @@ mysqli_query($con, "CREATE TABLE IF NOT EXISTS user_stories (
     FOREIGN KEY (story_id) REFERENCES stories(id)
 )ENGINE=InnoDB");
 
+?>
 
-?>
-// Thiết lập tiếng Việt
-$conn->set_charset($charset);
-?>
 

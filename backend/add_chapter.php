@@ -1,30 +1,22 @@
 <?php
-require 'db_connect.php';
+include 'connect.php';
 
-$story_id = $_POST['story_id'] ?? '';
-$title = $_POST['title'] ?? '';
-$content = $_POST['content'] ?? '';
-$chapter_number = $_POST['chapter_number'] ?? '';
+// Nhận dữ liệu từ AJAX
+$story_id = $_POST['story_id'];
+$title = mysqli_real_escape_string($conn, $_POST['title']);
+$content = mysqli_real_escape_string($conn, $_POST['content']);
 
-if ($story_id == '' || $title == '' || $chapter_number == '') {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Vui lòng nhập đầy đủ thông tin'
-    ]);
-    exit;
-}
+// Tự động tính số chương tiếp theo (chapter_number)
+$result = mysqli_query($conn, "SELECT MAX(chapter_number) as max_num FROM chapters WHERE story_id = $story_id");
+$row = mysqli_fetch_assoc($result);
+$next_number = $row['max_num'] + 1;
 
-$sql = "INSERT INTO chapters (story_id, title, content, chapter_number)
-        VALUES ('$story_id', '$title', '$content', '$chapter_number')";
+$sql = "INSERT INTO chapters (story_id, chapter_number, title, content) 
+        VALUES ('$story_id', '$next_number', '$title', '$content')";
 
-if (mysqli_query($con, $sql)) {
-    echo json_encode([
-        'status' => 'success',
-        'message' => 'Thêm chương thành công'
-    ]);
+if (mysqli_query($conn, $sql)) {
+    echo "Thành công!";
 } else {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Lỗi khi thêm chương'
-    ]);
+    echo "Lỗi: " . mysqli_error($conn);
 }
+?>

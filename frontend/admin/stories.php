@@ -1,10 +1,7 @@
 <?php
-// giả lập data (sau này thay bằng DB)
-$stories = [
-    ["id"=>1, "title"=>"Naruto", "status"=>"ongoing"],
-    ["id"=>2, "title"=>"One Piece", "status"=>"ongoing"],
-    ["id"=>3, "title"=>"Attack on Titan", "status"=>"completed"]
-];
+include '../../backend/connect.php';
+$sql = "SELECT * FROM stories";
+$stories = mysqli_query($conn, $sql); // Đảm bảo có dấu $ trước conn
 ?>
 
 <!DOCTYPE html>
@@ -30,13 +27,14 @@ $stories = [
     <!-- Action -->
     <div class="action-bar">
         <div class="left-actions">
-            <input type="text" placeholder="Tìm truyện...">
-            <select>
+            <input type="text" id="searchInput" placeholder="Tìm truyện...">
+            <select id="filterSelect">
                 <option>Tất cả</option>
                 <option>Đang cập nhật</option>
                 <option>Hoàn thành</option>
                 <option>Ẩn</option>
             </select>
+            <div id="resultContainer"> <!-- Kết quả sẽ đổ vào đây --> </div>
         </div>
     </div>
 
@@ -63,7 +61,7 @@ $stories = [
                     <button class="btn edit" onclick="editStory(<?= $s['id'] ?>)">Sửa</button>
                     <button class="btn delete">Xóa</button>
                     <a href="chapter.php?id=<?= $s['id'] ?>">
-                        <button class="btn">Chapter</button>
+                        <button class="btn">Chương</button>
                     </a>
                 </td>
             </tr>
@@ -106,8 +104,10 @@ function saveStory(){
     alert("Gọi API thêm truyện (PHP backend)");
 }
 function editStory(id){
-    alert("Sửa truyện ID: " + id);
+    alert("Sửa truyện " + id);
 }
+
+
 </script>
 
 </body>
