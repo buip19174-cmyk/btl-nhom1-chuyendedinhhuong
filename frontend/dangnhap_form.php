@@ -13,13 +13,13 @@
                 <i class="fa-solid fa-eye toggle-eye-icon" style="cursor: pointer;"></i>
             </div>
             
-            <button type="submit">Đăng nhập</button>
+            <button type="submit" name="login">Đăng nhập</button>
 
-            <?php if(!empty($message)): ?>
-                <p class="message" style="color: #49c5aa; text-align: center; margin-top: 10px;">
-                    <?php echo $message; ?>
-                </p> 
-            <?php endif; ?>
+            <?php if(!empty($login_message)): ?>
+    <p class="message" style="color: #49c5aa; text-align: center; margin-top: 10px;">
+        <?php echo $login_message; ?>
+    </p> 
+<?php endif; ?>
 
         <p style="margin-top: 15px; text-align: center;">
             Chưa có tài khoản? 
@@ -29,7 +29,7 @@
     </div>
 
     <script>
-        // Đoạn Script này nằm trong form để xử lý riêng việc ẩn/hiện mật khẩu
+        
         (function() {
             // Tìm các phần tử trong phạm vi của form này thôi
             const container = document.currentScript.parentElement;

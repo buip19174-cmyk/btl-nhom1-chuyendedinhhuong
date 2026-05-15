@@ -81,7 +81,7 @@ nav ul li a:hover{
 }
 nav ul li:last-child .mega-menu {
   right: 0;
-  left: auto;
+  left: 0;
   transform: none;
 }
     nav ul li:hover .mega-menu {
@@ -106,9 +106,6 @@ nav ul li:last-child .mega-menu {
       border-radius: 10px;
     }
 
-.book a{
-    color: #f1f1f1;
-}
 /* SEARCH + BUTTON */
 .buttons {
   display: flex;
