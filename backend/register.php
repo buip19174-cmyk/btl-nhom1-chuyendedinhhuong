@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $check_sql = "SELECT username, email FROM users WHERE username = ? OR email = ? LIMIT 1";
-        if ($stmt_user = $conn->prepare($check_sql)) {
+        if ($stmt_user = $con->prepare($check_sql)) {
             $stmt_user->bind_param("ss", $username, $email);
             $stmt_user->execute();
             $result = $stmt_user->get_result();
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
-        if ($stmt = $conn->prepare($sql)) {
+        if ($stmt = $con->prepare($sql)) {
             $stmt->bind_param("sss", $username, $email, $hashed_password);
 
             if ($stmt->execute()) {

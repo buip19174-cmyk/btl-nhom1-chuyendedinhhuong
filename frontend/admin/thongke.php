@@ -27,20 +27,20 @@ include '../../backend/connect.php';
 
 // 1. Lấy tổng số người dùng
 $sql_users = "SELECT COUNT(*) as total FROM users";
-$res_users = $conn->query($sql_users);
+$res_users = $con->query($sql_users);
 $total_users = $res_users->fetch_assoc()['total'];
 
 // 2. Lấy tổng số truyện
 $sql_stories = "SELECT COUNT(*) as total FROM stories";
-$res_stories = $conn->query($sql_stories);
+$res_stories = $con->query($sql_stories);
 $total_stories = $res_stories->fetch_assoc()['total'];
 
 // 3. Lấy danh sách truyện nổi bật (Top 4 truyện nhiều view nhất)
 $sql_top_stories = "SELECT title, luot_xem, status FROM stories ORDER BY luot_xem DESC LIMIT 4";
-$res_top_stories = $conn->query($sql_top_stories);
+$res_top_stories = $con->query($sql_top_stories);
 // 4. Lấy tổng số truyện
 $sql_views = "SELECT SUM(luot_xem) AS total FROM stories;";
-$res_views = $conn->query($sql_views);
+$res_views = $con->query($sql_views);
 $total_views = $res_views->fetch_assoc()['total'];
 // 5. Giả sử lấy % người dùng hoạt động (logic tùy bạn thiết kế)
 // Ví dụ: (số người login trong 30 ngày / tổng số người) * 100

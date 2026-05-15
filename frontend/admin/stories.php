@@ -1,7 +1,7 @@
 <?php
 include '../../backend/connect.php';
 $sql = "SELECT * FROM stories";
-$stories = mysqli_query($conn, $sql); // Đảm bảo có dấu $ trước conn
+$stories = mysqli_query($con, $sql); // Đảm bảo có dấu $ trước conn
 ?>
 
 <!DOCTYPE html>
@@ -105,8 +105,13 @@ function saveStory(){
 }
 function editStory(id){
     alert("Sửa truyện " + id);
+    
 }
 
+function deleteStory(id){
+    alert("Xóa truyện " + id);
+    
+}
 
 </script>
 

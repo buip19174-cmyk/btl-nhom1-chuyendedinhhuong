@@ -2,7 +2,7 @@
 include '../../backend/connect.php';
 
 $sql = "SELECT * FROM users";
-$users = $conn->query($sql);
+$users = $con->query($sql);
 ?>
 
 <!DOCTYPE html>

@@ -1,4 +1,11 @@
-
+<?php
+session_start();
+// Nếu không phải admin, đá về trang chủ hoặc trang đăng nhập
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header("Location: index.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>

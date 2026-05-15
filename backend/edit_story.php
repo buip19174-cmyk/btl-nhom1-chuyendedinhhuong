@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include('connect.php'); // file connect.php chứa $conn
+include('connect.php'); // file connect.php chứa $con
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = intval($_POST['storyId'] ?? 0);
