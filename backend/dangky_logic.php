@@ -1,9 +1,6 @@
 <?php
-// dangky_logic.php
-
-// 1. Phải nạp file kết nối ngay tại đây để biến $con có hiệu lực
 include_once '../database/connect.php';
-$message = ''; // Khởi tạo biến message để tránh lỗi undefined
+$message = ''; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Lấy và làm sạch dữ liệu đầu vào
@@ -23,12 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "Số điện thoại phải gồm đúng 10 chữ số!";
     } 
     else {
-        // --- 3. KIỂM TRA TỒN TẠI (DÙNG PREPARED STATEMENTS) ---
-
-        // Chuẩn bị câu lệnh SQL
+        
         $stmt_check = $con->prepare("SELECT username FROM users WHERE username = ? OR email = ?");
         
-        // Kiểm tra xem prepare có thành công không (nếu sai tên cột sẽ lỗi ở đây)
+       
         if (!$stmt_check) {
             die("Lỗi SQL (Prepare check): " . $con->error);
         }
@@ -40,12 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt_check->num_rows > 0) {
             $message = "Username hoặc email đã tồn tại!";
         } else {
-            // --- 4. THỰC HIỆN ĐĂNG KÝ ---
+            
 
-            // Mã hóa mật khẩu
+           
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-            // Chuẩn bị câu lệnh SQL để chèn dữ liệu
+            
             $stmt_insert = $con->prepare("INSERT INTO users (username, sdt, email, password) VALUES (?, ?, ?, ?)");
             
             if (!$stmt_insert) {

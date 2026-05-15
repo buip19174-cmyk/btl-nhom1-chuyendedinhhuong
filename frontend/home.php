@@ -22,7 +22,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-
+    <link rel="stylesheet" href="css/user.css">
     <link rel="stylesheet" href="css/d.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="css/style.css">
@@ -105,7 +105,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                     <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
                     <hr>
                     <li>
-                    <a href="dangxuat.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                        <a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                     </li>
                 </ul>
             </div>
@@ -215,10 +215,10 @@ const bannerSwiper = new Swiper(".bannerSwiper", {
     <?php include 'dangnhap_form.php'; ?> 
 </div>
 
-<?php if (!empty($message)): ?>
-    <script>
-        alert("<?php echo addslashes($message); ?>");
-    </script>
+<?php if (!empty($register_message)): ?>
+<script>
+    alert("<?php echo addslashes($register_message); ?>");
+</script>
 <?php endif; ?>
 
 <script src="../backend/script.js"></script>

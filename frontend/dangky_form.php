@@ -13,7 +13,7 @@
             <i class="fa-solid fa-eye toggle-eye" id="toggleEye"></i>
         </div>
         <span class="note">Mật khẩu bao gồm ít nhất 6 ký tự</span>
-        <button type="submit">Đăng kí</button>
+        <button type="submit" name="register">Đăng ký</button>
 
        <p class="message"><?php echo $message ?? ''; ?></p> 
        <p style="margin-top: 15px; text-align: center;">
