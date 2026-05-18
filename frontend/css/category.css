@@ -1,0 +1,217 @@
+/* ══════════════════════════════════════
+   CATEGORY PAGE — dùng chung cho tất cả
+   trang danh mục sách/truyện
+   ══════════════════════════════════════ */
+
+/* ── HERO ── */
+.cat-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 50px 60px;
+    gap: 40px;
+    background: linear-gradient(135deg, #0f0f0f 0%, #161616 100%);
+    border-bottom: 1px solid #222;
+    min-height: 340px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Hiệu ứng glow nền */
+.cat-hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,208,132,.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* TEXT BÊN TRÁI */
+.cat-hero-text {
+    flex: 1;
+    max-width: 520px;
+}
+
+.cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,208,132,.12);
+    border: 1px solid rgba(0,208,132,.3);
+    color: #00d084;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+}
+
+.cat-hero-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.25;
+    margin-bottom: 14px;
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+.cat-hero-desc {
+    font-size: 15px;
+    color: rgba(255,255,255,.6);
+    line-height: 1.7;
+    margin-bottom: 28px;
+    text-align: left;
+}
+
+.cat-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cat-btn-read {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: #00d084;
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 30px;
+    text-decoration: none;
+    transition: .2s;
+    box-shadow: 0 4px 18px rgba(0,208,132,.3);
+}
+.cat-btn-read:hover {
+    background: #00b872;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(0,208,132,.4);
+    color: #000;
+}
+
+.cat-btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: transparent;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 30px;
+    border: 2px solid rgba(255,255,255,.25);
+    cursor: pointer;
+    transition: .2s;
+}
+.cat-btn-save:hover {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.5);
+    color: #ff6b8a;
+}
+
+/* SWIPER BÊN PHẢI */
+.cat-hero-swiper {
+    width: 420px;
+    flex-shrink: 0;
+}
+
+.cat-hero-swiper .swiper {
+    width: 100%;
+    padding: 30px 0;
+}
+
+.cat-hero-swiper .swiper-slide {
+    display: flex;
+    justify-content: center;
+    transition: .3s;
+}
+
+.cat-hero-swiper .swiper-slide img {
+    width: 130px;
+    height: 190px;
+    object-fit: cover;
+    border-radius: 10px;
+    opacity: 0.4;
+    transform: scale(0.82);
+    transition: .4s;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+
+.cat-hero-swiper .swiper-slide-active img {
+    opacity: 1;
+    transform: scale(1.08);
+    box-shadow: 0 16px 40px rgba(0,0,0,.7);
+}
+
+.cat-hero-swiper .swiper-slide-prev img,
+.cat-hero-swiper .swiper-slide-next img {
+    opacity: 0.55;
+    transform: scale(0.9);
+}
+
+/* ── SECTION HEADER ── */
+.cat-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 20px 12px;
+    border-bottom: 1px solid #222;
+    margin-bottom: 20px;
+}
+
+.cat-section-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e8e8e8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cat-section-header h2 i {
+    color: #00d084;
+    font-size: 16px;
+}
+
+.cat-count {
+    font-size: 13px;
+    color: #555;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* ── EMPTY STATE ── */
+.cat-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #444;
+}
+.cat-empty i {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 14px;
+    opacity: .3;
+}
+.cat-empty p { font-size: 15px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+    .cat-hero {
+        flex-direction: column;
+        padding: 36px 24px;
+        text-align: center;
+    }
+    .cat-hero-text { max-width: 100%; }
+    .cat-hero-desc { text-align: center; }
+    .cat-hero-actions { justify-content: center; }
+    .cat-hero-swiper { width: 100%; }
+    .cat-hero-title { font-size: 26px; }
+}
