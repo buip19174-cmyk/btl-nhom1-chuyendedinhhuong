@@ -1,0 +1,138 @@
+/* AJAX search — dropdown header + trang tìm kiếm */
+.search-form-wrap {
+    position: relative;
+}
+
+.search-ajax-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(380px, 92vw);
+    max-height: 420px;
+    overflow-y: auto;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    z-index: 10001;
+    scrollbar-width: thin;
+}
+
+.search-ajax-dropdown.is-open {
+    display: block;
+}
+
+.search-ajax-dropdown .sad-header {
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #222;
+}
+
+.search-ajax-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: #e0e0e0;
+    transition: background 0.15s;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.search-ajax-item:last-child {
+    border-bottom: none;
+}
+
+.search-ajax-item:hover,
+.search-ajax-item.is-active {
+    background: #1e1e1e;
+}
+
+.search-ajax-item img {
+    width: 40px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: #222;
+}
+
+.search-ajax-item .sad-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-ajax-item .sad-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.search-ajax-item .sad-cat {
+    font-size: 11px;
+    color: #00d084;
+    margin-top: 3px;
+}
+
+.search-ajax-footer {
+    padding: 10px 14px;
+    border-top: 1px solid #222;
+    text-align: center;
+}
+
+.search-ajax-footer a {
+    font-size: 12px;
+    font-weight: 700;
+    color: #00d084;
+    text-decoration: none;
+}
+
+.search-ajax-footer a:hover {
+    text-decoration: underline;
+}
+
+.search-ajax-empty,
+.search-ajax-loading,
+.search-ajax-hint {
+    padding: 20px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+}
+
+.search-ajax-loading i {
+    color: #00d084;
+    margin-right: 6px;
+}
+
+.search-ajax-status {
+    min-height: 24px;
+}
+
+.search-ajax-status .ajax-loading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.search-ajax-status .ajax-loading-inline i {
+    color: #00d084;
+}
+
+/* Trang timkiem — khu vực kết quả AJAX */
+#ajax-search-results.is-loading {
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}

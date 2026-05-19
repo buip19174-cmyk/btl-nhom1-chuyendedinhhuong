@@ -37,6 +37,7 @@ $categories = [
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/search-ajax.css">
     <style>
     /* ── RESET & BASE ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -91,6 +92,8 @@ $categories = [
         background: var(--green); color: #000; font-size: 9px;
         font-weight: 800; padding: 1px 6px; border-radius: 8px; text-transform: uppercase;
     }
+
+    .buttons { position: relative; }
 
     /* search */
     .search-form {
@@ -355,10 +358,12 @@ $categories = [
     </nav>
 
     <div class="buttons">
-        <form action="timkiem.php" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="Tìm sách, truyện...">
-            <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
-        </form>
+        <div class="search-form-wrap">
+            <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
+                <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
+                <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
+            </form>
+        </div>
     </div>
 
     <div class="user-area">
@@ -551,6 +556,7 @@ new Swiper(".bannerSwiper", {
     pagination: { el: '.banner-pagination', clickable: true },
 });
 </script>
+<script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
 </body>
 </html>

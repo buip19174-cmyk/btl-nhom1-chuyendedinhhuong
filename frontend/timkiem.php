@@ -1,21 +1,6 @@
 <?php
 session_start();
-include '../database/connect.php';
-
 $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
-$safe_kw = mysqli_real_escape_string($con, $keyword);
-
-$results = [];
-$count   = 0;
-
-if ($keyword !== '') {
-    $sql = "SELECT id, title, cover, description FROM stories WHERE title LIKE '%$safe_kw%' ORDER BY title ASC";
-    $q   = mysqli_query($con, $sql);
-    $count = mysqli_num_rows($q);
-    while ($r = mysqli_fetch_assoc($q)) $results[] = $r;
-}
-
-$user_id = $_SESSION['user_id'] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -23,7 +8,8 @@ $user_id = $_SESSION['user_id'] ?? null;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= $keyword ? 'Tìm: ' . htmlspecialchars($keyword) : 'Tìm kiếm' ?> — KEWE</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/search-ajax.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -211,10 +197,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 <section class="search-hero">
     <h1><i class="fa-solid fa-magnifying-glass" style="color:var(--green);font-size:24px"></i> Tìm kiếm</h1>
     <p>Tìm sách, truyện theo tên — kho tàng hàng nghìn đầu sách đang chờ bạn</p>
-    <form action="timkiem.php" method="GET" class="search-form">
+    <form id="ajax-search-form" action="timkiem.php" method="GET" class="search-form">
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" name="q" placeholder="Nhập tên sách hoặc truyện..."
-               value="<?= htmlspecialchars($keyword) ?>" autofocus>
+               value="<?= htmlspecialchars($keyword) ?>" autofocus autocomplete="off">
         <button type="submit"><i class="fa-solid fa-search"></i> Tìm</button>
     </form>
 </section>
@@ -222,60 +208,29 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 <!-- RESULTS -->
 <div class="results-wrap">
 
-    <?php if ($keyword !== ''): ?>
-    <div class="results-header">
+    <div id="ajax-results-header" class="results-header" style="<?= $keyword !== '' ? '' : 'display:none' ?>">
         <h2>
             <i class="fa-solid fa-filter" style="color:var(--green);font-size:14px"></i>
-            Kết quả cho "<span class="kw"><?= htmlspecialchars($keyword) ?></span>"
+            Kết quả cho "<span class="kw" id="ajax-result-keyword"><?= htmlspecialchars($keyword) ?></span>"
         </h2>
-        <span class="count"><?= $count ?> kết quả</span>
+        <span class="count" id="ajax-result-count"></span>
     </div>
 
-        <?php if ($count > 0): ?>
-        <div class="results-grid">
-            <?php foreach ($results as $book): ?>
-            <div class="result-card">
-                <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>"
-                         alt="<?= htmlspecialchars($book['title']) ?>"
-                         onerror="this.src='img/sach2.jpg'">
-                </a>
-                <div class="result-card-body">
-                    <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="result-card-title">
-                        <?= htmlspecialchars($book['title']) ?>
-                    </a>
-                </div>
-                <div class="result-card-footer">
-                    <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read">
-                        <i class="fa-solid fa-book-open"></i> Đọc
-                    </a>
-                    <form action="luutruyen.php" method="POST">
-                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <button type="submit" class="btn-save" title="Lưu vào tủ sách">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <?php endforeach; ?>
+    <div id="ajax-search-status" class="search-ajax-status"></div>
+    <div id="ajax-search-results">
+        <?php if ($keyword === ''): ?>
+        <div class="empty-state">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>Bắt đầu tìm kiếm</h3>
+            <p>Nhập tên sách hoặc truyện — kết quả cập nhật ngay khi gõ.</p>
         </div>
         <?php else: ?>
         <div class="empty-state">
-            <i class="fa-solid fa-face-sad-tear"></i>
-            <h3>Không tìm thấy kết quả</h3>
-            <p>Thử tìm với từ khoá khác hoặc duyệt theo danh mục bên dưới.</p>
-            <a href="home.php" class="btn-home"><i class="fa-solid fa-compass"></i> Khám phá trang chủ</a>
+            <i class="fa-solid fa-spinner fa-spin" style="opacity:.3;font-size:40px"></i>
+            <p style="margin-top:12px">Đang tải kết quả...</p>
         </div>
         <?php endif; ?>
-
-    <?php else: ?>
-    <!-- Chưa tìm gì -->
-    <div class="empty-state">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <h3>Bắt đầu tìm kiếm</h3>
-        <p>Nhập tên sách hoặc truyện vào ô tìm kiếm phía trên.</p>
     </div>
-    <?php endif; ?>
 
     <!-- Gợi ý danh mục -->
     <div class="suggestions">
@@ -294,5 +249,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 
 </div>
 
+<script src="js/search-ajax.js"></script>
 </body>
 </html>

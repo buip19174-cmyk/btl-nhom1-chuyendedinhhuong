@@ -35,6 +35,7 @@ $first_book = $books[0] ?? null;
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/search-ajax.css">
 </head>
 <body>
 
@@ -79,13 +80,15 @@ $first_book = $books[0] ?? null;
             </li>
         </ul>
     </nav>
-    <div class="buttons">
-        <form action="timkiem.php" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="Tìm tên truyện..." required>
-            <button type="submit" class="btn-timkiem">
-                <i class="fas fa-search"></i> Tìm kiếm
-            </button>
-        </form>
+    <div class="buttons" style="position:relative">
+        <div class="search-form-wrap">
+            <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
+                <input type="text" name="q" placeholder="Tìm tên truyện..." autocomplete="off">
+                <button type="submit" class="btn-timkiem">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </form>
+        </div>
     </div>
     <div class="user-area">
         <?php if (isset($_SESSION['username'])): ?>
@@ -259,6 +262,7 @@ const mySwiper = new Swiper(".mySwiper", {
 <script>alert("<?= addslashes($message) ?>");</script>
 <?php endif; ?>
 
+<script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
 </body>
 </html>
