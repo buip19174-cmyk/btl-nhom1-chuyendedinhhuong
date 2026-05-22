@@ -16,6 +16,13 @@ $total_pages = max(1, ceil($total / $per_page));
 $result = mysqli_query($con, "SELECT id, title, cover FROM stories ORDER BY id DESC LIMIT $per_page OFFSET $offset");
 $books  = [];
 while ($r = mysqli_fetch_assoc($result)) $books[] = $r;
+
+// Lấy danh sách truyện đã lưu
+$saved_story_ids = [];
+if (isset($_SESSION['user_id'])) {
+    $sv_q = mysqli_query($con, "SELECT story_id FROM user_stories WHERE user_id=" . intval($_SESSION['user_id']));
+    while ($sv = mysqli_fetch_assoc($sv_q)) $saved_story_ids[] = $sv['story_id'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -68,18 +75,20 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 .book-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius); overflow: hidden; transition: .2s;
+    display: flex; flex-direction: column;
 }
 .book-card:hover { border-color: #333; transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.5); }
 .book-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; transition: .3s; }
 .book-card:hover img { filter: brightness(1.1); }
-.book-card-body { padding: 10px 10px 6px; }
+.book-card-body { padding: 10px 10px 6px; flex: 1; }
 .book-card-title {
     font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     text-decoration: none; display: block; margin-bottom: 6px;
 }
 .book-card-title:hover { color: var(--green); }
-.book-card-footer { padding: 0 10px 10px; display: flex; gap: 5px; }
+.book-card-footer { padding: 0 10px 10px; display: flex; gap: 5px; align-items: center; margin-top: auto; }
+.book-card-footer form { display: flex; }
 .btn-read {
     flex: 1; padding: 6px; background: var(--green); color: #000;
     border: none; border-radius: 6px; font-size: 11px; font-weight: 700;
@@ -88,10 +97,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 }
 .btn-read:hover { background: #00b872; color: #000; }
 .btn-save {
-    padding: 6px 9px; background: #1a0a0a; color: #e74c3c;
-    border: 1px solid #2a1010; border-radius: 6px; font-size: 11px; cursor: pointer; transition: .2s;
+    padding: 6px 9px; background: transparent; color: #e74c3c;
+    border: 1.5px solid #e74c3c; border-radius: 6px; font-size: 11px; cursor: pointer; transition: .2s;
 }
-.btn-save:hover { background: #2b0d0d; }
+.btn-save:hover { background: rgba(231,76,60,.1); }
+.btn-save.saved { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+.btn-save.saved:hover { background: #c0392b; }
 
 /* Pagination */
 .pagination {
@@ -159,7 +170,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                 </a>
                 <form action="luutruyen.php" method="POST">
                     <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                    <button type="submit" class="btn-save" title="Lưu"><i class="fa-solid fa-heart"></i></button>
+                    <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                    <button type="submit" class="btn-save <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
+                        <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                    </button>
                 </form>
             </div>
         </div>

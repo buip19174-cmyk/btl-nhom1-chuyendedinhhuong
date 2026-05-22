@@ -9,21 +9,42 @@ $banner_books  = [];
 while ($r = mysqli_fetch_assoc($banner_result)) $banner_books[] = $r;
 
 // Grid sách — 18 cuốn
-$result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 18");
+$result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 21");
 $books  = [];
 while ($r = mysqli_fetch_assoc($result)) $books[] = $r;
 
+// Lấy danh sách truyện đã lưu của user
+$saved_story_ids = [];
+if (isset($_SESSION['user_id'])) {
+    $sv_q = mysqli_query($con, "SELECT story_id FROM user_stories WHERE user_id=" . intval($_SESSION['user_id']));
+    while ($sv = mysqli_fetch_assoc($sv_q)) $saved_story_ids[] = $sv['story_id'];
+}
+
 // Danh mục nổi bật (lấy 1 ảnh đại diện mỗi danh mục)
 $categories = [
-    ['key'=>'tho',       'label'=>'Thơ - Tản văn',          'icon'=>'fa-feather',        'url'=>'tho_tanvan.php'],
-    ['key'=>'trinhtham', 'label'=>'Trinh thám - Kinh dị',    'icon'=>'fa-magnifying-glass','url'=>'trinhtham.php'],
-    ['key'=>'taichinh',  'label'=>'Tài chính cá nhân',       'icon'=>'fa-coins',          'url'=>'taichinhcanhan.php'],
-    ['key'=>'ptcanhan',  'label'=>'Phát triển cá nhân',      'icon'=>'fa-seedling',       'url'=>'pt_canhan.php'],
-    ['key'=>'doanhnhan', 'label'=>'Doanh nhân',              'icon'=>'fa-briefcase',      'url'=>'doanh_nhan.php'],
-    ['key'=>'suckhoe',   'label'=>'Sức khỏe - Làm đẹp',     'icon'=>'fa-heart-pulse',    'url'=>'suckhoe_lamdep.php'],
-    ['key'=>'khoahoc',   'label'=>'Khoa học - Công nghệ',   'icon'=>'fa-flask',          'url'=>'khoahoc_congnghe.php'],
-    ['key'=>'tamlinh',   'label'=>'Tâm linh - Tôn giáo',    'icon'=>'fa-yin-yang',       'url'=>'tamlinh.php'],
-    ['key'=>'giaoduc',   'label'=>'Giáo dục & Văn hóa',    'icon'=>'fa-yin-yang',       'url'=>'tamlinh.php'],
+    ['key'=>'tho',       'label'=>'Thơ - Tản văn',          'icon'=>'fa-feather',         'url'=>'tho_tanvan.php'],
+    ['key'=>'trinhtham', 'label'=>'Trinh thám - Kinh dị',   'icon'=>'fa-magnifying-glass', 'url'=>'trinhtham.php'],
+    ['key'=>'taichinh',  'label'=>'Tài chính cá nhân',      'icon'=>'fa-coins',           'url'=>'taichinhcanhan.php'],
+    ['key'=>'ptcanhan',  'label'=>'Phát triển cá nhân',     'icon'=>'fa-seedling',        'url'=>'pt_canhan.php'],
+    ['key'=>'doanhnhan', 'label'=>'Doanh nhân',             'icon'=>'fa-briefcase',       'url'=>'doanh_nhan.php'],
+    ['key'=>'suckhoe',   'label'=>'Sức khỏe - Làm đẹp',    'icon'=>'fa-heart-pulse',     'url'=>'suckhoe_lamdep.php'],
+    ['key'=>'khoahoc',   'label'=>'Khoa học - Công nghệ',   'icon'=>'fa-flask',           'url'=>'khoahoc_congnghe.php'],
+    ['key'=>'tamlinh',   'label'=>'Tâm linh - Tôn giáo',   'icon'=>'fa-yin-yang',        'url'=>'tamlinh.php'],
+    ['key'=>'giaoduc',   'label'=>'Giáo dục & Văn hóa',    'icon'=>'fa-graduation-cap',  'url'=>'giaoduc_vanhoa.php'],
+    ['key'=>'chungkhoan','label'=>'Chứng khoán - BĐS',     'icon'=>'fa-building-columns','url'=>'chungkhoan_bds_dautu.php'],
+    ['key'=>'nghethuat', 'label'=>'Nghệ thuật sống',        'icon'=>'fa-palette',         'url'=>'nghe_thuat_song.php'],
+    ['key'=>'tuduy',     'label'=>'Tư duy sáng tạo',       'icon'=>'fa-lightbulb',       'url'=>'tuduy_sangtao.php'],
+    // Truyện
+    ['key'=>'nam',       'label'=>'Truyện Nam',             'icon'=>'fa-mars',            'url'=>'nam.php'],
+    ['key'=>'nu',        'label'=>'Truyện Nữ',             'icon'=>'fa-venus',           'url'=>'nu.php'],
+    ['key'=>'xuyenkhong','label'=>'Xuyên không',            'icon'=>'fa-clock-rotate-left','url'=>'xuyenkhong.php'],
+    ['key'=>'truyenma',  'label'=>'Truyện ma',              'icon'=>'fa-ghost',           'url'=>'truyenma.php'],
+    ['key'=>'tinhcam',   'label'=>'Tình cảm',              'icon'=>'fa-heart',           'url'=>'tinhcam.php'],
+    ['key'=>'ngungon',   'label'=>'Ngụ ngôn',              'icon'=>'fa-dragon',          'url'=>'ngungon.php'],
+    ['key'=>'codai',     'label'=>'Cổ đại',                'icon'=>'fa-scroll',          'url'=>'codai.php'],
+    ['key'=>'thieunhi',  'label'=>'Thiếu nhi',             'icon'=>'fa-child',           'url'=>'thieunhi.php'],
+    ['key'=>'haihuoc',   'label'=>'Hài hước',              'icon'=>'fa-face-laugh',      'url'=>'haihuoc.php'],
+    ['key'=>'hanhdong',  'label'=>'Hành động',             'icon'=>'fa-bolt',            'url'=>'hanhdong.php'],
 ];
 ?>
 <!DOCTYPE html>
@@ -75,11 +96,18 @@ $categories = [
     }
     nav ul li > a:hover { color: #fff; background: #1a1a1a; }
     .mega-menu {
-        position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+        position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
         width: 680px; background: #141414; border: 1px solid var(--border);
         padding: 20px; display: none; grid-template-columns: repeat(3,1fr);
         gap: 4px; border-radius: 14px; z-index: 9999;
         box-shadow: 0 20px 60px rgba(0,0,0,.6);
+        padding-top: 28px;
+    }
+    /* Tạo vùng hover liền mạch giữa link và menu */
+    nav ul li { position: relative; }
+    nav ul li::after {
+        content: ''; position: absolute;
+        top: 100%; left: 0; right: 0; height: 10px;
     }
     nav ul li:hover .mega-menu { display: grid; }
     .mega-menu .item a {
@@ -236,7 +264,7 @@ $categories = [
     .book-card {
         background: var(--card); border: 1px solid var(--border);
         border-radius: var(--radius); overflow: hidden;
-        transition: .2s; position: relative;
+        transition: .2s; display: flex; flex-direction: column;
     }
     .book-card:hover { border-color: #333; transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.5); }
     .book-card img {
@@ -244,7 +272,7 @@ $categories = [
         transition: .3s;
     }
     .book-card:hover img { filter: brightness(1.1); }
-    .book-card-body { padding: 10px 12px 6px; }
+    .book-card-body { padding: 10px 12px 6px; flex: 1; }
     .book-card-title {
         font-size: 13px; font-weight: 600; color: var(--text);
         line-height: 1.4; display: -webkit-box;
@@ -254,8 +282,9 @@ $categories = [
     .book-card-title:hover { color: var(--green); }
     .book-card-footer {
         padding: 0 12px 10px;
-        display: flex; gap: 6px;
+        display: flex; gap: 6px; align-items: center; margin-top: auto;
     }
+    .book-card-footer form { display: flex; }
     .btn-read-sm {
         flex: 1; padding: 6px; background: var(--green); color: #000;
         border: none; border-radius: 6px; font-size: 11px; font-weight: 700;
@@ -264,11 +293,15 @@ $categories = [
     }
     .btn-read-sm:hover { background: #00b872; color: #000; }
     .btn-save-sm {
-        padding: 6px 10px; background: #1a0a0a; color: #e74c3c;
-        border: 1px solid #2a1010; border-radius: 6px; font-size: 11px;
+        padding: 6px 10px; background: transparent; color: #e74c3c;
+        border: 1.5px solid #e74c3c; border-radius: 6px; font-size: 11px;
         cursor: pointer; transition: .2s;
     }
-    .btn-save-sm:hover { background: #2b0d0d; }
+    .btn-save-sm:hover { background: rgba(231,76,60,.1); }
+    .btn-save-sm.saved {
+        background: #e74c3c; color: #fff; border-color: #e74c3c;
+    }
+    .btn-save-sm.saved:hover { background: #c0392b; }
 
     /* ── EMPTY ── */
     .empty-books { grid-column: 1/-1; text-align: center; padding: 60px; color: var(--dim); }
@@ -298,6 +331,55 @@ $categories = [
         font-size: 12px; color: var(--dim);
     }
     .footer-bottom span { color: var(--green); }
+
+    /* ── SEARCH DROPDOWN ── */
+    .search-form { position: relative; }
+    .search-dropdown {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0; right: 0;
+        background: #141414;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+        z-index: 9999;
+        box-shadow: 0 12px 40px rgba(0,0,0,.6);
+    }
+    .search-dropdown.open { display: block; }
+    .search-dropdown .sd-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        text-decoration: none;
+        color: var(--text);
+        transition: .12s;
+        border-bottom: 1px solid #1a1a1a;
+    }
+    .search-dropdown .sd-item:last-child { border-bottom: none; }
+    .search-dropdown .sd-item:hover { background: #1a1a1a; }
+    .search-dropdown .sd-item img {
+        width: 36px; height: 50px;
+        object-fit: cover; border-radius: 4px; flex-shrink: 0;
+    }
+    .search-dropdown .sd-title {
+        font-size: 13px; font-weight: 600; line-height: 1.3;
+    }
+    .search-dropdown .sd-empty {
+        padding: 20px; text-align: center;
+        color: var(--dim); font-size: 13px;
+    }
+    .search-dropdown .sd-footer {
+        padding: 10px 14px; text-align: center;
+        border-top: 1px solid var(--border);
+    }
+    .search-dropdown .sd-footer a {
+        color: var(--green); font-size: 12px; font-weight: 700;
+        text-decoration: none;
+    }
+    .search-dropdown .sd-footer a:hover { text-decoration: underline; }
 
     @media (max-width: 900px) {
         .slide-overlay { padding: 0 30px; }
@@ -358,12 +440,22 @@ $categories = [
     </nav>
 
     <div class="buttons">
+<<<<<<< HEAD
+        <form action="timkiem.php" method="GET" class="search-form" id="searchForm" autocomplete="off">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="q" placeholder="Tìm sách, truyện..." id="searchInput">
+            <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
+            <!-- Dropdown kết quả -->
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </form>
+=======
         <div class="search-form-wrap">
             <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
                 <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
                 <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
             </form>
         </div>
+>>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
     </div>
 
     <div class="user-area">
@@ -480,8 +572,9 @@ $categories = [
                     </a>
                     <form action="luutruyen.php" method="POST">
                         <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <button type="submit" class="btn-save-sm" title="Lưu vào tủ sách">
-                            <i class="fa-solid fa-heart"></i>
+                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
+                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                         </button>
                     </form>
                 </div>
@@ -544,6 +637,14 @@ $categories = [
 <script>alert("<?= addslashes($register_message) ?>");</script>
 <?php endif; ?>
 
+<?php if (!empty($message)): ?>
+<script>alert("<?= addslashes($message) ?>");</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['login']) && $_GET['login'] === 'success'): ?>
+<script>alert("Đăng nhập thành công!");</script>
+<?php endif; ?>
+
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 new Swiper(".bannerSwiper", {
@@ -558,5 +659,51 @@ new Swiper(".bannerSwiper", {
 </script>
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
+<script>
+// Live search
+const searchInput = document.getElementById('searchInput');
+const dropdown    = document.getElementById('searchDropdown');
+let debounceTimer;
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const q = this.value.trim();
+    if (q.length < 1) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
+
+    debounceTimer = setTimeout(() => {
+        fetch('../backend/search_ajax.php?q=' + encodeURIComponent(q))
+            .then(r => r.json())
+            .then(data => {
+                if (data.length === 0) {
+                    dropdown.innerHTML = '<div class="sd-empty"><i class="fa-solid fa-search" style="opacity:.3;margin-right:6px"></i>Không tìm thấy "' + q + '"</div>';
+                } else {
+                    let html = '';
+                    data.forEach(item => {
+                        html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
+                        html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
+                        html += '<span class="sd-title">' + item.title + '</span>';
+                        html += '</a>';
+                    });
+                    html += '<div class="sd-footer"><a href="timkiem.php?q=' + encodeURIComponent(q) + '">Xem tất cả kết quả →</a></div>';
+                    dropdown.innerHTML = html;
+                }
+                dropdown.classList.add('open');
+            })
+            .catch(() => { dropdown.classList.remove('open'); });
+    }, 250);
+});
+
+// Đóng dropdown khi click ngoài
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('searchForm').contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// Mở lại khi focus vào input có text
+searchInput.addEventListener('focus', function() {
+    if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open');
+});
+</script>
 </body>
 </html>

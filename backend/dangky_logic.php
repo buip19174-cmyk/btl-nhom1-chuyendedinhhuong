@@ -1,6 +1,6 @@
 <?php
 include_once '../database/connect.php';
-$message = ''; 
+$register_message = ''; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Lấy và làm sạch dữ liệu đầu vào
@@ -13,11 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Kiểm tra mật khẩu ≥6 ký tự
     if(strlen($password) < 6){
-        $message = "Mật khẩu phải có ít nhất 6 ký tự!";
+        $register_message = "Mật khẩu phải có ít nhất 6 ký tự!";
     } 
     // Kiểm tra số điện thoại đúng 10 chữ số
     else if(!preg_match('/^\d{10}$/', $sdt)){
-        $message = "Số điện thoại phải gồm đúng 10 chữ số!";
+        $register_message = "Số điện thoại phải gồm đúng 10 chữ số!";
     } 
     else {
         
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt_check->store_result();
         
         if ($stmt_check->num_rows > 0) {
-            $message = "Username hoặc email đã tồn tại!";
+            $register_message = "Username hoặc email đã tồn tại!";
         } else {
             
 
@@ -50,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_insert->bind_param("ssss", $username, $sdt, $email, $hashed_password);
             
             if ($stmt_insert->execute()) {
-                $message = "Đăng ký thành công! Bạn có thể đăng nhập.";
+                $register_message = "Đăng ký thành công!";
                 $_POST = array(); 
             } else {
-                $message = "Lỗi khi đăng ký: " . $stmt_insert->error;
+                $register_message = "Lỗi khi đăng ký: " . $stmt_insert->error;
             }
 
             $stmt_insert->close();

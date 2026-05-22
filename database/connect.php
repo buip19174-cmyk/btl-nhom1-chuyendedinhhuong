@@ -19,6 +19,12 @@ if ($_col && mysqli_num_rows($_col) === 0) {
     mysqli_query($con, "ALTER TABLE users ADD COLUMN coins INT NOT NULL DEFAULT 0");
 }
 
+// ── Thêm cột role nếu chưa có ──
+$_col_role = mysqli_query($con, "SHOW COLUMNS FROM users LIKE 'role'");
+if ($_col_role && mysqli_num_rows($_col_role) === 0) {
+    mysqli_query($con, "ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'");
+}
+
 // ── Tạo bảng purchased_chapters nếu chưa có ──
 mysqli_query($con, "CREATE TABLE IF NOT EXISTS purchased_chapters (
     id INT AUTO_INCREMENT PRIMARY KEY,
