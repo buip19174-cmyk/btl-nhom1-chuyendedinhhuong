@@ -24,14 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
             $_SESSION['role'] = $user['role'];
 
             $message = "Đăng nhập thành công! Chào mừng " . $user['username'];
-            // Bạn có thể redirect sang trang chủ: header("Location: index.php");
 
             // 2. Logic phân quyền và điều hướng
             if ($user['role'] === 'admin') {
                 header("Location: ../frontend/admin/index.php");
-                exit(); // Luôn dùng exit() sau header Location
+                exit();
             } else {
-                header("Location: ../frontend/home.php");
+                header("Location: ../frontend/home.php?login=success");
                 exit();
             }
 
@@ -39,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
             $message = "Sai mật khẩu, vui lòng thử lại!";
         }
     } else {
-        $message = "Tài khoản không tồn tại!";
+        $message = "Tài khoản không tồn tại! Bạn cần đăng ký.";
     }
     $stmt->close();
 }

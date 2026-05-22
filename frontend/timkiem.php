@@ -118,7 +118,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 .result-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius); overflow: hidden;
-    transition: .2s; position: relative;
+    transition: .2s; display: flex; flex-direction: column;
 }
 .result-card:hover { border-color: #333; transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.5); }
 
@@ -128,7 +128,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 }
 .result-card:hover img { filter: brightness(1.1); }
 
-.result-card-body { padding: 10px 12px 6px; }
+.result-card-body { padding: 10px 12px 6px; flex: 1; }
 .result-card-title {
     font-size: 13px; font-weight: 600; color: var(--text);
     line-height: 1.4; display: -webkit-box;
@@ -143,8 +143,9 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 
 .result-card-footer {
     padding: 0 12px 10px;
-    display: flex; gap: 6px;
+    display: flex; gap: 6px; align-items: center; margin-top: auto;
 }
+.result-card-footer form { display: flex; }
 .btn-read {
     flex: 1; padding: 7px; background: var(--green); color: #000;
     border: none; border-radius: 6px; font-size: 11px; font-weight: 700;

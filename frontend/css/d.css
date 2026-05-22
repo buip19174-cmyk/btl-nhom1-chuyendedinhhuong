@@ -67,17 +67,23 @@ nav ul li a:hover{
 .mega-menu {
     position: absolute;
     top: 100%;
-    left: 100%;
-    transform: translateX(-30%);
+    left: 50%;
+    transform: translateX(-50%);
     width: 650px;
-    background: rgba(51, 49, 49, 0.9);
+    background: rgba(51, 49, 49, 0.95);
     color: #fff;
     padding: 20px;
+    padding-top: 28px;
     display: none;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     border-radius: 10px;
     z-index: 9999;
+}
+/* Vùng hover liền mạch */
+nav ul li::after {
+    content: ''; position: absolute;
+    top: 100%; left: 0; right: 0; height: 10px;
 }
 nav ul li:last-child .mega-menu {
   right: 0;

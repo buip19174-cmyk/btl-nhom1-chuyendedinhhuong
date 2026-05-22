@@ -215,3 +215,23 @@
     .cat-hero-swiper { width: 100%; }
     .cat-hero-title { font-size: 26px; }
 }
+
+
+/* ── NÚT LƯU TRUYỆN ── */
+.btn-save {
+    background: transparent;
+    color: #e74c3c;
+    border: 1.5px solid #e74c3c;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: .2s;
+}
+.btn-save:hover { background: rgba(231,76,60,.1); }
+.btn-save.saved {
+    background: #e74c3c;
+    color: #fff;
+    border-color: #e74c3c;
+}
+.btn-save.saved:hover { background: #c0392b; }

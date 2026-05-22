@@ -4,7 +4,7 @@
 
     <form method="POST" action="home.php"> 
         <h2>Đăng kí tài khoản</h2>
-        <input type="number" name="sdt" placeholder="Số điện thoại" required >
+        <input type="tel" name="sdt" placeholder="Số điện thoại" pattern="[0-9]{10}" maxlength="10" required >
         <input type="text" name="username" placeholder="Tên đăng nhập" required>
         <input type="email" name="email" placeholder="Email" required>
 
