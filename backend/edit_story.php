@@ -31,8 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Update story
-    $stmt = mysqli_prepare($con, "UPDATE stories SET title=?, description=?, cover=? WHERE id=?");
-    mysqli_stmt_bind_param($stmt, "sssi", $title, $description, $cover_path, $id);
+    $stmt = mysqli_prepare($con, "UPDATE stories SET title=?, `description`=?, cover=?, `status`=? WHERE id=?");
+    mysqli_stmt_bind_param($stmt, "sssi", $title, $description, $cover_path, $status, $id);
 
     if (mysqli_stmt_execute($stmt)) {
         echo json_encode(['status'=>'success','message'=>'Cập nhật truyện thành công']);

@@ -58,6 +58,7 @@ $categories = [
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/search-ajax.css">
     <style>
     /* ── RESET & BASE ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -119,6 +120,8 @@ $categories = [
         background: var(--green); color: #000; font-size: 9px;
         font-weight: 800; padding: 1px 6px; border-radius: 8px; text-transform: uppercase;
     }
+
+    .buttons { position: relative; }
 
     /* search */
     .search-form {
@@ -437,6 +440,7 @@ $categories = [
     </nav>
 
     <div class="buttons">
+<<<<<<< HEAD
         <form action="timkiem.php" method="GET" class="search-form" id="searchForm" autocomplete="off">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" name="q" placeholder="Tìm sách, truyện..." id="searchInput">
@@ -444,6 +448,14 @@ $categories = [
             <!-- Dropdown kết quả -->
             <div class="search-dropdown" id="searchDropdown"></div>
         </form>
+=======
+        <div class="search-form-wrap">
+            <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
+                <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
+                <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
+            </form>
+        </div>
+>>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
     </div>
 
     <div class="user-area">
@@ -645,6 +657,7 @@ new Swiper(".bannerSwiper", {
     pagination: { el: '.banner-pagination', clickable: true },
 });
 </script>
+<script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
 <script>
 // Live search

@@ -28,6 +28,7 @@ if (isset($_SESSION['user_id'])) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<<<<<<< HEAD
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($page_title) ?> — KEWE</title>
@@ -225,6 +226,17 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
 }
 @media (max-width:560px) { .book-grid { grid-template-columns:repeat(2,1fr); } .footer-inner { grid-template-columns:1fr; } }
 </style>
+=======
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($page_title) ?> — KEWE</title>
+    <link rel="stylesheet" href="css/d.css">
+    <link rel="stylesheet" href="css/category.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/search-ajax.css">
+>>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
 </head>
 <body>
 
@@ -269,6 +281,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
             </li>
         </ul>
     </nav>
+<<<<<<< HEAD
     <div class="buttons">
         <form action="timkiem.php" method="GET" class="search-form" id="searchForm" autocomplete="off">
             <i class="fa-solid fa-magnifying-glass" style="color:var(--dim)"></i>
@@ -276,6 +289,17 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
             <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
             <div class="search-dropdown" id="searchDropdown"></div>
         </form>
+=======
+    <div class="buttons" style="position:relative">
+        <div class="search-form-wrap">
+            <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
+                <input type="text" name="q" placeholder="Tìm tên truyện..." autocomplete="off">
+                <button type="submit" class="btn-timkiem">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </form>
+        </div>
+>>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
     </div>
     <div class="user-area">
         <?php if (isset($_SESSION['username'])): ?>
@@ -509,6 +533,22 @@ if (searchInput) {
     searchInput.addEventListener('focus', function() { if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open'); });
 }
 </script>
+<<<<<<< HEAD
+=======
+
+<div id="registerModal" class="modal" style="display: none;">
+    <?php include 'dangky_form.php'; ?>
+</div>
+<div id="loginModal" class="modal" style="display: none;">
+    <?php include 'dangnhap_form.php'; ?>
+</div>
+
+<?php if (!empty($message)): ?>
+<script>alert("<?= addslashes($message) ?>");</script>
+<?php endif; ?>
+
+<script src="js/search-ajax.js"></script>
+>>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
 <script src="../backend/script.js"></script>
 </body>
 </html>
