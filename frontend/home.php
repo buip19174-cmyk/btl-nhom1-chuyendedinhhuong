@@ -440,7 +440,6 @@ $categories = [
     </nav>
 
     <div class="buttons">
-
         <div class="search-form-wrap">
             <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
                 <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
