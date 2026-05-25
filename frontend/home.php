@@ -258,8 +258,8 @@ $categories = [
     /* ── BOOK GRID ── */
     .book-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 18px;
     }
     .book-card {
         background: var(--card); border: 1px solid var(--border);
@@ -649,51 +649,5 @@ new Swiper(".bannerSwiper", {
 </script>
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
-<script>
-// Live search
-const searchInput = document.getElementById('searchInput');
-const dropdown    = document.getElementById('searchDropdown');
-let debounceTimer;
-
-searchInput.addEventListener('input', function() {
-    clearTimeout(debounceTimer);
-    const q = this.value.trim();
-    if (q.length < 1) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
-
-    debounceTimer = setTimeout(() => {
-        fetch('../backend/search_ajax.php?q=' + encodeURIComponent(q))
-            .then(r => r.json())
-            .then(data => {
-                if (data.length === 0) {
-                    dropdown.innerHTML = '<div class="sd-empty"><i class="fa-solid fa-search" style="opacity:.3;margin-right:6px"></i>Không tìm thấy "' + q + '"</div>';
-                } else {
-                    let html = '';
-                    data.forEach(item => {
-                        html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
-                        html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
-                        html += '<span class="sd-title">' + item.title + '</span>';
-                        html += '</a>';
-                    });
-                    html += '<div class="sd-footer"><a href="timkiem.php?q=' + encodeURIComponent(q) + '">Xem tất cả kết quả →</a></div>';
-                    dropdown.innerHTML = html;
-                }
-                dropdown.classList.add('open');
-            })
-            .catch(() => { dropdown.classList.remove('open'); });
-    }, 250);
-});
-
-// Đóng dropdown khi click ngoài
-document.addEventListener('click', function(e) {
-    if (!document.getElementById('searchForm').contains(e.target)) {
-        dropdown.classList.remove('open');
-    }
-});
-
-// Mở lại khi focus vào input có text
-searchInput.addEventListener('focus', function() {
-    if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open');
-});
-</script>
 </body>
 </html>

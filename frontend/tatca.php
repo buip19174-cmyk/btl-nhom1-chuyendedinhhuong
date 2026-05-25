@@ -3,7 +3,7 @@ session_start();
 include '../database/connect.php';
 
 // Phân trang: 3 hàng x 6 = 18 truyện mỗi trang
-$per_page = 18;
+$per_page = 21;
 $page     = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset   = ($page - 1) * $per_page;
 
@@ -68,8 +68,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 /* Grid 6 cột */
 .book-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 18px;
     margin-bottom: 40px;
 }
 .book-card {
