@@ -440,22 +440,13 @@ $categories = [
     </nav>
 
     <div class="buttons">
-<<<<<<< HEAD
-        <form action="timkiem.php" method="GET" class="search-form" id="searchForm" autocomplete="off">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" name="q" placeholder="Tìm sách, truyện..." id="searchInput">
-            <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
-            <!-- Dropdown kết quả -->
-            <div class="search-dropdown" id="searchDropdown"></div>
-        </form>
-=======
+
         <div class="search-form-wrap">
             <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
                 <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
                 <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
             </form>
         </div>
->>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
     </div>
 
     <div class="user-area">
