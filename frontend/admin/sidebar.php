@@ -1,9 +1,10 @@
-
 <?php
+if (!function_exists('app_url')) {
+    require_once __DIR__ . '/../includes/paths.php';
+}
 // Lấy tên file hiện tại (ví dụ: index.php)
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
-
 <!-- Sidebar -->
   <div class="sidebar">
     <h2>Trang Quản Trị</h2>
@@ -21,9 +22,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <li class="<?php echo ($current_page == 'thongke.php') ? 'active-menu' : ''; ?>">
           <a href="thongke.php">Thống kê</a>
         </li>
-        <li class="<?php echo ($current_page == 'setting.php') ? 'active-menu' : ''; ?>">
-          <a href="stories.php">Cài đặt</a>
+        <li>
+          <a href="<?= htmlspecialchars(app_url('frontend/home.php')) ?>" target="_blank">Xem website</a>
         </li>
-        </ul>
-    </ul> 
+        <li>
+          <a href="<?= htmlspecialchars(app_url('backend/logout.php')) ?>">Đăng xuất</a>
+        </li>
+    </ul>
   </div>

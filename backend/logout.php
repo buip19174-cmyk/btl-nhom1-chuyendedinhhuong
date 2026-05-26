@@ -16,5 +16,6 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-header("Location: /btl-nhom1-chuyendedinhhuong/frontend/home.php");
+require_once __DIR__ . '/../frontend/includes/paths.php';
+header('Location: ' . app_url('frontend/home.php'));
 exit;
