@@ -25,12 +25,12 @@ $err     = $_GET['err'] ?? '';
 $added   = isset($_GET['coins']) ? intval($_GET['coins']) : 0;
 
 $packs = [
-    ['coins' => 10,  'vnd' => 100,   'label' => 'Starter'],
-    ['coins' => 30,  'vnd' => 300,   'label' => 'Phổ biến'],
-    ['coins' => 50,  'vnd' => 500,   'label' => 'Tiết kiệm'],
-    ['coins' => 100, 'vnd' => 1000,  'label' => 'Giá trị'],
-    ['coins' => 200, 'vnd' => 2000,  'label' => 'Super'],
-    ['coins' => 500, 'vnd' => 5000,  'label' => 'VIP'],
+    ['coins' => 10,  'vnd' => 1000,   'label' => 'Starter'],
+    ['coins' => 30,  'vnd' => 3000,   'label' => 'Phổ biến'],
+    ['coins' => 50,  'vnd' => 5000,   'label' => 'Tiết kiệm'],
+    ['coins' => 100, 'vnd' => 10000,  'label' => 'Giá trị'],
+    ['coins' => 200, 'vnd' => 20000,  'label' => 'Super'],
+    ['coins' => 500, 'vnd' => 50000,  'label' => 'VIP'],
 ];
 ?>
 <!DOCTYPE html>

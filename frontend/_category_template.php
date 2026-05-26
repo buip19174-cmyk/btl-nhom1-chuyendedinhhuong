@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Template dùng chung cho tất cả trang danh mục
  * Biến cần khai báo trước khi include:
@@ -28,7 +28,7 @@ if (isset($_SESSION['user_id'])) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<<<<<<< HEAD
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($page_title) ?> — KEWE</title>
@@ -226,7 +226,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
 }
 @media (max-width:560px) { .book-grid { grid-template-columns:repeat(2,1fr); } .footer-inner { grid-template-columns:1fr; } }
 </style>
-=======
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title) ?> — KEWE</title>
@@ -236,7 +236,6 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/search-ajax.css">
->>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
 </head>
 <body>
 
@@ -281,25 +280,14 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
             </li>
         </ul>
     </nav>
-<<<<<<< HEAD
-    <div class="buttons">
-        <form action="timkiem.php" method="GET" class="search-form" id="searchForm" autocomplete="off">
-            <i class="fa-solid fa-magnifying-glass" style="color:var(--dim)"></i>
-            <input type="text" name="q" placeholder="Tìm sách, truyện..." id="searchInput">
-            <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
-            <div class="search-dropdown" id="searchDropdown"></div>
-        </form>
-=======
     <div class="buttons" style="position:relative">
+         <div class="buttons">
         <div class="search-form-wrap">
             <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
-                <input type="text" name="q" placeholder="Tìm tên truyện..." autocomplete="off">
-                <button type="submit" class="btn-timkiem">
-                    <i class="fas fa-search"></i> Tìm kiếm
-                </button>
+                <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
+                <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
             </form>
         </div>
->>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
     </div>
     <div class="user-area">
         <?php if (isset($_SESSION['username'])): ?>
@@ -352,7 +340,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
     </div>
 
     <!-- Swiper ảnh bìa bên phải -->
-    <div style="width:420px;flex-shrink:0;position:relative;z-index:2">
+    <div style="width:800px;flex-shrink:0;position:relative;z-index:2">
         <?php if (!empty($hero_books)): ?>
         <div class="swiper heroSwiper" style="padding:30px 0">
             <div class="swiper-wrapper">
@@ -365,7 +353,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
                         <img src="../code/images/<?= htmlspecialchars($b['cover']) ?>"
                              alt="<?= htmlspecialchars($b['title']) ?>"
                              onerror="this.src='img/sach2.jpg'"
-                             style="width:180px;height:260px;object-fit:cover;border-radius:10px;transition:.4s;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+                             style="width:250px;height:360px;object-fit:cover;border-radius:10px;transition:.4s;box-shadow:0 8px 24px rgba(22, 29, 22, 0.5)">
                     </a>
                 </div>
                 <?php endforeach; ?>
@@ -500,42 +488,51 @@ new Swiper(".heroSwiper", {
     }
 });
 
-// Live search
 const searchInput = document.getElementById('searchInput');
-const dropdown = document.getElementById('searchDropdown');
+const dropdown    = document.getElementById('searchDropdown');
 let debounceTimer;
-if (searchInput) {
-    searchInput.addEventListener('input', function() {
-        clearTimeout(debounceTimer);
-        const q = this.value.trim();
-        if (q.length < 1) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
-        debounceTimer = setTimeout(() => {
-            fetch('../backend/search_ajax.php?q=' + encodeURIComponent(q))
-                .then(r => r.json())
-                .then(data => {
-                    if (data.length === 0) {
-                        dropdown.innerHTML = '<div class="sd-empty">Không tìm thấy "' + q + '"</div>';
-                    } else {
-                        let html = '';
-                        data.forEach(item => {
-                            html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
-                            html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
-                            html += '<span class="sd-title">' + item.title + '</span></a>';
-                        });
-                        html += '<div class="sd-footer"><a href="timkiem.php?q=' + encodeURIComponent(q) + '">Xem tất cả →</a></div>';
-                        dropdown.innerHTML = html;
-                    }
-                    dropdown.classList.add('open');
-                }).catch(() => { dropdown.classList.remove('open'); });
-        }, 250);
-    });
-    document.addEventListener('click', e => { if (!document.getElementById('searchForm').contains(e.target)) dropdown.classList.remove('open'); });
-    searchInput.addEventListener('focus', function() { if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open'); });
-}
-</script>
-<<<<<<< HEAD
-=======
 
+searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const q = this.value.trim();
+    if (q.length < 1) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
+
+    debounceTimer = setTimeout(() => {
+        fetch('../backend/search_ajax.php?q=' + encodeURIComponent(q))
+            .then(r => r.json())
+            .then(data => {
+                if (data.length === 0) {
+                    dropdown.innerHTML = '<div class="sd-empty"><i class="fa-solid fa-search" style="opacity:.3;margin-right:6px"></i>Không tìm thấy "' + q + '"</div>';
+                } else {
+                    let html = '';
+                    data.forEach(item => {
+                        html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
+                        html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
+                        html += '<span class="sd-title">' + item.title + '</span>';
+                        html += '</a>';
+                    });
+                    html += '<div class="sd-footer"><a href="timkiem.php?q=' + encodeURIComponent(q) + '">Xem tất cả kết quả →</a></div>';
+                    dropdown.innerHTML = html;
+                }
+                dropdown.classList.add('open');
+            })
+            .catch(() => { dropdown.classList.remove('open'); });
+    }, 250);
+});
+
+// Đóng dropdown khi click ngoài
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('searchForm').contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// Mở lại khi focus vào input có text
+searchInput.addEventListener('focus', function() {
+    if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open');
+});
+  
+</script>
 <div id="registerModal" class="modal" style="display: none;">
     <?php include 'dangky_form.php'; ?>
 </div>
@@ -548,7 +545,6 @@ if (searchInput) {
 <?php endif; ?>
 
 <script src="js/search-ajax.js"></script>
->>>>>>> efc30eb11317c2658697adc0e3aa06a2f4c047a3
 <script src="../backend/script.js"></script>
 </body>
 </html>
