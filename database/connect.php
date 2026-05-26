@@ -25,6 +25,22 @@ if ($_col_role && mysqli_num_rows($_col_role) === 0) {
     mysqli_query($con, "ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'");
 }
 
+// ── Thêm cột status cho users nếu chưa có (active/banned) ──
+$_col_user_status = mysqli_query($con, "SHOW COLUMNS FROM users LIKE 'status'");
+if ($_col_user_status && mysqli_num_rows($_col_user_status) === 0) {
+    mysqli_query($con, "ALTER TABLE users ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'active'");
+}
+
+// ── Thêm cột status, luot_xem cho stories nếu chưa có ──
+$_col_story_status = mysqli_query($con, "SHOW COLUMNS FROM stories LIKE 'status'");
+if ($_col_story_status && mysqli_num_rows($_col_story_status) === 0) {
+    mysqli_query($con, "ALTER TABLE stories ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ongoing'");
+}
+$_col_story_views = mysqli_query($con, "SHOW COLUMNS FROM stories LIKE 'luot_xem'");
+if ($_col_story_views && mysqli_num_rows($_col_story_views) === 0) {
+    mysqli_query($con, "ALTER TABLE stories ADD COLUMN luot_xem INT NOT NULL DEFAULT 0");
+}
+
 // ── Tạo bảng purchased_chapters nếu chưa có ──
 mysqli_query($con, "CREATE TABLE IF NOT EXISTS purchased_chapters (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,6 +62,21 @@ mysqli_query($con, "CREATE TABLE IF NOT EXISTS coin_transactions (
     type ENUM('topup','spend') NOT NULL,
     note VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB");
+
+// ── Tạo bảng topup_orders nếu chưa có ──
+mysqli_query($con, "CREATE TABLE IF NOT EXISTS topup_orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id VARCHAR(32) NOT NULL,
+    user_id INT NOT NULL,
+    coins INT NOT NULL,
+    vnd_amount INT NOT NULL,
+    status ENUM('pending','paid','cancelled') NOT NULL DEFAULT 'pending',
+    chapter_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    paid_at TIMESTAMP NULL DEFAULT NULL,
+    UNIQUE KEY unique_order_id (order_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB");
 
