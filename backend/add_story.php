@@ -1,12 +1,15 @@
 <?php
 header('Content-Type: application/json');
-include('connect.php');
+require_once __DIR__ . '/require_admin.php';
+require_admin_api('Bạn không có quyền admin.');
+include_once '../database/connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $id = $_POST['storyId'] ?? ''; // Nếu có thì là sửa
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
+    $status = trim($_POST['status'] ?? 'ongoing');
     $cover = '';
 
     if (!$title) {
@@ -33,13 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($id) {
         // Update
-        $stmt = mysqli_prepare($con, "UPDATE stories SET title=?, description=?, cover=? WHERE id=?");
-        mysqli_stmt_bind_param($stmt, "sssi", $title, $description, $cover, $id);
+        $stmt = mysqli_prepare($con, "UPDATE stories SET title=?, `description`=?, cover=?, `status`=? WHERE id=?");
+        $id_i = intval($id);
+        mysqli_stmt_bind_param($stmt, "ssssi", $title, $description, $cover, $status, $id_i);
         $msg = 'Cập nhật truyện thành công';
     } else {
         // Insert mới
-        $stmt = mysqli_prepare($con, "INSERT INTO stories (title, description, cover) VALUES (?,?,?)");
-        mysqli_stmt_bind_param($stmt, "sss", $title, $description, $cover);
+        $stmt = mysqli_prepare($con, "INSERT INTO stories (title, `description`, cover, `status`) VALUES (?,?,?,?)");
+        mysqli_stmt_bind_param($stmt, "ssss", $title, $description, $cover, $status);
         $msg = 'Thêm truyện thành công';
     }
 

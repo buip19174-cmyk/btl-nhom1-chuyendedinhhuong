@@ -15,7 +15,7 @@
         <span class="note">Mật khẩu bao gồm ít nhất 6 ký tự</span>
         <button type="submit" name="register">Đăng ký</button>
 
-       <p class="message"><?php echo $message ?? ''; ?></p> 
+       <p class="message"><?php echo htmlspecialchars($register_message ?? '', ENT_QUOTES, 'UTF-8'); ?></p> 
        <p style="margin-top: 15px; text-align: center;">
         Đã có tài khoản? 
         <a href="javascript:void(0);" id="switch-to-login">Đăng nhập</a>

@@ -1,19 +1,16 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: index.php"); 
-    exit();
-}
-// --- Code của trang quản lý nằm dưới này ---
-?>
-
-<?php
-include '../../backend/connect.php';
+require_once '../../backend/require_admin.php';
+require_admin();
+include '../../database/connect.php';
 
 $sql = "SELECT * FROM stories";
-$stories = mysqli_query($con, $sql); // Đảm bảo có dấu $ trước conn
+$stories = [];
+$res = mysqli_query($con, $sql);
+if ($res) {
+    while ($row = mysqli_fetch_assoc($res)) {
+        $stories[] = $row;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -60,8 +57,9 @@ $stories = mysqli_query($con, $sql); // Đảm bảo có dấu $ trước conn
                         <th>Hành động</th>
                     </tr>
 
+                    <tbody>
                     <?php foreach($stories as $s): ?>
-                    <tr>
+                    <tr data-story="<?= htmlspecialchars(json_encode($s), ENT_QUOTES, 'UTF-8') ?>">
                         <td><?= $s['id'] ?></td>
                         <td><?= $s['title'] ?></td>
                         <td>
@@ -70,83 +68,147 @@ $stories = mysqli_query($con, $sql); // Đảm bảo có dấu $ trước conn
                             </span>
                         </td>
                         <td>
-                            <button class="btn edit" onclick="editStory(<?= $s['id'] ?>)">Sửa</button>
-                            <button class="btn delete">Xóa</button>
+                            <button class="btn edit" onclick="openEditStory(this)">Sửa</button>
+                            <button class="btn delete" onclick="deleteStory(<?= (int)$s['id'] ?>)">Xóa</button>
                             <a href="chapter.php?id=<?= $s['id'] ?>">
                                 <button class="btn">Chương</button>
                             </a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
+                    </tbody>
 
                 </table>
             </div>
 
         </div>
-        <div class="modal" style="display:none;">
-            <div class="modal-content">
-                <h2>Sửa truyện</h2>
-                <input type="text" placeholder="Tên truyện">
-                <textarea placeholder="Mô tả"></textarea>
-                <select>
-                    <option>Romance</option>
-                    <option>Fantasy</option>
+
+        <!-- MODAL ADD/EDIT STORY -->
+        <div id="storyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55);">
+            <div style="background:white; width:560px; max-width:92vw; margin:6% auto; padding:18px 18px 14px; border-radius:10px;">
+                <h3 id="modalTitle" style="margin-bottom:10px;">Thêm truyện</h3>
+
+                <input type="hidden" id="storyId" value="">
+                <input type="hidden" id="coverOld" value="">
+
+                <label style="display:block; font-size:13px; margin-top:10px;">Tên truyện</label>
+                <input id="title" placeholder="Tên truyện" style="width:100%; padding:10px; margin-top:6px;">
+
+                <label style="display:block; font-size:13px; margin-top:10px;">Mã danh mục (home, tho, tinhcam…)</label>
+                <textarea id="description" placeholder="Chỉ nhập mã danh mục ngắn, không nhập mô tả dài" style="width:100%; padding:10px; margin-top:6px; min-height:60px;"></textarea>
+                <p style="font-size:12px; color:#666; margin-top:4px;">Dùng để phân loại truyện trên trang chủ. Không phải phần giới thiệu nội dung.</p>
+
+                <label style="display:block; font-size:13px; margin-top:10px;">Trạng thái</label>
+                <select id="status" style="width:100%; padding:10px; margin-top:6px;">
+                    <option value="ongoing">ongoing</option>
+                    <option value="completed">completed</option>
+                    <option value="hidden">hidden</option>
                 </select>
-                <div class="upload-box">
-                <h2>Tải Ảnh Bìa Lên</h2>
-                <div class="drop-zone">
-                    <input type="file">
-                    Kéo & thả ảnh vào đây
+
+                <label style="display:block; font-size:13px; margin-top:10px;">Ảnh bìa (tùy chọn)</label>
+                <input id="cover" type="file" accept="image/*" style="width:100%; margin-top:6px;">
+
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+                    <button onclick="closeStoryModal()" style="padding:10px 12px;">Đóng</button>
+                    <button onclick="saveStory()" style="padding:10px 12px; background:#111; color:#fff; border:0; border-radius:6px;">Lưu</button>
                 </div>
-                <select>
-                    <option>Đang ra</option>
-                    <option>Hoàn thành</option>
-                </select>
-                <button>Lưu thay đổi</button>
             </div>
         </div>
-                    </div>
-        <!-- MODAL ADD STORY -->
-        <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
-            <div style="background:white; width:500px; margin:10% auto; padding:20px; border-radius:10px;">
-                <h3>Thêm truyện</h3>
 
-                <input id="title" placeholder="Tên truyện" style="width:100%; padding:10px; margin:10px 0;">
-                
-                <select id="status" style="width:100%; padding:10px;">
-                    <option>ongoing</option>
-                    <option>completed</option>
-                    <option>hidden</option>
-                </select>
+        <script>
+        function openModal() {
+            openAddStory();
+        }
 
-                <br><br>
+        function openAddStory() {
+            document.getElementById('modalTitle').innerText = 'Thêm truyện';
+            document.getElementById('storyId').value = '';
+            document.getElementById('coverOld').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('status').value = 'ongoing';
+            document.getElementById('cover').value = '';
+            document.getElementById('storyModal').style.display = 'block';
+        }
 
-                <button onclick="saveStory()">Lưu</button>
-                <button onclick="closeModal()">Đóng</button>
-            </div>
-    </div>
+        function openEditStory(btn) {
+            const tr = btn.closest('tr');
+            const raw = tr.getAttribute('data-story');
+            const story = JSON.parse(raw);
 
-    <script>
-    function openModal(){
-        document.getElementById("modal").style.display="block";
-    }
-    function closeModal(){
-        document.getElementById("modal").style.display="none";
-    }
+            document.getElementById('modalTitle').innerText = 'Sửa truyện';
+            document.getElementById('storyId').value = story.id || '';
+            document.getElementById('coverOld').value = story.cover || '';
+            document.getElementById('title').value = story.title || '';
+            document.getElementById('description').value = story.description || '';
+            document.getElementById('status').value = story.status || 'ongoing';
+            document.getElementById('cover').value = '';
+            document.getElementById('storyModal').style.display = 'block';
+        }
 
-    function saveStory(){
-        alert("Gọi API thêm truyện (PHP backend)");
-    }
-    function editStory(id){
-        document.querySelector(".modal").style.display = "flex";
-    }
+        function closeStoryModal() {
+            document.getElementById('storyModal').style.display = 'none';
+        }
 
-    function deleteStory(id){
-        alert("Xóa truyện " + id);
-        
-    }
+        async function saveStory() {
+            const storyId = document.getElementById('storyId').value.trim();
+            const fd = new FormData();
+            if (storyId) fd.append('storyId', storyId);
+            fd.append('title', document.getElementById('title').value.trim());
+            fd.append('description', document.getElementById('description').value.trim());
+            fd.append('status', document.getElementById('status').value);
+            const coverOld = document.getElementById('coverOld').value;
+            if (coverOld) fd.append('cover_old', coverOld);
+            const file = document.getElementById('cover').files[0];
+            if (file) fd.append('cover', file);
 
-    </script>
+            const url = storyId ? '../../backend/edit_story.php' : '../../backend/add_story.php';
+            const res = await fetch(url, { method: 'POST', body: fd });
+            const data = await res.json().catch(() => null);
+            if (!data) {
+                alert('Có lỗi xảy ra (phản hồi không hợp lệ).');
+                return;
+            }
+            alert(data.message || (data.status === 'success' ? 'Thành công' : 'Thất bại'));
+            if (data.status === 'success') location.reload();
+        }
+
+        async function deleteStory(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa truyện này?')) return;
+            const fd = new FormData();
+            fd.append('id', id);
+            const res = await fetch('../../backend/delete_story.php', { method: 'POST', body: fd });
+            const data = await res.json().catch(() => null);
+            if (!data) {
+                alert('Có lỗi xảy ra (phản hồi không hợp lệ).');
+                return;
+            }
+            alert(data.message || (data.status === 'success' ? 'Đã xóa' : 'Xóa thất bại'));
+            if (data.status === 'success') location.reload();
+        }
+
+        const statusMap = {
+            'Tất cả': '',
+            'Đang cập nhật': 'ongoing',
+            'Hoàn thành': 'completed',
+            'Ẩn': 'hidden'
+        };
+
+        function filterStories() {
+            const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            const statusFilter = statusMap[document.getElementById('filterSelect').value] || '';
+            document.querySelectorAll('.table-container tbody tr').forEach(function(tr) {
+                const title = (tr.children[1]?.textContent || '').toLowerCase();
+                const status = (tr.children[2]?.textContent || '').trim().toLowerCase();
+                const matchTitle = !q || title.includes(q);
+                const matchStatus = !statusFilter || status === statusFilter;
+                tr.style.display = (matchTitle && matchStatus) ? '' : 'none';
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterStories);
+        document.getElementById('filterSelect').addEventListener('change', filterStories);
+        </script>
 
     </body>
 </html>

@@ -1,11 +1,14 @@
 <?php
 header('Content-Type: application/json');
-include('connect.php'); // file connect.php chứa $con
+require_once __DIR__ . '/require_admin.php';
+require_admin_api('Bạn không có quyền admin.');
+include_once '../database/connect.php'; // file connect.php chứa $con
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = intval($_POST['storyId'] ?? 0);
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
+    $status = trim($_POST['status'] ?? '');
     $cover_old = trim($_POST['cover_old'] ?? '');
 
     if (!$id || !$title) {
@@ -31,8 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Update story
+    // Update story
     $stmt = mysqli_prepare($con, "UPDATE stories SET title=?, `description`=?, cover=?, `status`=? WHERE id=?");
-    mysqli_stmt_bind_param($stmt, "sssi", $title, $description, $cover_path, $status, $id);
+    mysqli_stmt_bind_param($stmt, "ssssi", $title, $description, $cover_path, $status, $id);
 
     if (mysqli_stmt_execute($stmt)) {
         echo json_encode(['status'=>'success','message'=>'Cập nhật truyện thành công']);

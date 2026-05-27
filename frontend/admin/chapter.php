@@ -1,5 +1,7 @@
 <?php
-include '../../backend/connect.php';
+require_once '../../backend/require_admin.php';
+require_admin();
+include '../../database/connect.php';
 
 // Tối ưu bảo mật: Ép kiểu INT để phòng chống lỗi SQL Injection qua tham số 'id' trên URL
 $story_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -64,6 +66,7 @@ $chapters = mysqli_query($con, $sql);
                     <br>
                     <div>
                         <button onclick="saveChapter()" id="btnSave" class="btn">Lưu chương</button>
+                        <a id="btnPreview" class="btn" style="display:none; text-decoration:none;" target="_blank">Xem trước</a>
                         <button onclick="deleteChapter()" class="btn" style="background:red; color:white;">Xóa</button>
                     </div>
                 </div>
@@ -107,6 +110,8 @@ $chapters = mysqli_query($con, $sql);
                 let title = document.getElementById("chapterTitle").value;
                 
                 if (id && title.trim() !== "") {
+                    let contentText = document.getElementById("editor").innerText || '';
+                    if (contentText.trim().length < 10) return;
                     console.log("Hệ thống đang tự động lưu chương ID: " + id);
                     
                     let content = document.getElementById("editor").innerHTML;
@@ -149,6 +154,10 @@ $chapters = mysqli_query($con, $sql);
             document.getElementById("chapterTitle").value = chapterData.title;
             document.getElementById("editor").innerHTML = chapterData.content ? chapterData.content : "";
             document.getElementById("btnSave").innerText = "Cập nhật chương";
+
+            const preview = document.getElementById("btnPreview");
+            preview.style.display = "inline-block";
+            preview.href = "../../backend/read_chapter.php?chapter_id=" + chapterData.id;
         }
 
         // Reset toàn bộ trường nhập liệu về trạng thái thêm mới
@@ -158,6 +167,7 @@ $chapters = mysqli_query($con, $sql);
             document.getElementById("chapterTitle").value = "";
             document.getElementById("editor").innerHTML = "";
             document.getElementById("btnSave").innerText = "Lưu chương mới";
+            document.getElementById("btnPreview").style.display = "none";
         }
 
         // Gửi dữ liệu bằng fetch (AJAX) theo phương thức thủ công khi click nút Lưu
@@ -171,6 +181,11 @@ $chapters = mysqli_query($con, $sql);
                 alert("Vui lòng nhập tiêu đề chương!");
                 return;
             }
+            let contentText = document.getElementById("editor").innerText || '';
+            if (contentText.trim().length < 10) {
+                alert("Nội dung quá ngắn (tối thiểu 10 ký tự)!");
+                return;
+            }
 
             let formData = new FormData();
             formData.append('id', id);
@@ -182,10 +197,10 @@ $chapters = mysqli_query($con, $sql);
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                alert(data); 
-                location.reload(); 
+                alert(data.message || (data.status === 'success' ? 'Thành công' : 'Thất bại'));
+                if (data.status === 'success') location.reload();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -208,10 +223,10 @@ $chapters = mysqli_query($con, $sql);
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    alert(data);
-                    location.reload();
+                    alert(data.message || (data.status === 'success' ? 'Đã xóa' : 'Xóa thất bại'));
+                    if (data.status === 'success') location.reload();
                 })
                 .catch(error => console.error('Error:', error));
             }

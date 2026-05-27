@@ -2,6 +2,10 @@
 session_start();
 include '../backend/dangky_logic.php';
 include '../backend/dangnhap_logic.php';
+require_once __DIR__ . '/includes/paths.php';
+/** @var mysqli $con */
+
+$adminUrl = app_url('frontend/admin/index.php');
 
 // Banner — 4 truyện đầu
 $banner_result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 4");
@@ -460,12 +464,12 @@ $categories = [
                     </div>
                     <ul class="dropdown-menu-list">
                         <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i> Tài khoản</a></li>
-                        <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
-                        <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <li><a href="admin/index.php">
-                                <i class="fa-solid fa-shield-halved"></i> Trang quản lý
-                            </a></li>
+                        <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                            <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                            <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php endif; ?>
+                        <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                            <li><a href="<?= htmlspecialchars($adminUrl) ?>"><i class="fa-solid fa-shield-halved"></i> Quản trị</a></li>
                         <?php endif; ?>
                         <hr>
                         <li><a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
@@ -498,10 +502,12 @@ $categories = [
                         <p class="slide-desc">Khám phá ngay câu chuyện hấp dẫn này trên KEWE — đọc miễn phí 3 chương đầu.</p>
                         <div class="slide-actions">
                             <a href="<?= $url ?>" class="slide-btn"><i class="fa-solid fa-book-open"></i> Đọc ngay</a>
-                            <form method="POST" action="luutruyen.php" style="display:inline">
-                                <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
-                                <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
-                            </form>
+                            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                                <form method="POST" action="luutruyen.php" style="display:inline">
+                                    <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
+                                    <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -565,13 +571,15 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
-                    <form action="luutruyen.php" method="POST">
-                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
-                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
-                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
-                        </button>
-                    </form>
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                        <form action="luutruyen.php" method="POST">
+                            <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
+                            <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
+                                <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -613,10 +621,12 @@ $categories = [
         <div class="footer-col">
             <h4>Tài khoản</h4>
             <a href="taikhoan.php">Thông tin tài khoản</a>
-            <a href="tusach.php">Tủ sách cá nhân</a>
-            <a href="napcoin.php">Nạp Coin</a>
-            <a href="dangky_form.php">Đăng ký</a>
-            <a href="dangnhap_form.php">Đăng nhập</a>
+            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                <a href="tusach.php">Tủ sách cá nhân</a>
+                <a href="napcoin.php">Nạp Coin</a>
+            <?php endif; ?>
+            <a href="javascript:void(0);" id="footer-open-register">Đăng ký</a>
+            <a href="javascript:void(0);" id="footer-open-login">Đăng nhập</a>
         </div>
     </div>
     <div class="footer-bottom">
@@ -632,8 +642,12 @@ $categories = [
 <script>alert("<?= addslashes($register_message) ?>");</script>
 <?php endif; ?>
 
-<?php if (!empty($message)): ?>
-<script>alert("<?= addslashes($message) ?>");</script>
+<?php if (!empty($login_message)): ?>
+<script>alert("<?= addslashes($login_message) ?>");</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['banned']) && $_GET['banned'] === '1'): ?>
+<script>alert("Tài khoản đã bị khóa.");</script>
 <?php endif; ?>
 
 <?php if (isset($_GET['login']) && $_GET['login'] === 'success'): ?>
@@ -655,6 +669,27 @@ new Swiper(".bannerSwiper", {
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
 <script>
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'login') {
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) loginModal.style.setProperty('display', 'flex', 'important');
+        const redirectInput = document.querySelector('#loginModal input[name="redirect"]');
+        if (redirectInput && params.get('redirect')) redirectInput.value = params.get('redirect');
+    }
+    const footerLogin = document.getElementById('footer-open-login');
+    const footerReg = document.getElementById('footer-open-register');
+    if (footerLogin) footerLogin.addEventListener('click', function(e) {
+        e.preventDefault();
+        const m = document.getElementById('loginModal');
+        if (m) m.style.setProperty('display', 'flex', 'important');
+    });
+    if (footerReg) footerReg.addEventListener('click', function(e) {
+        e.preventDefault();
+        const m = document.getElementById('registerModal');
+        if (m) m.style.setProperty('display', 'flex', 'important');
+    });
+})();
 // Live search
 const searchInput = document.getElementById('searchInput');
 const dropdown    = document.getElementById('searchDropdown');

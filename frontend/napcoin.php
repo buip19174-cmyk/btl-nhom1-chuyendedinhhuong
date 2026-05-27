@@ -1,9 +1,13 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 include '../database/connect.php';
+require_once __DIR__ . '/includes/paths.php';
+require_once __DIR__ . '/../backend/require_auth.php';
+require_active_user($_SERVER['REQUEST_URI']);
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: dangnhap_form.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
+$is_admin = (($_SESSION['role'] ?? '') === 'admin');
+if ($is_admin) {
+    header("Location: home.php");
     exit();
 }
 
@@ -246,6 +250,11 @@ $packs = [
         <i class="fa-solid fa-triangle-exclamation"></i>
         Bạn cần <strong><?= $need ?> coin</strong> để mở chương này. Hãy nạp thêm coin bên dưới.
     </div>
+    <?php elseif ($err === 'invalid_order'): ?>
+    <div class="alert alert-error">
+        <i class="fa-solid fa-circle-xmark"></i>
+        Không tìm thấy đơn thanh toán hoặc đơn đã hết hạn.
+    </div>
     <?php elseif ($err): ?>
     <div class="alert alert-error">
         <i class="fa-solid fa-circle-xmark"></i>
@@ -279,12 +288,12 @@ $packs = [
             <div class="pack-label"><?= $pack['label'] ?></div>
             <div class="pack-vnd"><?= number_format($pack['vnd']) ?> VND</div>
             <div class="pack-rate">= <?= $pack['coins'] ?> chương trả phí</div>
-            <form method="POST" action="../backend/topup_coin.php">
+            <form method="POST" action="../backend/topup_create_order.php">
                 <input type="hidden" name="coins" value="<?= $pack['coins'] ?>">
                 <?php if ($chapter_id > 0): ?>
                 <input type="hidden" name="chapter_id" value="<?= $chapter_id ?>">
                 <?php endif; ?>
-                <button type="submit" class="btn-buy">Nạp ngay</button>
+                <button type="submit" class="btn-buy"><i class="fa-solid fa-qrcode"></i> Thanh toán QR</button>
             </form>
         </div>
         <?php endforeach; ?>

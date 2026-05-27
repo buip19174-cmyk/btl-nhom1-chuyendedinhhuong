@@ -1,8 +1,12 @@
 <?php
 session_start();
 include '../database/connect.php';
+require_once __DIR__ . '/includes/paths.php';
+require_once __DIR__ . '/../backend/require_auth.php';
+require_active_user($_SERVER['REQUEST_URI']);
 
-if (!isset($_SESSION['username'])) {
+$is_admin = (($_SESSION['role'] ?? '') === 'admin');
+if ($is_admin) {
     header("Location: home.php");
     exit();
 }

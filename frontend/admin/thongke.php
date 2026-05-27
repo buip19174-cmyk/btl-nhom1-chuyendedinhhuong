@@ -1,142 +1,138 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+
+require_once '../../backend/require_admin.php';
+require_admin();
+include_once '../../database/connect.php';
+/** @var mysqli $con */
+
+// 1. Tổng người dùng
+$total_users = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM users"))['total'] ?? 0);
+
+// 2. Tổng truyện
+$total_stories = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM stories"))['total'] ?? 0);
+
+// 3. Tổng lượt xem
+$total_views = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT SUM(luot_xem) AS total FROM stories"))['total'] ?? 0);
+
+// 4. Tổng bình luận
+$total_comments = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM comments"))['total'] ?? 0);
+
+// 5. Top 4 truyện (bảng)
+$res_top_stories = mysqli_query($con, "SELECT title, luot_xem, status FROM stories ORDER BY luot_xem DESC LIMIT 4");
+
+// 6. Top 7 truyện (biểu đồ)
+$chart_stories = [];
+$res_chart = mysqli_query($con, "SELECT title, luot_xem FROM stories ORDER BY luot_xem DESC LIMIT 7");
+if ($res_chart) {
+    while ($r = mysqli_fetch_assoc($res_chart)) {
+        $chart_stories[] = $r;
+    }
+}
+$max_views = 1;
+foreach ($chart_stories as $cs) {
+    $max_views = max($max_views, (int)($cs['luot_xem'] ?? 0));
 }
 
-// Nếu chưa đăng nhập HOẶC đăng nhập rồi nhưng không phải admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    // Chuyển hướng ngay lập tức về trang chủ hoặc trang lỗi
-    header("Location: index.php"); 
-    exit(); // Dừng toàn bộ script phía sau
+// 7. % user hoạt động
+$active_users = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM users WHERE status='active'"))['total'] ?? 0);
+$active_percent = $total_users > 0 ? (int)round(($active_users / $total_users) * 100) : 0;
+
+// 8. Cơ cấu thể loại
+$top_categories = [];
+$res_cats = mysqli_query($con, "SELECT COALESCE(NULLIF(description,''),'(trống)') AS cat, COUNT(*) AS cnt
+                         FROM stories
+                         GROUP BY cat
+                         ORDER BY cnt DESC
+                         LIMIT 4");
+if ($res_cats) {
+    while ($r = mysqli_fetch_assoc($res_cats)) {
+        $top_categories[] = [
+            'cat' => $r['cat'],
+            'cnt' => (int)$r['cnt'],
+            'pct' => $total_stories > 0 ? ($r['cnt'] / $total_stories) * 100 : 0,
+        ];
+    }
 }
 
-// --- Code của trang quản lý nằm dưới này ---
-?>
+function thongke_status_class(string $status): string
+{
+    return match ($status) {
+        'ongoing' => 'good',
+        'completed' => 'normal',
+        'hidden' => 'hot',
+        default => 'normal',
+    };
 
-<?php
-// Giả sử bạn có mảng dữ liệu lượt xem theo ngày
-$views_data = [180, 160, 120, 130, 90, 110, 70, 40]; 
-$points = "";
-$x = 0;
-foreach($views_data as $v) {
-    $points .= $x . "," . $v . " ";
-    $x += 80;
 }
 ?>
-<?php
-// Giả sử bạn truy vấn từ database để lấy số lượng truyện theo thể loại
-// $sql_action = "SELECT COUNT(*) as total FROM stories WHERE the_loai = 'Hành động'";
-$action_count = 120; // Dữ liệu giả lập
-$romance_count = 85;
-$comedy_count = 45;
-$total_stories = 250; // Tổng số truyện
-
-// Tính %
-$action_pct = ($action_count / $total_stories) * 100;
-$romance_pct = ($romance_count / $total_stories) * 100;
-$comedy_pct = ($comedy_count / $total_stories) * 100;
-?>
-
-<?php 
-include '../../backend/connect.php'; 
-
-// 1. Lấy tổng số người dùng
-$sql_users = "SELECT COUNT(*) as total FROM users";
-$res_users = $con->query($sql_users);
-$total_users = $res_users->fetch_assoc()['total'];
-
-// 2. Lấy tổng số truyện
-$sql_stories = "SELECT COUNT(*) as total FROM stories";
-$res_stories = $con->query($sql_stories);
-$total_stories = $res_stories->fetch_assoc()['total'];
-
-// 3. Lấy danh sách truyện nổi bật (Top 4 truyện nhiều view nhất)
-$sql_top_stories = "SELECT title, luot_xem, status FROM stories ORDER BY luot_xem DESC LIMIT 4";
-$res_top_stories = $con->query($sql_top_stories);
-// 4. Lấy tổng số truyện
-$sql_views = "SELECT SUM(luot_xem) AS total FROM stories;";
-$res_views = $con->query($sql_views);
-$total_views = $res_views->fetch_assoc()['total'];
-// 5. Giả sử lấy % người dùng hoạt động (logic tùy bạn thiết kế)
-// Ví dụ: (số người login trong 30 ngày / tổng số người) * 100
-$active_percent = 72; // Bạn có thể viết SQL để tính con số này
-?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Trang Thống Kê</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Sidebar -->
     <?php include 'sidebar.php'; ?>
 
-    <!-- Main -->
     <div class="main">
-    <!-- Topbar -->
     <div class="topbar">
         <div>
             <h1>Thống Kê</h1>
             <p>Tổng quan hoạt động hệ thống</p>
         </div>
-        <input class="search" type="text" placeholder="Tìm kiếm...">
     </div>
 
-    <!-- Cards -->
     <div class="cards">
         <div class="card">
             <h3>Người dùng</h3>
-            <p><?php echo number_format($total_users); ?></p>
+            <p><?= number_format($total_users) ?></p>
         </div>
         <div class="card">
             <h3>Truyện</h3>
-            <p><?php echo number_format($total_stories); ?></p>
+            <p><?= number_format($total_stories) ?></p>
         </div>
         <div class="card">
             <h3>Lượt xem</h3>
-            <p><?php echo number_format($total_views); ?></p>
+            <p><?= number_format($total_views) ?></p>
         </div>
         <div class="card">
             <h3>Bình luận</h3>
-            <p>Chưa có</p>
+            <p><?= number_format($total_comments) ?></p>
         </div>
     </div>
 
-    <!-- Grid -->
     <div class="grid">
-        <!-- LEFT -->
         <div>
-            <!-- Line Chart -->
             <div class="box">
-                <div class="title">Lượt truy cập 7 ngày gần đây</div>
-                <svg class="line-chart" viewBox="0 0 600 260">
-                    <!-- Grid Lines -->
-                    <line x1="0" y1="50" x2="600" y2="50" stroke="#e5e7eb" stroke-dasharray="4"/>
-                    <line x1="0" y1="120" x2="600" y2="120" stroke="#e5e7eb" stroke-dasharray="4"/>
-                    <line x1="0" y1="190" x2="600" y2="190" stroke="#e5e7eb" stroke-dasharray="4"/>
-
-                    <!-- Area Fill -->
-                    <path d="M0 180 L80 160 L160 120 L240 130 L320 90 L400 110 L480 70 L560 40 L560 260 L0 260 Z" 
-                          fill="rgba(139,92,246,0.1)"/>
-
-                    <!-- Main Line -->
-                    <polyline points="<?php echo trim($points); ?>" ... />
-                    <!-- Data Points -->
-                    <circle cx="80" cy="160" r="4" fill="#8b5cf6" />
-                    <circle cx="160" cy="120" r="4" fill="#8b5cf6" />
-                    <circle cx="240" cy="130" r="4" fill="#8b5cf6" />
-                    <circle cx="320" cy="90" r="4" fill="#8b5cf6" />
-                    <circle cx="400" cy="110" r="4" fill="#8b5cf6" />
-                    <circle cx="480" cy="70" r="4" fill="#8b5cf6" />
-                    <circle cx="560" cy="40" r="4" fill="#8b5cf6" />
-                </svg>
+                <div class="title">Top truyện theo lượt xem</div>
+                <?php if (empty($chart_stories)): ?>
+                    <p style="color:#999;padding:20px 0;">Chưa có dữ liệu truyện.</p>
+                <?php else: ?>
+                    <div class="bar-chart">
+                        <?php
+                        $chart_h = 200;
+                        $bar_w = 56;
+                        $gap = 18;
+                        $i = 0;
+                        foreach ($chart_stories as $cs):
+                            $views = (int)($cs['luot_xem'] ?? 0);
+                            $h = (int)round(($views / $max_views) * $chart_h);
+                            $label = mb_strimwidth($cs['title'], 0, 12, '…');
+                        ?>
+                        <div class="bar-col" style="width:<?= $bar_w ?>px">
+                            <span class="bar-val"><?= number_format($views) ?></span>
+                            <div class="bar-track" style="height:<?= $chart_h ?>px">
+                                <div class="bar-fill" style="height:<?= max(4, $h) ?>px"></div>
+                            </div>
+                            <span class="bar-label" title="<?= htmlspecialchars($cs['title']) ?>"><?= htmlspecialchars($label) ?></span>
+                        </div>
+                        <?php $i++; endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
-            <!-- Table -->
             <div class="box" style="margin-top:20px;">
                 <div class="title">Truyện nổi bật</div>
                 <table>
@@ -148,19 +144,15 @@ $active_percent = 72; // Bạn có thể viết SQL để tính con số này
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($res_top_stories->num_rows > 0): ?>
-                            <?php while($row = $res_top_stories->fetch_assoc()): ?>
+                        <?php if ($res_top_stories && mysqli_num_rows($res_top_stories) > 0): ?>
+                            <?php while ($row = mysqli_fetch_assoc($res_top_stories)): ?>
+                                <?php $st = (string)($row['status'] ?? ''); ?>
                                 <tr>
-                                    <td><?php echo $row['title']; ?></td>
-                                    <td><?php echo number_format($row['luot_xem']); ?></td>
+                                    <td><?= htmlspecialchars($row['title']) ?></td>
+                                    <td><?= number_format((int)$row['luot_xem']) ?></td>
                                     <td>
-                                        <?php 
-                                            $status_class = 'normal';
-                                            if($row['status'] == 'Hot') $status_class = 'hot';
-                                            if($row['status'] == 'Tăng') $status_class = 'good';
-                                        ?>
-                                        <span class="status <?php echo $status_class; ?>">
-                                            <?php echo $row['status']; ?>
+                                        <span class="status <?= thongke_status_class($st) ?>">
+                                            <?= htmlspecialchars($st) ?>
                                         </span>
                                     </td>
                                 </tr>
@@ -173,14 +165,12 @@ $active_percent = 72; // Bạn có thể viết SQL để tính con số này
             </div>
         </div>
 
-        <!-- RIGHT -->
         <div>
-            <!-- Donut -->
             <div class="box">
                 <div class="title">Người dùng hoạt động</div>
                 <div class="donut-wrap">
-                    <div class="donut" style="background: conic-gradient(var(--primary) 0% <?php echo $active_percent; ?>%, #e5e7eb <?php echo $active_percent; ?>% 100%);">
-                        <div class="donut-text"><?php echo $active_percent; ?>%</div>
+                    <div class="donut" style="background: conic-gradient(var(--primary) 0% <?= $active_percent ?>%, #e5e7eb <?= $active_percent ?>% 100%);">
+                        <div class="donut-text"><?= $active_percent ?>%</div>
                     </div>
                     <div class="legend">
                         <div class="legend-item">
@@ -188,62 +178,41 @@ $active_percent = 72; // Bạn có thể viết SQL để tính con số này
                                 <div style="width:12px; height:12px; background:var(--primary); border-radius:3px;"></div>
                                 <span>Hoạt động</span>
                             </div>
-                            <span>72%</span>
+                            <span><?= $active_percent ?>%</span>
                         </div>
                         <div class="legend-item">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <div style="width:12px; height:12px; background:#e5e7eb; border-radius:3px;"></div>
                                 <span>Không hoạt động</span>
                             </div>
-                            <span>28%</span>
+                            <span><?= max(0, 100 - $active_percent) ?>%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Progress -->
             <div class="box" style="margin-top:20px;">
                 <div class="title">Cơ cấu thể loại</div>
-                
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Hành động</span>
-                        <span><?php echo $action_count; ?> truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo $action_pct; ?>%; background: var(--primary);"></div>
-                    </div>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Tình cảm</span>
-                        <span><?php echo $romance_count; ?> truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo $romance_pct; ?>%; background: var(--blue);"></div>
-                    </div>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Hài hước</span>
-                        <span><?php echo $comedy_count; ?> truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo $comedy_pct; ?>%; background: var(--green);"></div>
-                    </div>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Kinh dị</span>
-                        <span>15 truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 10%; background: var(--orange);"></div>
-                    </div>
-                </div>
+                <?php
+                $colors = ['var(--primary)', 'var(--blue)', 'var(--green)', 'var(--orange)'];
+                if (empty($top_categories)) {
+                    echo '<div style="padding:10px;color:#999;">Chưa có dữ liệu thể loại.</div>';
+                } else {
+                    foreach ($top_categories as $i => $cat) {
+                        $color = $colors[$i % count($colors)];
+                        $pct = max(0, min(100, (float)$cat['pct']));
+                        echo '<div class="progress-item">';
+                        echo '  <div class="progress-top">';
+                        echo '    <span>' . htmlspecialchars($cat['cat']) . '</span>';
+                        echo '    <span>' . (int)$cat['cnt'] . ' truyện</span>';
+                        echo '  </div>';
+                        echo '  <div class="progress-bar">';
+                        echo '    <div class="progress-fill" style="width: ' . $pct . '%; background: ' . $color . ';"></div>';
+                        echo '  </div>';
+                        echo '</div>';
+                    }
+                }
+                ?>
             </div>
         </div>
     </div>
