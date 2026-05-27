@@ -24,16 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
             $_SESSION['role'] = $user['role'];
 
             $message = "Đăng nhập thành công! Chào mừng " . $user['username'];
-
-            // 2. Logic phân quyền và điều hướng
-            if ($user['role'] === 'admin') {
-                header("Location: ../frontend/admin/index.php");
-                exit();
-            } else {
                 header("Location: ../frontend/home.php?login=success");
                 exit();
-            }
-
         } else {
             $message = "Sai mật khẩu, vui lòng thử lại!";
         }

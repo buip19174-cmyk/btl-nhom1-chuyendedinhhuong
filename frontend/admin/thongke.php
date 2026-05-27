@@ -1,4 +1,19 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Nếu chưa đăng nhập HOẶC đăng nhập rồi nhưng không phải admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // Chuyển hướng ngay lập tức về trang chủ hoặc trang lỗi
+    header("Location: index.php"); 
+    exit(); // Dừng toàn bộ script phía sau
+}
+
+// --- Code của trang quản lý nằm dưới này ---
+?>
+
+<?php
 // Giả sử bạn có mảng dữ liệu lượt xem theo ngày
 $views_data = [180, 160, 120, 130, 90, 110, 70, 40]; 
 $points = "";

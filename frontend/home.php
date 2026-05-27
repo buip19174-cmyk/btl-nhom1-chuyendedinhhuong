@@ -443,7 +443,7 @@ $categories = [
         <div class="search-form-wrap">
             <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
                 <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
-                <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
+                <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i>Tìm</button>
             </form>
         </div>
     </div>
@@ -462,6 +462,11 @@ $categories = [
                         <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i> Tài khoản</a></li>
                         <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
                         <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                            <li><a href="admin/index.php">
+                                <i class="fa-solid fa-shield-halved"></i> Trang quản lý
+                            </a></li>
+                        <?php endif; ?>
                         <hr>
                         <li><a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>

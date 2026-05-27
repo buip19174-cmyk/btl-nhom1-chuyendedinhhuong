@@ -1,4 +1,19 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Nếu chưa đăng nhập HOẶC đăng nhập rồi nhưng không phải admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // Chuyển hướng ngay lập tức về trang chủ hoặc trang lỗi
+    header("Location: index.php"); 
+    exit(); // Dừng toàn bộ script phía sau
+}
+
+// --- Code của trang quản lý nằm dưới này ---
+?>
+
+<?php
 include '../../backend/connect.php';
 
 $sql = "SELECT * FROM users";
