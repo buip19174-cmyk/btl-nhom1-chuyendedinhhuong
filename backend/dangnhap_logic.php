@@ -34,16 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $result = $stmt->get_result();
 
 
-
     if ($user = $result->fetch_assoc()) {
 
         if (password_verify($password, $user['password'])) {
 
-<<<<<<< HEAD
-            $message = "Đăng nhập thành công! Chào mừng " . $user['username'];
-                header("Location: ../frontend/home.php?login=success");
-                exit();
-=======
             if (($user['status'] ?? 'active') === 'banned') {
 
                 $login_message = "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.";
@@ -65,8 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 exit();
 
             }
-
->>>>>>> 5fc58b8cf4da9b97db2b245a1b6f3959d0004c59
         } else {
 
             $login_message = "Sai mật khẩu, vui lòng thử lại!";
