@@ -1,10 +1,31 @@
 <?php
-session_start();
-// Nếu không phải admin, đá về trang chủ hoặc trang đăng nhập
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: index.php");
-    exit();
-}
+require_once '../../backend/require_admin.php';
+require_admin();
+
+include_once '../../database/connect.php';
+/** @var mysqli $con */
+
+// Cards
+$total_users = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM users"))['total'] ?? 0);
+$total_stories = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM stories"))['total'] ?? 0);
+$total_chapters = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM chapters"))['total'] ?? 0);
+$total_comments = (int)(mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS total FROM comments"))['total'] ?? 0);
+
+// Recent users (top 5)
+$users_recent = mysqli_query($con, "
+  SELECT id, username, email, role, status
+  FROM users
+  ORDER BY id DESC
+  LIMIT 5
+");
+
+// Top stories by views (top 5)
+$stories_recent = mysqli_query($con, "
+  SELECT id, title, status, luot_xem, description
+  FROM stories
+  ORDER BY luot_xem DESC, id DESC
+  LIMIT 5
+");
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -27,14 +48,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <div class="topbar">
       <div>
         <h1>Tổng Quan</h1>
-        <p>Chào mừng quản trị viên quay trở lại</p>
-      </div>
-      <div class="notify">
-        <i class="fa-solid fa-bell"></i>
-        <span class="badge">3</span>
-      </div>
-      <div class="search-box">
-        <input type="text" placeholder="Tìm kiếm...">
+        <br>
+        <p>Xin chào, <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></strong></p>
       </div>
     </div>
 
@@ -42,71 +57,91 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <div class="cards">
       <div class="card">
         <h3>Tổng Người Dùng</h3>
-        <p>1,245</p>
+        <p><?= number_format($total_users) ?></p>
       </div>
 
       <div class="card">
         <h3>Truyện</h3>
-        <p>328</p>
+        <p><?= number_format($total_stories) ?></p>
       </div>
 
       <div class="card">
-        <h3>Bình Luận</h3>
-        <p>5,231</p>
+        <h3>Chương</h3>
+        <p><?= number_format($total_chapters) ?></p>
       </div>
 
       <div class="card">
-        <h3>Báo cáo</h3>
-        <p>12</p>
+        <h3>Bình luận</h3>
+        <p><?= number_format($total_comments) ?></p>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="table-container">
+    <!-- Recent users -->
+    <div class="table-container" style="margin-top:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;">User mới</h3>
+        <a href="users.php" style="font-size:13px;">Xem tất cả</a>
+      </div>
       <table>
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Actions</th>
           </tr>
         </thead>
-
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>Nguyen Van A</td>
-            <td>Quản trị viên</td>
-            <td><span class="status">Đang hoạt động</span></td>
-            <td>
-              <button class="btn edit">Sửa</button>
-              <button class="btn delete">Xóa</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td>2</td>
-            <td>Tran Thi B</td>
-            <td>Member</td>
-            <td><span class="status">Banned</span></td>
-            <td>
-              <button class="btn edit">Sửa</button>
-              <button class="btn delete">Xóa</button>
-            </td>
-          </tr>
+          <?php if ($users_recent && mysqli_num_rows($users_recent) > 0): ?>
+            <?php while($u = mysqli_fetch_assoc($users_recent)): ?>
+              <tr>
+                <td><?= (int)$u['id'] ?></td>
+                <td><?= htmlspecialchars($u['username']) ?></td>
+                <td><?= htmlspecialchars($u['email']) ?></td>
+                <td><?= htmlspecialchars($u['role'] ?? 'user') ?></td>
+                <td><?= htmlspecialchars($u['status'] ?? 'active') ?></td>
+              </tr>
+            <?php endwhile; ?>
+          <?php else: ?>
+            <tr><td colspan="5">Chưa có user</td></tr>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
 
-    <!-- Upload -->
-    <div class="upload-box">
-      <h2>Tải Ảnh Bìa Lên</h2>
-
-      <div class="drop-zone">
-        Kéo & thả ảnh vào đây
+    <!-- Recent stories -->
+    <div class="table-container" style="margin-top:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;">Top 5 truyện được xem nhiều nhất</h3>
+        <a href="stories.php" style="font-size:13px;">Xem tất cả</a>
       </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>Trạng thái</th>
+            <th>View</th>
+            <th>Danh mục</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if ($stories_recent && mysqli_num_rows($stories_recent) > 0): ?>
+            <?php while($s = mysqli_fetch_assoc($stories_recent)): ?>
+              <tr>
+                <td><?= (int)$s['id'] ?></td>
+                <td><?= htmlspecialchars($s['title']) ?></td>
+                <td><?= htmlspecialchars($s['status'] ?? 'ongoing') ?></td>
+                <td><?= number_format((int)($s['luot_xem'] ?? 0)) ?></td>
+                <td><?= htmlspecialchars($s['description'] ?? '') ?></td>
+              </tr>
+            <?php endwhile; ?>
+          <?php else: ?>
+            <tr><td colspan="5">Chưa có truyện</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
     </div>
 
   </div>

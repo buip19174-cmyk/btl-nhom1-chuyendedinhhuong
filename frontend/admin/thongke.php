@@ -1,50 +1,233 @@
 <?php
-// Giả sử bạn có mảng dữ liệu lượt xem theo ngày
-$views_data = [180, 160, 120, 130, 90, 110, 70, 40]; 
-$points = "";
-$x = 0;
-foreach($views_data as $v) {
-    $points .= $x . "," . $v . " ";
-    $x += 80;
+require_once '../../backend/require_admin.php';
+require_admin();
+include_once '../../database/connect.php';
+/** @var mysqli $con */
+
+function get_count(mysqli $con, string $query): int {
+    $res = mysqli_query($con, $query);
+    return $res ? (int)(mysqli_fetch_assoc($res)['total'] ?? 0) : 0;
 }
-?>
-<?php
-// Giả sử bạn truy vấn từ database để lấy số lượng truyện theo thể loại
-// $sql_action = "SELECT COUNT(*) as total FROM stories WHERE the_loai = 'Hành động'";
-$action_count = 120; // Dữ liệu giả lập
-$romance_count = 85;
-$comedy_count = 45;
-$total_stories = 250; // Tổng số truyện
 
-// Tính %
-$action_pct = ($action_count / $total_stories) * 100;
-$romance_pct = ($romance_count / $total_stories) * 100;
-$comedy_pct = ($comedy_count / $total_stories) * 100;
-?>
+// Lấy tổng số lượng người dùng
+$total_users = get_count($con, "SELECT COUNT(*) AS total FROM users");
 
-<?php 
-include '../../backend/connect.php'; 
+// Lấy tổng số lượng truyện trên hệ thống
+$total_stories = get_count($con, "SELECT COUNT(*) AS total FROM stories");
 
-// 1. Lấy tổng số người dùng
-$sql_users = "SELECT COUNT(*) as total FROM users";
-$res_users = $con->query($sql_users);
-$total_users = $res_users->fetch_assoc()['total'];
+// Lấy tổng lượt xem của tất cả các truyện
+$total_views = get_count($con, "SELECT SUM(luot_xem) AS total FROM stories");
 
-// 2. Lấy tổng số truyện
-$sql_stories = "SELECT COUNT(*) as total FROM stories";
-$res_stories = $con->query($sql_stories);
-$total_stories = $res_stories->fetch_assoc()['total'];
+// Lấy tổng số lượng bình luận
+$total_comments = get_count($con, "SELECT COUNT(*) AS total FROM comments");
 
-// 3. Lấy danh sách truyện nổi bật (Top 4 truyện nhiều view nhất)
-$sql_top_stories = "SELECT title, luot_xem, status FROM stories ORDER BY luot_xem DESC LIMIT 4";
-$res_top_stories = $con->query($sql_top_stories);
-// 4. Lấy tổng số truyện
-$sql_views = "SELECT SUM(luot_xem) AS total FROM stories;";
-$res_views = $con->query($sql_views);
-$total_views = $res_views->fetch_assoc()['total'];
-// 5. Giả sử lấy % người dùng hoạt động (logic tùy bạn thiết kế)
-// Ví dụ: (số người login trong 30 ngày / tổng số người) * 100
-$active_percent = 72; // Bạn có thể viết SQL để tính con số này
+// Lấy tổng doanh thu nạp tiền từ trước đến nay
+$total_revenue = get_count(
+    $con,
+    "SELECT SUM(vnd_amount) AS total 
+     FROM coin_transactions 
+     WHERE type = 'topup'"
+);
+
+// Lấy tổng số lượng xu người dùng đã tiêu
+$total_coins_spent = get_count(
+    $con,
+    "SELECT SUM(coins_spent) AS total 
+     FROM purchased_chapters"
+);
+
+// Lấy tổng số lượt mở khóa chương truyện
+$total_chapter_unlocks = get_count(
+    $con,
+    "SELECT COUNT(*) AS total 
+     FROM purchased_chapters"
+);
+
+// Xác định bộ lọc thời gian doanh thu (mặc định là 7 ngày)
+$filter = $_GET['filter'] ?? '7_days';
+
+// Cấu hình khoảng thời gian và định dạng SQL/Hiển thị dựa theo bộ lọc
+switch ($filter) {
+    case 'this_month':
+        $start_date = date('Y-m-01');
+        $end_date = date('Y-m-t');
+        $interval_format = 'Y-m-d';
+        $display_format = 'd/m';
+        break;
+    case 'this_year':
+        $start_date = date('Y-01-01');
+        $end_date = date('Y-12-31');
+        $interval_format = 'Y-m';
+        $display_format = 'm/Y';
+        break;
+    case '7_days':
+    default:
+        $start_date = date('Y-m-d', strtotime('-6 days'));
+        $end_date = date('Y-m-d');
+        $interval_format = 'Y-m-d';
+        $display_format = 'd/m';
+        break;
+}
+
+// Định nghĩa cách gom nhóm trong câu lệnh SQL tùy theo bộ lọc ngày hay tháng
+$group_by_sql = ($filter === 'this_year') ? "DATE_FORMAT(created_at, '%Y-%m')" : "DATE(created_at)";
+
+// Truy vấn lấy dữ liệu doanh thu thực tế từ cơ sở dữ liệu
+$query_revenue = "
+    SELECT 
+        $group_by_sql AS revenue_period,
+        SUM(vnd_amount) AS total_revenue
+    FROM coin_transactions
+    WHERE type = 'topup'
+      AND created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59'
+    GROUP BY $group_by_sql
+";
+$res_revenue_chart = mysqli_query($con, $query_revenue);
+
+// Đổ dữ liệu doanh thu thực tế vào mảng tạm để đối chiếu
+$real_data = [];
+if ($res_revenue_chart) {
+    while ($row = mysqli_fetch_assoc($res_revenue_chart)) {
+        $real_data[$row['revenue_period']] = (int)$row['total_revenue'];
+    }
+}
+
+// Tạo trục thời gian đầy đủ để điền giá trị 0 cho những ngày không có doanh thu
+$revenue_chart = [];
+$period_start = new DateTime($start_date);
+$period_end = new DateTime($end_date);
+$period_end->modify('+1 day');
+$interval_step = ($filter === 'this_year') ? new DateInterval('P1M') : new DateInterval('P1D');
+$period = new DatePeriod($period_start, $interval_step, $period_end);
+
+foreach ($period as $date) {
+    $key = $date->format($interval_format);
+    $label = $date->format($display_format);
+    $revenue_chart[] = [
+        'label' => $label,
+        'total' => $real_data[$key] ?? 0
+    ];
+}
+
+// Lấy danh sách Top 5 truyện mang lại doanh thu (tiêu xu) cao nhất
+$top_revenue_stories = [];
+$res_rev_stories = mysqli_query($con, "
+    SELECT s.title, s.status, SUM(pc.coins_spent) AS total_coins
+    FROM purchased_chapters pc
+    JOIN chapters c ON pc.chapter_id = c.id
+    JOIN stories s ON c.story_id = s.id
+    GROUP BY s.id
+    ORDER BY total_coins DESC
+    LIMIT 5
+");
+if ($res_rev_stories) {
+    while ($row = mysqli_fetch_assoc($res_rev_stories)) {
+        $top_revenue_stories[] = $row;
+    }
+}
+
+// Lấy danh sách Top 5 người dùng nạp nhiều tiền nhất hệ thống
+$top_spenders = [];
+$res_spenders = mysqli_query($con, "
+    SELECT u.id, u.username, u.email, SUM(ct.vnd_amount) AS total_deposited
+    FROM coin_transactions ct
+    JOIN users u ON ct.user_id = u.id
+    WHERE ct.type = 'topup'
+    GROUP BY u.id
+    ORDER BY total_deposited DESC
+    LIMIT 5
+");
+if ($res_spenders) {
+    while ($row = mysqli_fetch_assoc($res_spenders)) {
+        $top_spenders[] = $row;
+    }
+}
+
+// Lấy danh sách Top 4 truyện có lượt xem cao nhất hiển thị ở bảng
+$res_top_stories = mysqli_query(
+    $con,
+    "SELECT title, luot_xem, status
+     FROM stories
+     ORDER BY luot_xem DESC
+     LIMIT 4"
+);
+
+// Lấy số lượng người dùng đang ở trạng thái hoạt động
+$active_users = get_count(
+    $con,
+    "SELECT COUNT(*) AS total 
+     FROM users 
+     WHERE status='active'"
+);
+
+// Tính toán số lượng người dùng không hoạt động
+$inactive_users = max(0, $total_users - $active_users);
+
+// Lấy danh sách cơ cấu thể loại truyện dựa trên mô tả
+$top_categories = [];
+$res_cats = mysqli_query(
+    $con,
+    "SELECT 
+        COALESCE(NULLIF(description,''),'(trống)') AS cat,
+        COUNT(*) AS cnt
+     FROM stories
+     GROUP BY cat
+     ORDER BY cnt DESC
+     LIMIT 4"
+);
+if ($res_cats) {
+    while ($r = mysqli_fetch_assoc($res_cats)) {
+        $top_categories[] = [
+            'cat' => $r['cat'],
+            'cnt' => (int)$r['cnt'],
+            'pct' => $total_stories > 0 ? ($r['cnt'] / $total_stories) * 100 : 0,
+        ];
+    }
+}
+
+// Lấy danh sách 5 lượt mở khóa chương truyện gần đây nhất (Tiêu Xu)
+$recent_purchases = [];
+$res_purchases = mysqli_query(
+    $con,
+    "SELECT u.username, pc.chapter_id, pc.coins_spent, pc.purchased_at
+     FROM purchased_chapters pc
+     JOIN users u ON pc.user_id = u.id
+     ORDER BY pc.purchased_at DESC
+     LIMIT 5"
+);
+if ($res_purchases) {
+    while ($row = mysqli_fetch_assoc($res_purchases)) {
+        $recent_purchases[] = $row;
+    }
+}
+
+// Lấy danh sách 5 giao dịch nạp tiền gần đây nhất (Nạp Xu)
+$recent_deposits = [];
+$res_deposits = mysqli_query(
+    $con,
+    "SELECT u.username, ct.vnd_amount, ct.amount, ct.created_at
+     FROM coin_transactions ct
+     JOIN users u ON ct.user_id = u.id
+     WHERE ct.type = 'topup'
+     ORDER BY ct.created_at DESC
+     LIMIT 5"
+);
+if ($res_deposits) {
+    while ($row = mysqli_fetch_assoc($res_deposits)) {
+        $recent_deposits[] = $row;
+    }
+}
+
+// Hàm trả về tên lớp CSS hiển thị màu theo trạng thái truyện
+function thongke_status_class(string $status): string
+{
+    return match ($status) {
+        'ongoing' => 'good',
+        'completed' => 'normal',
+        'hidden' => 'hot',
+        default => 'normal',
+    };
+}
 ?>
 
 <!DOCTYPE html>
@@ -52,186 +235,377 @@ $active_percent = 72; // Bạn có thể viết SQL để tính con số này
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Trang Thống Kê</title>
+    <title>Trang Thống Kê Hệ Thống</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
-<body>
-    <!-- Sidebar -->
-    <?php include 'sidebar.php'; ?>
 
-    <!-- Main -->
-    <div class="main">
-    <!-- Topbar -->
+<body>
+<?php include 'sidebar.php'; ?>
+<div class="main">
     <div class="topbar">
         <div>
-            <h1>Thống Kê</h1>
-            <p>Tổng quan hoạt động hệ thống</p>
-        </div>
-        <input class="search" type="text" placeholder="Tìm kiếm...">
-    </div>
-
-    <!-- Cards -->
-    <div class="cards">
-        <div class="card">
-            <h3>Người dùng</h3>
-            <p><?php echo number_format($total_users); ?></p>
-        </div>
-        <div class="card">
-            <h3>Truyện</h3>
-            <p><?php echo number_format($total_stories); ?></p>
-        </div>
-        <div class="card">
-            <h3>Lượt xem</h3>
-            <p><?php echo number_format($total_views); ?></p>
-        </div>
-        <div class="card">
-            <h3>Bình luận</h3>
-            <p>Chưa có</p>
+            <h1>Thống Kê Hệ Thống</h1><br>
+            <p>Quản lý truyện, người dùng và doanh thu</p>
         </div>
     </div>
 
-    <!-- Grid -->
-    <div class="grid">
-        <!-- LEFT -->
-        <div>
-            <!-- Line Chart -->
-            <div class="box">
-                <div class="title">Lượt truy cập 7 ngày gần đây</div>
-                <svg class="line-chart" viewBox="0 0 600 260">
-                    <!-- Grid Lines -->
-                    <line x1="0" y1="50" x2="600" y2="50" stroke="#e5e7eb" stroke-dasharray="4"/>
-                    <line x1="0" y1="120" x2="600" y2="120" stroke="#e5e7eb" stroke-dasharray="4"/>
-                    <line x1="0" y1="190" x2="600" y2="190" stroke="#e5e7eb" stroke-dasharray="4"/>
+    <div class="box" style="margin-bottom:30px;">
+        <div class="title">
+            <b>Thống kê nội dung truyện</b>
+        </div>
 
-                    <!-- Area Fill -->
-                    <path d="M0 180 L80 160 L160 120 L240 130 L320 90 L400 110 L480 70 L560 40 L560 260 L0 260 Z" 
-                          fill="rgba(139,92,246,0.1)"/>
-
-                    <!-- Main Line -->
-                    <polyline points="<?php echo trim($points); ?>" ... />
-                    <!-- Data Points -->
-                    <circle cx="80" cy="160" r="4" fill="#8b5cf6" />
-                    <circle cx="160" cy="120" r="4" fill="#8b5cf6" />
-                    <circle cx="240" cy="130" r="4" fill="#8b5cf6" />
-                    <circle cx="320" cy="90" r="4" fill="#8b5cf6" />
-                    <circle cx="400" cy="110" r="4" fill="#8b5cf6" />
-                    <circle cx="480" cy="70" r="4" fill="#8b5cf6" />
-                    <circle cx="560" cy="40" r="4" fill="#8b5cf6" />
-                </svg>
+        <div class="cards">
+            <div class="card">
+                <h3>Tổng truyện</h3>
+                <p><?= number_format($total_stories) ?></p>
             </div>
+            <div class="card">
+                <h3>Tổng lượt xem</h3>
+                <p><?= number_format($total_views) ?></p>
+            </div>
+            <div class="card">
+                <h3>Bình luận</h3>
+                <p><?= number_format($total_comments) ?></p>
+            </div>
+            <div class="card">
+                <h3>Lượt mở khóa</h3>
+                <p><?= number_format($total_chapter_unlocks) ?></p>
+            </div>
+        </div>
 
-            <!-- Table -->
-            <div class="box" style="margin-top:20px;">
-                <div class="title">Truyện nổi bật</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tên truyện</th>
-                            <th>Lượt xem</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($res_top_stories->num_rows > 0): ?>
-                            <?php while($row = $res_top_stories->fetch_assoc()): ?>
+        <div class="grid">
+            <div>
+                <div class="box">
+                    <div class="title">Truyện nổi bật (Lượt xem)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên truyện</th>
+                                <th>Lượt xem</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php if ($res_top_stories && mysqli_num_rows($res_top_stories) > 0): ?>
+                            <?php while ($row = mysqli_fetch_assoc($res_top_stories)): $st = (string)($row['status'] ?? ''); ?>
                                 <tr>
-                                    <td><?php echo $row['title']; ?></td>
-                                    <td><?php echo number_format($row['luot_xem']); ?></td>
-                                    <td>
-                                        <?php 
-                                            $status_class = 'normal';
-                                            if($row['status'] == 'Hot') $status_class = 'hot';
-                                            if($row['status'] == 'Tăng') $status_class = 'good';
-                                        ?>
-                                        <span class="status <?php echo $status_class; ?>">
-                                            <?php echo $row['status']; ?>
-                                        </span>
-                                    </td>
+                                    <td><?= htmlspecialchars($row['title']) ?></td>
+                                    <td><?= number_format((int)$row['luot_xem']) ?></td>
+                                    <td><span class="status <?= thongke_status_class($st) ?>"><?= htmlspecialchars($st) ?></span></td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr><td colspan="3">Không có dữ liệu</td></tr>
                         <?php endif; ?>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <div class="box">
+                    <div class="title">Top truyện doanh thu cao nhất (Tiêu Xu)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên truyện</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align: right;">Tổng xu tiêu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($top_revenue_stories)): ?>
+                            <tr><td colspan="3" style="text-align:center; color:#999; padding: 15px;">Chưa có dữ liệu tiêu xu.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($top_revenue_stories as $rev_story): $st = (string)($rev_story['status'] ?? ''); ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($rev_story['title']) ?></td>
+                                    <td><span class="status <?= thongke_status_class($st) ?>"><?= htmlspecialchars($st) ?></span></td>
+                                    <td style="text-align: right; font-weight: bold; color: #ea580c;"><?= number_format($rev_story['total_coins']) ?> Xu</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="box" style="margin-bottom:30px;">
+        <div class="title">
+            <b>Thống kê thành viên</b>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <h3>Tổng người dùng</h3>
+                <p><?= number_format($total_users) ?></p>
+            </div>
+            <div class="card">
+                <h3>Đang hoạt động</h3>
+                <p><?= number_format($active_users) ?></p>
+            </div>
+            <div class="card">
+                <h3>Không hoạt động</h3>
+                <p><?= number_format($inactive_users) ?></p>
             </div>
         </div>
 
-        <!-- RIGHT -->
-        <div>
-            <!-- Donut -->
-            <div class="box">
-                <div class="title">Người dùng hoạt động</div>
-                <div class="donut-wrap">
-                    <div class="donut" style="background: conic-gradient(var(--primary) 0% <?php echo $active_percent; ?>%, #e5e7eb <?php echo $active_percent; ?>% 100%);">
-                        <div class="donut-text"><?php echo $active_percent; ?>%</div>
-                    </div>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <div style="width:12px; height:12px; background:var(--primary); border-radius:3px;"></div>
-                                <span>Hoạt động</span>
-                            </div>
-                            <span>72%</span>
-                        </div>
-                        <div class="legend-item">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <div style="width:12px; height:12px; background:#e5e7eb; border-radius:3px;"></div>
-                                <span>Không hoạt động</span>
-                            </div>
-                            <span>28%</span>
-                        </div>
-                    </div>
+        <div class="grid">
+            <div>
+                <div class="box">
+                    <div class="title">Người dùng hoạt động</div>
+                    <div id="userActiveDonutApex" style="min-height: 250px; padding: 10px 0;"></div>
                 </div>
             </div>
 
-            <!-- Progress -->
-            <div class="box" style="margin-top:20px;">
-                <div class="title">Cơ cấu thể loại</div>
-                
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Hành động</span>
-                        <span><?php echo $action_count; ?> truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo $action_pct; ?>%; background: var(--primary);"></div>
-                    </div>
+            <div>
+                <div class="box">
+                    <div class="title">Cơ cấu thể loại yêu thích</div>
+                    <?php
+                    $colors = ['var(--primary)', 'var(--blue)', 'var(--green)', 'var(--orange)'];
+                    if (empty($top_categories)) {
+                        echo '<div style="padding:10px;color:#999;">Chưa có dữ liệu.</div>';
+                    } else {
+                        foreach ($top_categories as $i => $cat) {
+                            $color = $colors[$i % count($colors)];
+                            $pct = max(0, min(100, (float)$cat['pct']));
+                            echo '<div class="progress-item">';
+                            echo '<div class="progress-top"><span>' . htmlspecialchars($cat['cat']) . '</span><span>' . (int)$cat['cnt'] . ' truyện</span></div>';
+                            echo '<div class="progress-bar"><div class="progress-fill" style="width:' . $pct . '%; background:' . $color . ';"></div></div>';
+                            echo '</div>';
+                        }
+                    }
+                    ?>
                 </div>
+            </div>
+        </div>
 
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Tình cảm</span>
-                        <span><?php echo $romance_count; ?> truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo $romance_pct; ?>%; background: var(--blue);"></div>
-                    </div>
+        <div class="box" style="margin-top: 20px;">
+            <div class="title">
+                <b>Top 5 người dùng nạp tiền nhiều nhất</b>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Hạng</th>
+                        <th>Tài khoản</th>
+                        <th>Email</th>
+                        <th style="text-align: right;">Tổng nạp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($top_spenders)): ?>
+                        <tr><td colspan="4" style="text-align:center; color:#999; padding: 20px;">Chưa có dữ liệu nạp tiền.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($top_spenders as $index => $spender): ?>
+                            <tr>
+                                <td><span class="status <?php echo match($index) { 0 => 'hot', 1 => 'good', 2 => 'normal', default => 'normal' }; ?>">#<?= $index + 1 ?></span></td>
+                                <td><strong><?= htmlspecialchars($spender['username']) ?></strong></td>
+                                <td style="color: #666; font-size: 0.9em;"><?= htmlspecialchars($spender['email']) ?></td>
+                                <td style="text-align: right; font-weight: bold; color: #10b981;"><?= number_format($spender['total_deposited']) ?> đ</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="box" style="margin-bottom:30px;">
+        <div class="title">
+            <b>Doanh thu & Quản lý ví Xu</b>
+        </div>
+
+        <div class="cards">
+            <div class="card" style="border-left: 4px solid #10b981;">
+                <h3>Doanh thu nạp</h3>
+                <p><?= number_format($total_revenue) ?> đ</p>
+            </div>
+            <div class="card" style="border-left: 4px solid #f59e0b;">
+                <h3>Xu đã tiêu</h3>
+                <p><?= number_format($total_coins_spent) ?> Xu</p>
+            </div>
+            <div class="card" style="border-left: 4px solid #3b82f6;">
+                <h3>Lượt mua chương</h3>
+                <p><?= number_format($total_chapter_unlocks) ?></p>
+            </div>
+        </div>
+
+        <div class="box" style="margin-top:20px; margin-bottom:20px;">
+            <div class="title" style="display: flex; justify-content: space-between; align-items: center;">
+                <b>Biến động doanh thu hệ thống</b>
+                <form method="GET" action="" id="filterForm">
+                    <select name="filter" onchange="document.getElementById('filterForm').submit();" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.9em;">
+                        <option value="7_days" <?= $filter === '7_days' ? 'selected' : '' ?>>7 ngày gần đây</option>
+                        <option value="this_month" <?= $filter === 'this_month' ? 'selected' : '' ?>>Tháng này</option>
+                        <option value="this_year" <?= $filter === 'this_year' ? 'selected' : '' ?>>Cả năm nay</option>
+                    </select>
+                </form>
+            </div>
+            <div id="revenueChartApex" style="min-height: 250px; padding: 15px 0;"></div>
+        </div>
+
+        <div class="grid">
+            <div>
+                <div class="box">
+                    <div class="title">Nhật ký nạp tiền gần đây</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Số tiền</th>
+                                <th>Xu nhận</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($recent_deposits)): ?>
+                            <tr><td colspan="4" style="text-align:center; color:#999;">Chưa có giao dịch nạp tiền nào</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($recent_deposits as $deposit): ?>
+                            <tr>
+                                <td><strong><?= htmlspecialchars($deposit['username'] ?? 'Ẩn danh') ?></strong></td>
+                                <td style="color:#10b981; font-weight:bold;">+<?= number_format($deposit['vnd_amount']) ?> đ</td>
+                                <td style="color:#3b82f6; font-weight:bold;"><?= number_format($deposit['amount']) ?> Xu</td>
+                                <td style="color:#666; font-size:0.85em;"><?= date('d/m H:i', strtotime($deposit['created_at'])) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Hài hước</span>
-                        <span><?php echo $comedy_count; ?> truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo $comedy_pct; ?>%; background: var(--green);"></div>
-                    </div>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-top">
-                        <span>Kinh dị</span>
-                        <span>15 truyện</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 10%; background: var(--orange);"></div>
-                    </div>
+            <div>
+                <div class="box">
+                    <div class="title">Lịch sử mở khóa gần đây</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Chương ID</th>
+                                <th>Xu tiêu</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($recent_purchases)): ?>
+                            <tr><td colspan="4" style="text-align:center; color:#999;">Chưa có lượt mua nào</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($recent_purchases as $purchase): ?>
+                            <tr>
+                                <td><strong><?= htmlspecialchars($purchase['username'] ?? 'Ẩn danh') ?></strong></td>
+                                <td>#<?= htmlspecialchars($purchase['chapter_id']) ?></td>
+                                <td style="color:#ea580c; font-weight:bold;">-<?= number_format($purchase['coins_spent']) ?></td>
+                                <td style="color:#666; font-size:0.85em;"><?= date('d/m H:i', strtotime($purchase['purchased_at'])) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<?php
+// Đồng bộ danh sách các mảng dữ liệu phục vụ xử lý đồ họa javascript
+$chart_labels = array_column($revenue_chart, 'label');
+$chart_values = array_column($revenue_chart, 'total');
+?>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Khởi tạo và kết xuất cấu trúc biểu đồ cột doanh thu hệ thống
+    var revenueOptions = {
+        series: [{
+            name: 'Doanh thu',
+            data: <?= json_encode($chart_values) ?>
+        }],
+        chart: {
+            type: 'bar',
+            height: 280,
+            toolbar: { show: false },
+            animations: { enabled: true, easing: 'easeinout', speed: 800 }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '45%',
+                borderRadius: 4,
+                dataLabels: { position: 'top' }
+            },
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) { return val > 0 ? val.toLocaleString('vi-VN') + 'đ' : ''; },
+            offsetY: -20,
+            style: { fontSize: '10px', colors: ["#304758"] }
+        },
+        colors: ['#10b981'],
+        stroke: { show: true, width: 2, colors: ['transparent'] },
+        xaxis: {
+            categories: <?= json_encode($chart_labels) ?>,
+        },
+        yaxis: {
+            title: { text: 'Số tiền (VND)' },
+            labels: { formatter: function (val) { return val.toLocaleString('vi-VN') + ' đ'; } }
+        },
+        fill: { opacity: 1 },
+        tooltip: {
+            y: { formatter: function (val) { return val.toLocaleString('vi-VN') + " đ"; } }
+        }
+    };
+    var revenueChart = new ApexCharts(document.querySelector("#revenueChartApex"), revenueOptions);
+    revenueChart.render();
+
+    // Khởi tạo và kết xuất cấu trúc biểu đồ vòng cung người dùng hoạt động
+    var donutOptions = {
+        series: [<?= (int)$active_users ?>, <?= (int)$inactive_users ?>],
+        chart: {
+            type: 'donut',
+            height: 260,
+            animations: { enabled: true, easing: 'easeinout', speed: 800 }
+        },
+        labels: ['Hoạt động', 'Không hoạt động'],
+        colors: ['#10b981', '#e5e7eb'],
+        legend: {
+            position: 'bottom',
+            fontFamily: 'inherit'
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) { return Math.round(val) + "%"; }
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '65%',
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: 'Tổng User',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString('vi-VN');
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) { return val.toLocaleString('vi-VN') + " thành viên"; }
+            }
+        }
+    };
+    var donutChart = new ApexCharts(document.querySelector("#userActiveDonutApex"), donutOptions);
+    donutChart.render();
+});
+</script>
 </body>
 </html>

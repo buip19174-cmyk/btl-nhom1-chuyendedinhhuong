@@ -1,15 +1,18 @@
 <?php
 session_start();
 include '../database/connect.php';
+require_once __DIR__ . '/../backend/story_config.php';
+require_once __DIR__ . '/includes/paths.php';
+require_once __DIR__ . '/../backend/require_auth.php';
+require_active_user($_SERVER['REQUEST_URI']);
 
-if (!isset($_SESSION['username'])) {
-    header("Location: home.php");
-    exit();
-}
 $username = $_SESSION['username'];
+$is_admin = (($_SESSION['role'] ?? '') === 'admin');
 
-$sql    = "SELECT username, email, sdt, coins FROM users WHERE username = '$username' LIMIT 1";
-$result = mysqli_query($con, $sql);
+$stmt = mysqli_prepare($con, "SELECT username, email, sdt, coins FROM users WHERE username = ? LIMIT 1");
+mysqli_stmt_bind_param($stmt, "s", $username);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
 if (!$result) die("Lỗi truy vấn: " . mysqli_error($con));
 if (mysqli_num_rows($result) == 0) die("Không tìm thấy thông tin người dùng");
@@ -346,27 +349,31 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
             <div class="profile-role">Thành viên</div>
         </div>
 
-        <!-- Coin -->
-        <div class="coin-card">
-            <div class="coin-card-label"><i class="fa-solid fa-coins"></i> Số dư coin</div>
-            <div class="coin-amount">
-                <i class="fa-solid fa-coins"></i>
-                <?php echo number_format($coins); ?>
+        <?php if (!$is_admin): ?>
+            <!-- Coin -->
+            <div class="coin-card">
+                <div class="coin-card-label"><i class="fa-solid fa-coins"></i> Số dư coin</div>
+                <div class="coin-amount">
+                    <i class="fa-solid fa-coins"></i>
+                    <?php echo number_format($coins); ?>
+                </div>
+                <div class="coin-vnd">≈ <?php echo number_format($coins * 10); ?> VND &nbsp;·&nbsp; 1 coin = 10 VND</div>
+                <a href="napcoin.php" class="btn-topup">
+                    <i class="fa-solid fa-plus"></i> Nạp coin
+                </a>
             </div>
-            <div class="coin-vnd">≈ <?php echo number_format($coins * 10); ?> VND &nbsp;·&nbsp; 1 coin = 10 VND</div>
-            <a href="napcoin.php" class="btn-topup">
-                <i class="fa-solid fa-plus"></i> Nạp coin
-            </a>
-        </div>
+        <?php endif; ?>
 
         <!-- Nav -->
         <div class="nav-links">
-            <a href="tusach.php" class="nav-link">
-                <i class="fa-solid fa-book-open"></i> Tủ sách cá nhân
-            </a>
-            <a href="napcoin.php" class="nav-link">
-                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử giao dịch
-            </a>
+            <?php if (!$is_admin): ?>
+                <a href="tusach.php" class="nav-link">
+                    <i class="fa-solid fa-book-open"></i> Tủ sách cá nhân
+                </a>
+                <a href="napcoin.php" class="nav-link">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử giao dịch
+                </a>
+            <?php endif; ?>
             <a href="../backend/logout.php" class="nav-link danger">
                 <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
             </a>
@@ -389,7 +396,7 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
                     <div class="stat-lbl">Chương đã mua</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-val" style="color:#888">3</div>
+                    <div class="stat-val" style="color:#888"><?= (int) FREE_CHAPTERS ?></div>
                     <div class="stat-lbl">Chương miễn phí</div>
                 </div>
             </div>
@@ -430,39 +437,41 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
             </div>
         </div>
 
-        <!-- Lịch sử giao dịch -->
-        <div class="section-card">
-            <div class="section-head">
-                <i class="fa-solid fa-receipt"></i> Giao dịch gần đây
-            </div>
+        <?php if (!$is_admin): ?>
+            <!-- Lịch sử giao dịch -->
+            <div class="section-card">
+                <div class="section-head">
+                    <i class="fa-solid fa-receipt"></i> Giao dịch gần đây
+                </div>
 
-            <?php if ($txHistory && mysqli_num_rows($txHistory) > 0): ?>
-                <?php while ($tx = mysqli_fetch_assoc($txHistory)): ?>
-                <div class="tx-row">
-                    <div class="tx-icon <?php echo $tx['type']; ?>">
-                        <i class="fa-solid fa-<?php echo $tx['type'] === 'topup' ? 'plus' : 'minus'; ?>"></i>
+                <?php if ($txHistory && mysqli_num_rows($txHistory) > 0): ?>
+                    <?php while ($tx = mysqli_fetch_assoc($txHistory)): ?>
+                    <div class="tx-row">
+                        <div class="tx-icon <?php echo $tx['type']; ?>">
+                            <i class="fa-solid fa-<?php echo $tx['type'] === 'topup' ? 'plus' : 'minus'; ?>"></i>
+                        </div>
+                        <div style="flex:1">
+                            <div class="tx-note"><?php echo htmlspecialchars($tx['note']); ?></div>
+                            <div class="tx-date"><?php echo date('d/m/Y H:i', strtotime($tx['created_at'])); ?></div>
+                        </div>
+                        <div class="tx-amount <?php echo $tx['type']; ?>">
+                            <?php echo $tx['type'] === 'topup' ? '+' : '-'; ?><?php echo $tx['amount']; ?> coin
+                        </div>
                     </div>
-                    <div style="flex:1">
-                        <div class="tx-note"><?php echo htmlspecialchars($tx['note']); ?></div>
-                        <div class="tx-date"><?php echo date('d/m/Y H:i', strtotime($tx['created_at'])); ?></div>
+                    <?php endwhile; ?>
+                    <div style="padding:12px 22px;border-top:1px solid var(--border)">
+                        <a href="napcoin.php" style="font-size:13px;color:var(--dim);text-decoration:none">
+                            Xem tất cả <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+                        </a>
                     </div>
-                    <div class="tx-amount <?php echo $tx['type']; ?>">
-                        <?php echo $tx['type'] === 'topup' ? '+' : '-'; ?><?php echo $tx['amount']; ?> coin
+                <?php else: ?>
+                    <div class="empty-state">
+                        <i class="fa-solid fa-receipt"></i>
+                        Chưa có giao dịch nào
                     </div>
-                </div>
-                <?php endwhile; ?>
-                <div style="padding:12px 22px;border-top:1px solid var(--border)">
-                    <a href="napcoin.php" style="font-size:13px;color:var(--dim);text-decoration:none">
-                        Xem tất cả <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
-                    </a>
-                </div>
-            <?php else: ?>
-                <div class="empty-state">
-                    <i class="fa-solid fa-receipt"></i>
-                    Chưa có giao dịch nào
-                </div>
-            <?php endif; ?>
-        </div>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
 
     </main>
 </div>
