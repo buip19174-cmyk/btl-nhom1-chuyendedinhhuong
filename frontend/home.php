@@ -489,13 +489,15 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
-                    <form action="luutruyen.php" method="POST">
-                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <button type="submit" class="btn-save-sm" title="Lưu vào tủ sách">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                    </form>
-
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                        <form action="luutruyen.php" method="POST">
+                            <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
+                            <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
+                                <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
