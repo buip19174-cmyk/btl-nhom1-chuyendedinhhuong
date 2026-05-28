@@ -101,7 +101,7 @@ $sql = mysqli_query($con, "
     <div class="topbar">
         <div>
             <h1>Quản lý bình luận</h1><br>
-            <p>Xem và quản lý comment của người dùng</p>
+            <p>Xem và quản lý bình luận của người dùng</p>
         </div>
     </div>
 
