@@ -25,7 +25,7 @@ $users = $con->query($sql);
         <!-- Topbar -->
         <div class="topbar">
             <div>
-                <h1>Quản Lý Người Dùng</h1>
+                <h1>Quản Lý Người Dùng</h1> <br>
                 <p>Danh sách người dùng hệ thống</p>
             </div>
             <div class="search-box">
@@ -150,8 +150,8 @@ $users = $con->query($sql);
 
             <label style="display:block; font-size:13px; margin-top:10px;">Trạng thái</label>
             <select id="status" style="width:100%; padding:10px; margin-top:6px;">
-                <option value="active">active</option>
-                <option value="banned">banned</option>
+                <option value="active">Hoạt động</option>
+                <option value="banned">Khoá tài khoản</option>
             </select>
 
             <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">

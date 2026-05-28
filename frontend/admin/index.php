@@ -48,6 +48,7 @@ $stories_recent = mysqli_query($con, "
     <div class="topbar">
       <div>
         <h1>Tổng Quan</h1>
+        <br>
         <p>Xin chào, <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></strong></p>
       </div>
     </div>

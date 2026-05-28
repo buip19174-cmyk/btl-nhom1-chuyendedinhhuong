@@ -100,9 +100,9 @@ if ($res) {
 
                 <label style="display:block; font-size:13px; margin-top:10px;">Trạng thái</label>
                 <select id="status" style="width:100%; padding:10px; margin-top:6px;">
-                    <option value="ongoing">ongoing</option>
-                    <option value="completed">completed</option>
-                    <option value="hidden">hidden</option>
+                    <option value="updating">Đang cập nhật</option>
+                    <option value="completed">Hoàn thành</option>
+                    <option value="hidden">Ẩn</option>
                 </select>
 
                 <label style="display:block; font-size:13px; margin-top:10px;">Ảnh bìa (tùy chọn)</label>
@@ -126,7 +126,7 @@ if ($res) {
             document.getElementById('coverOld').value = '';
             document.getElementById('title').value = '';
             document.getElementById('description').value = '';
-            document.getElementById('status').value = 'ongoing';
+            document.getElementById('status').value = 'updating';
             document.getElementById('cover').value = '';
             document.getElementById('storyModal').style.display = 'block';
         }
@@ -141,7 +141,7 @@ if ($res) {
             document.getElementById('coverOld').value = story.cover || '';
             document.getElementById('title').value = story.title || '';
             document.getElementById('description').value = story.description || '';
-            document.getElementById('status').value = story.status || 'ongoing';
+            document.getElementById('status').value = story.status || 'updating';
             document.getElementById('cover').value = '';
             document.getElementById('storyModal').style.display = 'block';
         }
@@ -189,7 +189,7 @@ if ($res) {
 
         const statusMap = {
             'Tất cả': '',
-            'Đang cập nhật': 'ongoing',
+            'Đang cập nhật': 'updating',
             'Hoàn thành': 'completed',
             'Ẩn': 'hidden'
         };
