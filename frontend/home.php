@@ -7,6 +7,24 @@ require_once __DIR__ . '/includes/paths.php';
 
 $adminUrl = app_url('frontend/admin/index.php');
 
+// #region agent log
+$_dbg_log_path = __DIR__ . '/../debug-7416fa.log';
+$_dbg_data = json_encode(['sessionId'=>'7416fa','hypothesisId'=>'A','location'=>'home.php:top','message'=>'saved_story_ids check','data'=>['saved_story_ids_defined'=>isset($saved_story_ids),'saved_story_ids_type'=>gettype($saved_story_ids ?? null),'user_logged_in'=>isset($_SESSION['username'])],'timestamp'=>round(microtime(true)*1000)]);
+file_put_contents($_dbg_log_path, $_dbg_data."\n", FILE_APPEND);
+// #endregion
+
+// Lấy danh sách truyện đã lưu của user
+$saved_story_ids = [];
+if (isset($_SESSION['user_id'])) {
+    $_uid = (int) $_SESSION['user_id'];
+    $_saved_q = mysqli_query($con, "SELECT story_id FROM user_stories WHERE user_id = $_uid");
+    if ($_saved_q) {
+        while ($_sr = mysqli_fetch_assoc($_saved_q)) {
+            $saved_story_ids[] = $_sr['story_id'];
+        }
+    }
+}
+
 // Banner — 4 truyện đầu
 $banner_result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 4");
 $banner_books  = [];
@@ -27,7 +45,7 @@ $categories = [
     ['key'=>'suckhoe',   'label'=>'Sức khỏe - Làm đẹp',     'icon'=>'fa-heart-pulse',    'url'=>'suckhoe_lamdep.php'],
     ['key'=>'khoahoc',   'label'=>'Khoa học - Công nghệ',   'icon'=>'fa-flask',          'url'=>'khoahoc_congnghe.php'],
     ['key'=>'tamlinh',   'label'=>'Tâm linh - Tôn giáo',    'icon'=>'fa-yin-yang',       'url'=>'tamlinh.php'],
-    ['key'=>'giaoduc',   'label'=>'Giáo dục & Văn hóa',    'icon'=>'fa-yin-yang',       'url'=>'tamlinh.php'],
+    ['key'=>'giaoduc',   'label'=>'Giáo dục & Văn hóa',    'icon'=>'fa-graduation-cap', 'url'=>'giaoduc_vanhoa.php'],
 ];
 ?>
 <!DOCTYPE html>
@@ -120,7 +138,7 @@ $categories = [
     .btn-timkiem:hover { background: #00b872; }
 
     /* user area */
-    .user-area { display: flex; align-items: center; gap: 10px; }
+    .user-area { position: relative; display: flex; align-items: center; gap: 10px; }
     .btn-dangky {
         background: var(--green); color: #000; border: none;
         padding: 8px 18px; border-radius: 20px; font-size: 13px;
@@ -492,7 +510,12 @@ $categories = [
                     <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
                         <form action="luutruyen.php" method="POST">
                             <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                            <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                            <?php
+                    // #region agent log
+                    $_dbg_data2 = json_encode(['sessionId'=>'7416fa','hypothesisId'=>'A','location'=>'home.php:495','message'=>'in_array call','data'=>['book_id'=>$book['id'],'saved_story_ids_isset'=>isset($saved_story_ids),'saved_story_ids_val'=>($saved_story_ids ?? 'UNDEFINED')],'timestamp'=>round(microtime(true)*1000)]);
+                    file_put_contents($_dbg_log_path, $_dbg_data2."\n", FILE_APPEND);
+                    // #endregion
+                    $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
                             <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
                                 <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                             </button>
@@ -560,21 +583,6 @@ $categories = [
 <script>alert("<?= addslashes($register_message) ?>");</script>
 <?php endif; ?>
 
-<<<<<<< HEAD
-=======
-<?php if (!empty($login_message)): ?>
-<script>alert("<?= addslashes($login_message) ?>");</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['banned']) && $_GET['banned'] === '1'): ?>
-<script>alert("Tài khoản đã bị khóa.");</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['login']) && $_GET['login'] === 'success'): ?>
-<script>alert("Đăng nhập thành công!");</script>
-<?php endif; ?>
-
->>>>>>> lth
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 new Swiper(".bannerSwiper", {
@@ -589,75 +597,30 @@ new Swiper(".bannerSwiper", {
 </script>
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
-<<<<<<< HEAD
-=======
 <script>
-(function() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('open') === 'login') {
-        const loginModal = document.getElementById('loginModal');
-        if (loginModal) loginModal.style.setProperty('display', 'flex', 'important');
-        const redirectInput = document.querySelector('#loginModal input[name="redirect"]');
-        if (redirectInput && params.get('redirect')) redirectInput.value = params.get('redirect');
-    }
-    const footerLogin = document.getElementById('footer-open-login');
-    const footerReg = document.getElementById('footer-open-register');
-    if (footerLogin) footerLogin.addEventListener('click', function(e) {
-        e.preventDefault();
-        const m = document.getElementById('loginModal');
-        if (m) m.style.setProperty('display', 'flex', 'important');
-    });
-    if (footerReg) footerReg.addEventListener('click', function(e) {
-        e.preventDefault();
-        const m = document.getElementById('registerModal');
-        if (m) m.style.setProperty('display', 'flex', 'important');
-    });
+// #region agent log
+(function(){
+    // Hypothesis B: Check duplicate loginModal IDs
+    var loginModals = document.querySelectorAll('#loginModal');
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'B',location:'home.php:script',message:'loginModal duplicate check',data:{loginModalCount:loginModals.length,loginModalNested:loginModals.length>1},timestamp:Date.now()})}).catch(function(){});
+
+    // Hypothesis D: Check footer link handlers
+    var footerReg = document.getElementById('footer-open-register');
+    var footerLogin = document.getElementById('footer-open-login');
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'D',location:'home.php:script',message:'footer links check',data:{footerRegExists:!!footerReg,footerLoginExists:!!footerLogin,footerRegHasClick:footerReg?footerReg.onclick!==null:false,footerLoginHasClick:footerLogin?footerLogin.onclick!==null:false},timestamp:Date.now()})}).catch(function(){});
+
+    // Hypothesis E: Check ?open=login param handling
+    var urlParams = new URLSearchParams(window.location.search);
+    var openParam = urlParams.get('open');
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'E',location:'home.php:script',message:'open param check',data:{openParam:openParam,loginModalVisible:document.getElementById('loginModal')?getComputedStyle(document.getElementById('loginModal')).display:'N/A'},timestamp:Date.now()})}).catch(function(){});
+
+    // Hypothesis C: Check categories strip links
+    var catChips = document.querySelectorAll('.cat-chip');
+    var catData = [];
+    catChips.forEach(function(c){catData.push({text:c.textContent.trim(),href:c.getAttribute('href')});});
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'C',location:'home.php:script',message:'categories check',data:{categories:catData},timestamp:Date.now()})}).catch(function(){});
 })();
-// Live search
-const searchInput = document.getElementById('searchInput');
-const dropdown    = document.getElementById('searchDropdown');
-let debounceTimer;
-
-searchInput.addEventListener('input', function() {
-    clearTimeout(debounceTimer);
-    const q = this.value.trim();
-    if (q.length < 1) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
-
-    debounceTimer = setTimeout(() => {
-        fetch('../backend/search_ajax.php?q=' + encodeURIComponent(q))
-            .then(r => r.json())
-            .then(data => {
-                if (data.length === 0) {
-                    dropdown.innerHTML = '<div class="sd-empty"><i class="fa-solid fa-search" style="opacity:.3;margin-right:6px"></i>Không tìm thấy "' + q + '"</div>';
-                } else {
-                    let html = '';
-                    data.forEach(item => {
-                        html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
-                        html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
-                        html += '<span class="sd-title">' + item.title + '</span>';
-                        html += '</a>';
-                    });
-                    html += '<div class="sd-footer"><a href="timkiem.php?q=' + encodeURIComponent(q) + '">Xem tất cả kết quả →</a></div>';
-                    dropdown.innerHTML = html;
-                }
-                dropdown.classList.add('open');
-            })
-            .catch(() => { dropdown.classList.remove('open'); });
-    }, 250);
-});
-
-// Đóng dropdown khi click ngoài
-document.addEventListener('click', function(e) {
-    if (!document.getElementById('searchForm').contains(e.target)) {
-        dropdown.classList.remove('open');
-    }
-});
-
-// Mở lại khi focus vào input có text
-searchInput.addEventListener('focus', function() {
-    if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open');
-});
+// #endregion
 </script>
->>>>>>> lth
 </body>
 </html>

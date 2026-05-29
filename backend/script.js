@@ -58,6 +58,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- 4.2. GÁN SỰ KIỆN MỞ TỪ FOOTER ---
+    const footerReg = document.getElementById('footer-open-register');
+    const footerLogin = document.getElementById('footer-open-login');
+
+    if (footerReg) {
+        footerReg.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal(regModal);
+        });
+    }
+
+    if (footerLogin) {
+        footerLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal(loginModal);
+        });
+    }
+
+    // --- 4.3. AUTO-OPEN MODAL TỪ URL PARAM ?open=login ---
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('open') === 'login') {
+        openModal(loginModal);
+    } else if (urlParams.get('open') === 'register') {
+        openModal(regModal);
+    }
+
     // --- [MỚI] 4.1. GÁN SỰ KIỆN CHO MENU DROP-DOWN ---
     if (userProfile && userDropdown) {
         userProfile.addEventListener('click', (e) => {
