@@ -2,6 +2,28 @@
 session_start();
 include '../backend/dangky_logic.php';
 include '../backend/dangnhap_logic.php';
+require_once __DIR__ . '/includes/paths.php';
+/** @var mysqli $con */
+
+$adminUrl = app_url('frontend/admin/index.php');
+
+// #region agent log
+$_dbg_log_path = __DIR__ . '/../debug-7416fa.log';
+$_dbg_data = json_encode(['sessionId'=>'7416fa','hypothesisId'=>'A','location'=>'home.php:top','message'=>'saved_story_ids check','data'=>['saved_story_ids_defined'=>isset($saved_story_ids),'saved_story_ids_type'=>gettype($saved_story_ids ?? null),'user_logged_in'=>isset($_SESSION['username'])],'timestamp'=>round(microtime(true)*1000)]);
+file_put_contents($_dbg_log_path, $_dbg_data."\n", FILE_APPEND);
+// #endregion
+
+// Lấy danh sách truyện đã lưu của user
+$saved_story_ids = [];
+if (isset($_SESSION['user_id'])) {
+    $_uid = (int) $_SESSION['user_id'];
+    $_saved_q = mysqli_query($con, "SELECT story_id FROM user_stories WHERE user_id = $_uid");
+    if ($_saved_q) {
+        while ($_sr = mysqli_fetch_assoc($_saved_q)) {
+            $saved_story_ids[] = $_sr['story_id'];
+        }
+    }
+}
 
 // Banner — 4 truyện đầu
 $banner_result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 4");
@@ -22,6 +44,15 @@ if (isset($_SESSION['user_id'])) {
 
 // Danh mục nổi bật (lấy 1 ảnh đại diện mỗi danh mục)
 $categories = [
+    ['key'=>'tho',       'label'=>'Thơ - Tản văn',          'icon'=>'fa-feather',        'url'=>'tho_tanvan.php'],
+    ['key'=>'trinhtham', 'label'=>'Trinh thám - Kinh dị',    'icon'=>'fa-magnifying-glass','url'=>'trinhtham.php'],
+    ['key'=>'taichinh',  'label'=>'Tài chính cá nhân',       'icon'=>'fa-coins',          'url'=>'taichinhcanhan.php'],
+    ['key'=>'ptcanhan',  'label'=>'Phát triển cá nhân',      'icon'=>'fa-seedling',       'url'=>'pt_canhan.php'],
+    ['key'=>'doanhnhan', 'label'=>'Doanh nhân',              'icon'=>'fa-briefcase',      'url'=>'doanh_nhan.php'],
+    ['key'=>'suckhoe',   'label'=>'Sức khỏe - Làm đẹp',     'icon'=>'fa-heart-pulse',    'url'=>'suckhoe_lamdep.php'],
+    ['key'=>'khoahoc',   'label'=>'Khoa học - Công nghệ',   'icon'=>'fa-flask',          'url'=>'khoahoc_congnghe.php'],
+    ['key'=>'tamlinh',   'label'=>'Tâm linh - Tôn giáo',    'icon'=>'fa-yin-yang',       'url'=>'tamlinh.php'],
+    ['key'=>'giaoduc',   'label'=>'Giáo dục & Văn hóa',    'icon'=>'fa-graduation-cap', 'url'=>'giaoduc_vanhoa.php'],
     ['key'=>'tho',       'label'=>'Thơ - Tản văn',          'icon'=>'fa-feather',         'url'=>'tho_tanvan.php'],
     ['key'=>'trinhtham', 'label'=>'Trinh thám - Kinh dị',   'icon'=>'fa-magnifying-glass', 'url'=>'trinhtham.php'],
     ['key'=>'taichinh',  'label'=>'Tài chính cá nhân',      'icon'=>'fa-coins',           'url'=>'taichinhcanhan.php'],
@@ -144,7 +175,7 @@ $categories = [
     .btn-timkiem:hover { background: #00b872; }
 
     /* user area */
-    .user-area { display: flex; align-items: center; gap: 10px; }
+    .user-area { position: relative; display: flex; align-items: center; gap: 10px; }
     .btn-dangky {
         background: var(--green); color: #000; border: none;
         padding: 8px 18px; border-radius: 20px; font-size: 13px;
@@ -562,6 +593,20 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                        <form action="luutruyen.php" method="POST">
+                            <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
+                            <?php
+                    // #region agent log
+                    $_dbg_data2 = json_encode(['sessionId'=>'7416fa','hypothesisId'=>'A','location'=>'home.php:495','message'=>'in_array call','data'=>['book_id'=>$book['id'],'saved_story_ids_isset'=>isset($saved_story_ids),'saved_story_ids_val'=>($saved_story_ids ?? 'UNDEFINED')],'timestamp'=>round(microtime(true)*1000)]);
+                    file_put_contents($_dbg_log_path, $_dbg_data2."\n", FILE_APPEND);
+                    // #endregion
+                    $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
+                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
+                                <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                     <form action="luutruyen.php" method="POST">
                         <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
                         <?php $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
@@ -655,5 +700,30 @@ new Swiper(".bannerSwiper", {
 </script>
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
+<script>
+// #region agent log
+(function(){
+    // Hypothesis B: Check duplicate loginModal IDs
+    var loginModals = document.querySelectorAll('#loginModal');
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'B',location:'home.php:script',message:'loginModal duplicate check',data:{loginModalCount:loginModals.length,loginModalNested:loginModals.length>1},timestamp:Date.now()})}).catch(function(){});
+
+    // Hypothesis D: Check footer link handlers
+    var footerReg = document.getElementById('footer-open-register');
+    var footerLogin = document.getElementById('footer-open-login');
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'D',location:'home.php:script',message:'footer links check',data:{footerRegExists:!!footerReg,footerLoginExists:!!footerLogin,footerRegHasClick:footerReg?footerReg.onclick!==null:false,footerLoginHasClick:footerLogin?footerLogin.onclick!==null:false},timestamp:Date.now()})}).catch(function(){});
+
+    // Hypothesis E: Check ?open=login param handling
+    var urlParams = new URLSearchParams(window.location.search);
+    var openParam = urlParams.get('open');
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'E',location:'home.php:script',message:'open param check',data:{openParam:openParam,loginModalVisible:document.getElementById('loginModal')?getComputedStyle(document.getElementById('loginModal')).display:'N/A'},timestamp:Date.now()})}).catch(function(){});
+
+    // Hypothesis C: Check categories strip links
+    var catChips = document.querySelectorAll('.cat-chip');
+    var catData = [];
+    catChips.forEach(function(c){catData.push({text:c.textContent.trim(),href:c.getAttribute('href')});});
+    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'C',location:'home.php:script',message:'categories check',data:{categories:catData},timestamp:Date.now()})}).catch(function(){});
+})();
+// #endregion
+</script>
 </body>
 </html>

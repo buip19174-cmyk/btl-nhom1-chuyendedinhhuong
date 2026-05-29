@@ -231,6 +231,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title) ?> — KEWE</title>
     <link rel="stylesheet" href="css/d.css">
+    <link rel="stylesheet" href="css/user.css">
     <link rel="stylesheet" href="css/category.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="css/style.css">
