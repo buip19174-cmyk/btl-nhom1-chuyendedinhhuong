@@ -4,6 +4,7 @@
         <span class="close-btn">&times;</span> 
 
         <form method="POST"> 
+            <input type="hidden"  name="redirect"  value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
             <h2>Đăng nhập</h2>
             
             <input type="text" name="username" placeholder="Tên đăng nhập" required>

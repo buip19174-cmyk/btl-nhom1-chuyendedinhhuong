@@ -503,30 +503,10 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     <?php endif; ?>
 
 </div><!-- /reader-wrap -->
-
 <?php if (!$user_id): ?>
-<div id="loginModal" class="modal" style="display:none">
-    <div class="reader-modal-content">
-        <span class="close-btn" aria-label="Dong">&times;</span>
-        <form method="POST" action="read_chapter.php?chapter_id=<?= $chapter_id ?>">
-            <h2>Dang nhap</h2>
-            <input type="hidden" name="redirect" value="read_chapter.php?chapter_id=<?= $chapter_id ?>">
-            <input type="text" name="username" placeholder="Ten dang nhap" required>
-            <div class="input-group">
-                <input type="password" name="password" id="readerLoginPassword" placeholder="Nhap mat khau" required>
-                <i class="fa-solid fa-eye" id="readerTogglePassword" aria-hidden="true"></i>
-            </div>
-            <button type="submit" name="login">Dang nhap</button>
-            <?php if (!empty($message)): ?>
-                <p class="message"><?= htmlspecialchars($message) ?></p>
-            <?php endif; ?>
-            <p style="margin-top: 15px; text-align: center;">
-                Chua co tai khoan?
-                <a href="../frontend/home.php">Dang ky</a>
-            </p>
-        </form>
+    <div id="loginModal" class="modal" style="display:none">
+        <?php include '../frontend/dangnhap_form.php'; ?>
     </div>
-</div>
 <?php endif; ?>
 
 <!-- FLOATING TOOLBAR -->
@@ -670,27 +650,7 @@ document.querySelectorAll('.js-open-login').forEach(btn => {
         if (loginModal) loginModal.style.setProperty('display', 'flex', 'important');
     });
 });
-if (loginModal) {
-    const closeBtn = loginModal.querySelector('.close-btn');
-    if (closeBtn) closeBtn.addEventListener('click', () => loginModal.style.display = 'none');
-    loginModal.addEventListener('click', e => {
-        if (e.target === loginModal) loginModal.style.display = 'none';
-    });
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') loginModal.style.display = 'none';
-    });
-}
-
-const readerLoginPassword = document.getElementById('readerLoginPassword');
-const readerTogglePassword = document.getElementById('readerTogglePassword');
-if (readerLoginPassword && readerTogglePassword) {
-    readerTogglePassword.addEventListener('click', () => {
-        const showing = readerLoginPassword.type === 'text';
-        readerLoginPassword.type = showing ? 'password' : 'text';
-        readerTogglePassword.classList.toggle('fa-eye', showing);
-        readerTogglePassword.classList.toggle('fa-eye-slash', !showing);
-    });
-}
 </script>
+<script src="script.js"></script>
 </body>
 </html>

@@ -31,18 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
                 exit();
             } else {
                 $redirect = $_POST['redirect'] ?? $_GET['redirect'] ?? '';
-                if (
-                    $redirect !== '' &&
-                    strpos($redirect, "\n") === false &&
-                    strpos($redirect, "\r") === false &&
-                    !preg_match('/^https?:\/\//i', $redirect) &&
-                    strpos($redirect, '//') !== 0
-                ) {
-                    header("Location: " . $redirect);
-                } else {
-                    header("Location: ../frontend/home.php?login=success");
-                }
-                exit();
+
+if (!empty($redirect)) {
+    header("Location: " . $redirect);
+} else {
+    header("Location: ../frontend/home.php?login=success");
+}
+exit();
             }
 
         } else {
