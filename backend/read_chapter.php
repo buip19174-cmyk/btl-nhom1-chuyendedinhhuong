@@ -1,4 +1,7 @@
 <?php
+include '../backend/dangky_logic.php';
+include '../backend/dangnhap_logic.php';
+
 if (session_status() === PHP_SESSION_NONE) session_start();
 include_once '../database/connect.php';
 
@@ -56,6 +59,7 @@ if ($user_id) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($chapter['story_title']) ?> · Chương <?= $current_no ?></title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="../frontend/css/style.css">
 <style>
 /* ── THEMES ── */
 :root {
@@ -333,6 +337,12 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
 }
 .btn-login:hover { background: #00b872; }
 
+.reader-modal-content {
+    position: relative;
+    width: min(420px, calc(100vw - 32px));
+}
+.reader-modal-content form { width: 100%; }
+
 @media (max-width: 600px) {
     .reader-wrap { padding: 28px 16px 100px; }
     .chap-title { font-size: 20px; }
@@ -359,7 +369,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
             <i class="fa-solid fa-coins"></i> <?= number_format($display_coins) ?>
         </a>
     <?php else: ?>
-        <a href="../frontend/dangnhap_form.php" class="coin-pill" style="color:#666;border-color:#333;background:transparent">
+        <a href="#" class="coin-pill js-open-login" style="color:#666;border-color:#333;background:transparent">
             <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
         </a>
     <?php endif; ?>
@@ -482,7 +492,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
                 </div>
             <?php else: ?>
                 <div class="paywall-actions">
-                    <a href="../frontend/dangnhap_form.php?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="btn-login">
+                    <a href="#" class="btn-login js-open-login">
                         <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập để đọc
                     </a>
                     <a href="../frontend/napcoin.php" class="btn-topup"><i class="fa-solid fa-circle-info"></i> Về coin</a>
@@ -493,6 +503,31 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     <?php endif; ?>
 
 </div><!-- /reader-wrap -->
+
+<?php if (!$user_id): ?>
+<div id="loginModal" class="modal" style="display:none">
+    <div class="reader-modal-content">
+        <span class="close-btn" aria-label="Dong">&times;</span>
+        <form method="POST" action="read_chapter.php?chapter_id=<?= $chapter_id ?>">
+            <h2>Dang nhap</h2>
+            <input type="hidden" name="redirect" value="read_chapter.php?chapter_id=<?= $chapter_id ?>">
+            <input type="text" name="username" placeholder="Ten dang nhap" required>
+            <div class="input-group">
+                <input type="password" name="password" id="readerLoginPassword" placeholder="Nhap mat khau" required>
+                <i class="fa-solid fa-eye" id="readerTogglePassword" aria-hidden="true"></i>
+            </div>
+            <button type="submit" name="login">Dang nhap</button>
+            <?php if (!empty($message)): ?>
+                <p class="message"><?= htmlspecialchars($message) ?></p>
+            <?php endif; ?>
+            <p style="margin-top: 15px; text-align: center;">
+                Chua co tai khoan?
+                <a href="../frontend/home.php">Dang ky</a>
+            </p>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- FLOATING TOOLBAR -->
 <div class="toolbar" id="toolbar">
@@ -627,6 +662,34 @@ function toggleBookmark() {
 if (localStorage.getItem(bmKey) == '<?= $chapter_id ?>') {
     bmBtn.innerHTML = '<i class="fa-solid fa-bookmark" style="color:var(--gold)"></i>';
     bmBtn.title = 'Đã đánh dấu';
+}
+const loginModal = document.getElementById('loginModal');
+document.querySelectorAll('.js-open-login').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.preventDefault();
+        if (loginModal) loginModal.style.setProperty('display', 'flex', 'important');
+    });
+});
+if (loginModal) {
+    const closeBtn = loginModal.querySelector('.close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', () => loginModal.style.display = 'none');
+    loginModal.addEventListener('click', e => {
+        if (e.target === loginModal) loginModal.style.display = 'none';
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') loginModal.style.display = 'none';
+    });
+}
+
+const readerLoginPassword = document.getElementById('readerLoginPassword');
+const readerTogglePassword = document.getElementById('readerTogglePassword');
+if (readerLoginPassword && readerTogglePassword) {
+    readerTogglePassword.addEventListener('click', () => {
+        const showing = readerLoginPassword.type === 'text';
+        readerLoginPassword.type = showing ? 'password' : 'text';
+        readerTogglePassword.classList.toggle('fa-eye', showing);
+        readerTogglePassword.classList.toggle('fa-eye-slash', !showing);
+    });
 }
 </script>
 </body>

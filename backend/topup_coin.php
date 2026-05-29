@@ -18,7 +18,7 @@ $coins      = intval($_POST['coins']);
 $chapter_id = isset($_POST['chapter_id']) ? intval($_POST['chapter_id']) : 0;
 
 // Gói nạp hợp lệ: 10, 30, 50, 100, 200, 500
-$valid_packs = [100, 30, 50, 100, 200, 500];
+$valid_packs = [10, 30, 50, 100, 200, 500];
 if (!in_array($coins, $valid_packs)) {
     header("Location: ../frontend/napcoin.php?err=invalid_pack");
     exit();
