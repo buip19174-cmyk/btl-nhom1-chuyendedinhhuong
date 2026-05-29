@@ -43,6 +43,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $login_message = "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.";
 
             } else {
+<<<<<<< HEAD
+=======
+                $redirect = $_POST['redirect'] ?? $_GET['redirect'] ?? '';
+                if (
+                    $redirect !== '' &&
+                    strpos($redirect, "\n") === false &&
+                    strpos($redirect, "\r") === false &&
+                    !preg_match('/^https?:\/\//i', $redirect) &&
+                    strpos($redirect, '//') !== 0
+                ) {
+                    header("Location: " . $redirect);
+                } else {
+                    header("Location: ../frontend/home.php?login=success");
+                }
+                exit();
+            }
+>>>>>>> bpa
 
                 $_SESSION['user_id'] = $user['id'];
 
@@ -74,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $stmt->close();
 
 }
+<<<<<<< HEAD
 
 ?>
 
+=======
+?>
+>>>>>>> bpa
