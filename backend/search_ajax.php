@@ -97,7 +97,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         $items[] = [
             'id'    => $id,
             'title' => $row['title'],
-            'cover' => $row['cover'],
+            'cover' => search_cover_url($row['cover'] ?? ''),
         ];
     }
 }

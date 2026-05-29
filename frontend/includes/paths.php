@@ -32,6 +32,21 @@ function app_login_url(?string $redirect = null): string
     return $url;
 }
 
+/**
+ * Trả về URL ảnh bìa sách.
+ * - Nếu cover bắt đầu bằng "uploads/" → file do admin upload → trong backend/uploads/
+ * - Ngược lại → ảnh tĩnh trong code/images/
+ */
+function cover_url(string $cover): string
+{
+    if ($cover === '') return '';
+    if (preg_match('#^https?://#i', $cover)) return $cover;
+    if (strpos($cover, 'uploads/') === 0) {
+        return app_url('backend/' . $cover);
+    }
+    return app_url('code/images/' . $cover);
+}
+
 /** Chỉ cho phép redirect nội bộ sau đăng nhập */
 function app_safe_redirect(?string $target): string
 {

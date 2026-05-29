@@ -7,11 +7,11 @@ require_once __DIR__ . '/includes/paths.php';
 
 $adminUrl = app_url('frontend/admin/index.php');
 
-// #region agent log
-$_dbg_log_path = __DIR__ . '/../debug-7416fa.log';
-$_dbg_data = json_encode(['sessionId'=>'7416fa','hypothesisId'=>'A','location'=>'home.php:top','message'=>'saved_story_ids check','data'=>['saved_story_ids_defined'=>isset($saved_story_ids),'saved_story_ids_type'=>gettype($saved_story_ids ?? null),'user_logged_in'=>isset($_SESSION['username'])],'timestamp'=>round(microtime(true)*1000)]);
-file_put_contents($_dbg_log_path, $_dbg_data."\n", FILE_APPEND);
-// #endregion
+// Đồng bộ role từ DB nếu session chưa có (tránh session cũ thiếu role)
+if (isset($_SESSION['user_id']) && !isset($_SESSION['role'])) {
+    $r_sync = mysqli_fetch_assoc(mysqli_query($con, "SELECT role FROM users WHERE id=" . intval($_SESSION['user_id'])));
+    if ($r_sync) $_SESSION['role'] = $r_sync['role'];
+}
 
 // Lấy danh sách truyện đã lưu của user
 $saved_story_ids = [];
@@ -493,8 +493,12 @@ $categories = [
                     </div>
                     <ul class="dropdown-menu-list">
                         <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i> Tài khoản</a></li>
-                        <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
-                        <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                            <li><a href="<?= $adminUrl ?>"><i class="fas fa-shield-halved"></i> Quản trị viên</a></li>
+                        <?php else: ?>
+                            <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                            <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php endif; ?>
                         <hr>
                         <li><a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>
@@ -518,7 +522,7 @@ $categories = [
                 $url = '../backend/read_story.php?story_id=' . $b['id'];
         ?>
             <div class="swiper-slide">
-                <img src="../code/images/<?= htmlspecialchars($b['cover']) ?>" alt="<?= htmlspecialchars($b['title']) ?>" onerror="this.src='img/ba1.webp'">
+                <img src="<?= htmlspecialchars(cover_url($b['cover'])) ?>" alt="<?= htmlspecialchars($b['title']) ?>" onerror="this.src='img/ba1.webp'">
                 <div class="slide-overlay">
                     <div class="slide-content">
                         <span class="slide-tag"><i class="fa-solid <?= $icons[$i%4] ?>"></i> <?= $labels[$i%4] ?></span>
@@ -526,10 +530,12 @@ $categories = [
                         <p class="slide-desc">Khám phá ngay câu chuyện hấp dẫn này trên KEWE — đọc miễn phí 3 chương đầu.</p>
                         <div class="slide-actions">
                             <a href="<?= $url ?>" class="slide-btn"><i class="fa-solid fa-book-open"></i> Đọc ngay</a>
-                            <form method="POST" action="luutruyen.php" style="display:inline">
-                                <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
-                                <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
-                            </form>
+                            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                                <form method="POST" action="luutruyen.php" style="display:inline">
+                                    <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
+                                    <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -580,7 +586,7 @@ $categories = [
             <?php foreach ($books as $book): ?>
             <div class="book-card">
                 <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>"
+                    <img src="<?= htmlspecialchars(cover_url($book['cover'])) ?>"
                          alt="<?= htmlspecialchars($book['title']) ?>"
                          onerror="this.src='img/sach2.jpg'">
                 </a>
@@ -593,27 +599,15 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
-                    <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'):
+                        $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
                         <form action="luutruyen.php" method="POST">
                             <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                            <?php
-                    // #region agent log
-                    $_dbg_data2 = json_encode(['sessionId'=>'7416fa','hypothesisId'=>'A','location'=>'home.php:495','message'=>'in_array call','data'=>['book_id'=>$book['id'],'saved_story_ids_isset'=>isset($saved_story_ids),'saved_story_ids_val'=>($saved_story_ids ?? 'UNDEFINED')],'timestamp'=>round(microtime(true)*1000)]);
-                    file_put_contents($_dbg_log_path, $_dbg_data2."\n", FILE_APPEND);
-                    // #endregion
-                    $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
                             <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
                                 <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                             </button>
                         </form>
                     <?php endif; ?>
-                    <form action="luutruyen.php" method="POST">
-                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
-                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
-                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
-                        </button>
-                    </form>
                 </div>
             </div>
             
@@ -656,10 +650,14 @@ $categories = [
         <div class="footer-col">
             <h4>Tài khoản</h4>
             <a href="taikhoan.php">Thông tin tài khoản</a>
-            <a href="tusach.php">Tủ sách cá nhân</a>
-            <a href="napcoin.php">Nạp Coin</a>
-            <a href="dangky_form.php">Đăng ký</a>
-            <a href="dangnhap_form.php">Đăng nhập</a>
+            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                <a href="tusach.php">Tủ sách cá nhân</a>
+                <a href="napcoin.php">Nạp Coin</a>
+            <?php endif; ?>
+            <?php if (!isset($_SESSION['username'])): ?>
+                <a href="javascript:void(0);" id="footer-open-register">Đăng ký</a>
+                <a href="javascript:void(0);" id="footer-open-login">Đăng nhập</a>
+            <?php endif; ?>
         </div>
     </div>
     <div class="footer-bottom">
@@ -671,21 +669,26 @@ $categories = [
 <div id="registerModal" class="modal" style="display:none"><?php include 'dangky_form.php'; ?></div>
 <div id="loginModal"   class="modal" style="display:none"><?php include 'dangnhap_form.php'; ?></div>
 
-<?php if (!empty($register_message)): ?>
-<script>alert("<?= addslashes($register_message) ?>");</script>
-<?php endif; ?>
+<div id="site-toast" style="display:none;position:fixed;top:20px;right:20px;z-index:9999;padding:14px 20px;border-radius:8px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;font-size:14px"></div>
+<script>
+(function(){
+    function showToast(msg, isError) {
+        var t = document.getElementById('site-toast');
+        t.textContent = msg;
+        t.style.background = isError ? '#e74c3c' : '#1ed760';
+        t.style.color = isError ? '#fff' : '#000';
+        t.style.display = 'block';
+        setTimeout(function(){ t.style.display = 'none'; }, 4000);
+    }
+    <?php if (!empty($register_message)): ?>
+    showToast("<?= addslashes($register_message) ?>", <?= strpos(strtolower($register_message), 'thành công') !== false ? 'false' : 'true' ?>);
+    <?php endif; ?>
+    <?php if (!empty($message)): ?>
+    showToast("<?= addslashes($message) ?>", <?= strpos(strtolower($message), 'thành công') !== false ? 'false' : 'true' ?>);
+    <?php endif; ?>
+})();
+</script>
 
-<<<<<<< HEAD
-=======
-<?php if (!empty($message)): ?>
-<script>alert("<?= addslashes($message) ?>");</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['login']) && $_GET['login'] === 'success'): ?>
-<script>alert("Đăng nhập thành công!");</script>
-<?php endif; ?>
-
->>>>>>> 12e755f37db22e451acc4f09cc3ed189d7acbba5
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 new Swiper(".bannerSwiper", {
@@ -700,30 +703,5 @@ new Swiper(".bannerSwiper", {
 </script>
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
-<script>
-// #region agent log
-(function(){
-    // Hypothesis B: Check duplicate loginModal IDs
-    var loginModals = document.querySelectorAll('#loginModal');
-    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'B',location:'home.php:script',message:'loginModal duplicate check',data:{loginModalCount:loginModals.length,loginModalNested:loginModals.length>1},timestamp:Date.now()})}).catch(function(){});
-
-    // Hypothesis D: Check footer link handlers
-    var footerReg = document.getElementById('footer-open-register');
-    var footerLogin = document.getElementById('footer-open-login');
-    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'D',location:'home.php:script',message:'footer links check',data:{footerRegExists:!!footerReg,footerLoginExists:!!footerLogin,footerRegHasClick:footerReg?footerReg.onclick!==null:false,footerLoginHasClick:footerLogin?footerLogin.onclick!==null:false},timestamp:Date.now()})}).catch(function(){});
-
-    // Hypothesis E: Check ?open=login param handling
-    var urlParams = new URLSearchParams(window.location.search);
-    var openParam = urlParams.get('open');
-    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'E',location:'home.php:script',message:'open param check',data:{openParam:openParam,loginModalVisible:document.getElementById('loginModal')?getComputedStyle(document.getElementById('loginModal')).display:'N/A'},timestamp:Date.now()})}).catch(function(){});
-
-    // Hypothesis C: Check categories strip links
-    var catChips = document.querySelectorAll('.cat-chip');
-    var catData = [];
-    catChips.forEach(function(c){catData.push({text:c.textContent.trim(),href:c.getAttribute('href')});});
-    fetch('http://127.0.0.1:7712/ingest/31a9d562-844d-4898-9010-0ebea3408a39',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7416fa'},body:JSON.stringify({sessionId:'7416fa',hypothesisId:'C',location:'home.php:script',message:'categories check',data:{categories:catData},timestamp:Date.now()})}).catch(function(){});
-})();
-// #endregion
-</script>
 </body>
 </html>

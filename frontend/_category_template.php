@@ -10,6 +10,14 @@ session_start();
 include '../backend/dangky_logic.php';
 include '../backend/dangnhap_logic.php';
 
+$adminUrl = app_url('frontend/admin/index.php');
+
+// Đồng bộ role từ DB nếu session chưa có (tránh session cũ thiếu role)
+if (isset($_SESSION['user_id']) && !isset($_SESSION['role'])) {
+    $r_sync = mysqli_fetch_assoc(mysqli_query($con, "SELECT role FROM users WHERE id=" . intval($_SESSION['user_id'])));
+    if ($r_sync) $_SESSION['role'] = $r_sync['role'];
+}
+
 $cat = mysqli_real_escape_string($con, $category_key);
 $sql = "SELECT id, title, cover FROM stories WHERE description = '$cat' LIMIT 18";
 $result = mysqli_query($con, $sql);
@@ -302,8 +310,12 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
                     </div>
                     <ul class="dropdown-menu-list">
                         <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i> Tài khoản</a></li>
-                        <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
-                        <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                            <li><a href="<?= $adminUrl ?>"><i class="fas fa-shield-halved"></i> Quản trị viên</a></li>
+                        <?php else: ?>
+                            <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                            <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php endif; ?>
                         <hr>
                         <li><a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>
@@ -351,7 +363,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
                      data-story-id="<?= $b['id'] ?>"
                      data-url="../backend/read_story.php?story_id=<?= $b['id'] ?>">
                     <a href="../backend/read_story.php?story_id=<?= $b['id'] ?>">
-                        <img src="../code/images/<?= htmlspecialchars($b['cover']) ?>"
+                        <img src="<?= htmlspecialchars(cover_url($b['cover'])) ?>"
                              alt="<?= htmlspecialchars($b['title']) ?>"
                              onerror="this.src='img/sach2.jpg'"
                              style="width:250px;height:360px;object-fit:cover;border-radius:10px;transition:.4s;box-shadow:0 8px 24px rgba(22, 29, 22, 0.5)">
@@ -383,20 +395,22 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
             <?php foreach ($books as $book): ?>
             <div class="book-card">
                 <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>" alt="<?= htmlspecialchars($book['title']) ?>" onerror="this.src='img/sach2.jpg'">
+                    <img src="<?= htmlspecialchars(cover_url($book['cover'])) ?>" alt="<?= htmlspecialchars($book['title']) ?>" onerror="this.src='img/sach2.jpg'">
                 </a>
                 <div class="book-card-body">
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="book-card-title"><?= htmlspecialchars($book['title']) ?></a>
                 </div>
                 <div class="book-card-footer">
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm"><i class="fa-solid fa-book-open"></i> Đọc</a>
-                    <form action="luutruyen.php" method="POST">
-                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
-                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
-                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
-                        </button>
-                    </form>
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'):
+                        $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                        <form action="luutruyen.php" method="POST">
+                            <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
+                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
+                                <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -446,12 +460,25 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
 <div id="registerModal" class="modal" style="display:none"><?php include 'dangky_form.php'; ?></div>
 <div id="loginModal" class="modal" style="display:none"><?php include 'dangnhap_form.php'; ?></div>
 
-<?php if (!empty($register_message)): ?>
-<script>alert("<?= addslashes($register_message) ?>");</script>
-<?php endif; ?>
-<?php if (!empty($message)): ?>
-<script>alert("<?= addslashes($message) ?>");</script>
-<?php endif; ?>
+<div id="site-toast" style="display:none;position:fixed;top:20px;right:20px;z-index:9999;padding:14px 20px;border-radius:8px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;font-size:14px"></div>
+<script>
+(function(){
+    function showToast(msg, isError) {
+        var t = document.getElementById('site-toast');
+        t.textContent = msg;
+        t.style.background = isError ? '#e74c3c' : '#1ed760';
+        t.style.color = isError ? '#fff' : '#000';
+        t.style.display = 'block';
+        setTimeout(function(){ t.style.display = 'none'; }, 4000);
+    }
+    <?php if (!empty($register_message)): ?>
+    showToast("<?= addslashes($register_message) ?>", <?= strpos(strtolower($register_message), 'thành công') !== false ? 'false' : 'true' ?>);
+    <?php endif; ?>
+    <?php if (!empty($message)): ?>
+    showToast("<?= addslashes($message) ?>", <?= strpos(strtolower($message), 'thành công') !== false ? 'false' : 'true' ?>);
+    <?php endif; ?>
+})();
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
@@ -508,7 +535,7 @@ searchInput.addEventListener('input', function() {
                     let html = '';
                     data.forEach(item => {
                         html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
-                        html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
+                        html += '<img src="' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
                         html += '<span class="sd-title">' + item.title + '</span>';
                         html += '</a>';
                     });
@@ -534,17 +561,6 @@ searchInput.addEventListener('focus', function() {
 });
   
 </script>
-<div id="registerModal" class="modal" style="display: none;">
-    <?php include 'dangky_form.php'; ?>
-</div>
-<div id="loginModal" class="modal" style="display: none;">
-    <?php include 'dangnhap_form.php'; ?>
-</div>
-
-<?php if (!empty($message)): ?>
-<script>alert("<?= addslashes($message) ?>");</script>
-<?php endif; ?>
-
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
 </body>

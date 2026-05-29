@@ -18,11 +18,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Xử lý cover upload nếu có
-    if (isset($_FILES['cover']) && $_FILES['cover']['name'] != '') {
+    if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+        $allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime  = finfo_file($finfo, $_FILES['cover']['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mime, $allowed_types)) {
+            echo json_encode(['status'=>'error','message'=>'File phải là ảnh (JPEG, PNG, WEBP, GIF)']);
+            exit;
+        }
+
+        $ext       = pathinfo($_FILES['cover']['name'], PATHINFO_EXTENSION);
         $targetDir = "uploads/";
-        if(!file_exists($targetDir)) mkdir($targetDir, 0777, true);
-        $filename = time().'_'.basename($_FILES['cover']['name']);
-        $targetFile = $targetDir.$filename;
+        if (!file_exists($targetDir)) mkdir($targetDir, 0777, true);
+        $filename   = time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
+        $targetFile = $targetDir . $filename;
 
         if (move_uploaded_file($_FILES['cover']['tmp_name'], $targetFile)) {
             $cover = $targetFile;
