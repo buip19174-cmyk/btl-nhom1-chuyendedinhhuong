@@ -3,8 +3,9 @@
     <div class="modal-content-inner">
         <span class="close-btn">&times;</span> 
 
-        <form method="POST"> 
+        <form method="POST" action="home.php"> 
             <h2>Đăng nhập</h2>
+            <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             
             <input type="text" name="username" placeholder="Tên đăng nhập" required>
             
@@ -17,7 +18,7 @@
 
             <?php if(!empty($login_message)): ?>
     <p class="message" style="color: #49c5aa; text-align: center; margin-top: 10px;">
-        <?php echo $login_message; ?>
+        <?php echo htmlspecialchars($login_message); ?>
     </p> 
 <?php endif; ?>
 
@@ -31,7 +32,6 @@
     <script>
         
         (function() {
-            // Tìm các phần tử trong phạm vi của form này thôi
             const container = document.currentScript.parentElement;
             const passwordInput = container.querySelector(".password-input");
             const toggleEye = container.querySelector(".toggle-eye-icon");

@@ -2,7 +2,7 @@
 include_once '../database/connect.php';
 $register_message = ''; 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     // Lấy và làm sạch dữ liệu đầu vào
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');

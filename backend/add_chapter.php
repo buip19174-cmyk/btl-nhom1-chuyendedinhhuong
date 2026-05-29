@@ -1,5 +1,7 @@
 <?php
-include 'connect.php';
+require_once __DIR__ . '/require_admin.php';
+require_admin_api('Bạn không có quyền admin.');
+include_once '../database/connect.php';
 
 // Nhận dữ liệu từ AJAX
 $story_id = $_POST['story_id'];

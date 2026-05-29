@@ -1,9 +1,13 @@
 <?php
 session_start();
 include_once '../database/connect.php';
+require_once __DIR__ . '/includes/paths.php';
+require_once __DIR__ . '/../backend/require_auth.php';
+require_active_user();
+/** @var mysqli $con */
 
-/* Chưa đăng nhập → quay về home */
-if (!isset($_SESSION['username'])) {
+/* Admin chỉ quản lý: không dùng tủ sách */
+if (($_SESSION['role'] ?? '') === 'admin') {
     header("Location: home.php");
     exit();
 }

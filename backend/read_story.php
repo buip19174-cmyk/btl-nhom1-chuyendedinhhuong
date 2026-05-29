@@ -1,12 +1,33 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 include_once '../database/connect.php';
+require_once __DIR__ . '/story_config.php';
+require_once __DIR__ . '/../frontend/includes/paths.php';
 
 if (!isset($_GET['story_id'])) die("Thiếu ID truyện");
 $story_id = intval($_GET['story_id']);
 
 $story = mysqli_fetch_assoc(mysqli_query($con, "SELECT * FROM stories WHERE id = $story_id"));
 if (!$story) die("Truyện không tồn tại");
+
+require_once __DIR__ . '/require_auth.php';
+if (isset($_SESSION['user_id'])) {
+    $uid = intval($_SESSION['user_id']);
+    $st = mysqli_fetch_assoc(mysqli_query($con, "SELECT status FROM users WHERE id=$uid LIMIT 1"));
+    if (!$st || ($st['status'] ?? '') === 'banned') {
+        destroy_user_session();
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $stmt_views = mysqli_prepare($con, "UPDATE stories SET luot_xem = luot_xem + 1 WHERE id = ?");
+    if ($stmt_views) {
+        mysqli_stmt_bind_param($stmt_views, "i", $story_id);
+        mysqli_stmt_execute($stmt_views);
+        mysqli_stmt_close($stmt_views);
+        $story['luot_xem'] = (int)($story['luot_xem'] ?? 0) + 1;
+    }
+}
 
 $chapters = mysqli_query($con, "SELECT * FROM chapters WHERE story_id = $story_id ORDER BY chapter_number ASC");
 $total    = mysqli_num_rows($chapters);
@@ -18,6 +39,7 @@ $first_chap = mysqli_fetch_assoc($chapters);
 // Kiểm tra đã lưu chưa
 $user_id    = $_SESSION['user_id'] ?? null;
 $username   = $_SESSION['username'] ?? null;
+$is_admin   = (($_SESSION['role'] ?? '') === 'admin');
 $is_saved   = false;
 $user_coins = 0;
 $bought_ids = [];
@@ -53,27 +75,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_action'])) {
         $action = $_POST['comment_action'];
 
         if ($action === 'post') {
-            $content   = trim($_POST['content'] ?? '');
-            $parent_id = isset($_POST['parent_id']) && is_numeric($_POST['parent_id'])
-                         ? intval($_POST['parent_id']) : 'NULL';
+            $content = trim($_POST['content'] ?? '');
+            $parent_id = null;
+            if (isset($_POST['parent_id']) && $_POST['parent_id'] !== '' && is_numeric($_POST['parent_id'])) {
+                $parent_id = intval($_POST['parent_id']);
+            }
             if (mb_strlen($content) < 2) {
                 $comment_error = 'Bình luận quá ngắn.';
             } elseif (mb_strlen($content) > 1000) {
                 $comment_error = 'Bình luận tối đa 1000 ký tự.';
+            } elseif ($parent_id !== null) {
+                $chk = mysqli_prepare($con, "SELECT id FROM comments WHERE id = ? AND story_id = ? LIMIT 1");
+                mysqli_stmt_bind_param($chk, "ii", $parent_id, $story_id);
+                mysqli_stmt_execute($chk);
+                $chk_res = mysqli_stmt_get_result($chk);
+                if (!$chk_res || mysqli_num_rows($chk_res) === 0) {
+                    $comment_error = 'Bình luận gốc không hợp lệ.';
+                } else {
+                    $stmt_c = mysqli_prepare($con, "INSERT INTO comments (story_id, user_id, parent_id, content) VALUES (?, ?, ?, ?)");
+                    mysqli_stmt_bind_param($stmt_c, "iiis", $story_id, $user_id, $parent_id, $content);
+                    mysqli_stmt_execute($stmt_c);
+                    mysqli_stmt_close($stmt_c);
+                    header("Location: read_story.php?story_id=$story_id#comments");
+                    exit();
+                }
             } else {
-                $safe = mysqli_real_escape_string($con, $content);
-                mysqli_query($con,
-                    "INSERT INTO comments (story_id, user_id, parent_id, content)
-                     VALUES ($story_id, $user_id, $parent_id, '$safe')"
-                );
-                $comment_success = true;
+                $stmt_c = mysqli_prepare($con, "INSERT INTO comments (story_id, user_id, parent_id, content) VALUES (?, ?, NULL, ?)");
+                mysqli_stmt_bind_param($stmt_c, "iis", $story_id, $user_id, $content);
+                mysqli_stmt_execute($stmt_c);
+                mysqli_stmt_close($stmt_c);
                 header("Location: read_story.php?story_id=$story_id#comments");
                 exit();
             }
         } elseif ($action === 'delete') {
             $cid = intval($_POST['comment_id'] ?? 0);
-            // Chỉ xoá comment của chính mình
-            mysqli_query($con, "DELETE FROM comments WHERE id=$cid AND user_id=$user_id");
+            $stmt_del = mysqli_prepare($con,
+                "DELETE FROM comments WHERE story_id = ? AND user_id = ? AND (id = ? OR parent_id = ?)"
+            );
+            mysqli_stmt_bind_param($stmt_del, "iiii", $story_id, $user_id, $cid, $cid);
+            mysqli_stmt_execute($stmt_del);
+            mysqli_stmt_close($stmt_del);
             header("Location: read_story.php?story_id=$story_id#comments");
             exit();
         }
@@ -473,12 +514,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
     <span class="sep">/</span>
     <span class="story-name"><?= htmlspecialchars($story['title']) ?></span>
 
-    <?php if ($user_id): ?>
+    <?php if ($user_id && !$is_admin): ?>
         <a href="../frontend/napcoin.php" class="coin-pill">
             <i class="fa-solid fa-coins"></i> <?= number_format($user_coins) ?> coin
         </a>
     <?php else: ?>
-        <a href="../frontend/dangnhap_form.php" class="coin-pill" style="color:#555;border-color:#333;background:transparent">
+        <a href="<?= htmlspecialchars(app_login_url($_SERVER['REQUEST_URI'])) ?>" class="coin-pill" style="color:#555;border-color:#333;background:transparent">
             <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
         </a>
     <?php endif; ?>
@@ -498,11 +539,23 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
             <h1 class="hero-title"><?= htmlspecialchars($story['title']) ?></h1>
             <div class="hero-stats">
                 <span><i class="fa-solid fa-list"></i> <?= $total ?> chương</span>
-                <span><i class="fa-solid fa-unlock"></i> 3 chương miễn phí</span>
-                <span><i class="fa-solid fa-coins"></i> 3 coin / chương</span>
+                <span><i class="fa-solid fa-unlock"></i> <?= FREE_CHAPTERS ?> chương miễn phí</span>
+                <span><i class="fa-solid fa-coins"></i> <?= COINS_PER_CHAPTER ?> coin / chương</span>
+                <span><i class="fa-solid fa-eye"></i> <?= number_format((int)($story['luot_xem'] ?? 0)) ?> lượt xem</span>
             </div>
+            <?php
+            $cat_code = trim($story['description'] ?? '');
+            $cat_label = story_category_label($cat_code);
+            ?>
             <p class="hero-desc">
-                <?= htmlspecialchars(mb_strimwidth($story['description'] ?? '', 0, 220, '...')) ?>
+                <?php if ($cat_code !== ''): ?>
+                    <strong>Thể loại:</strong> <?= htmlspecialchars($cat_label) ?>
+                    <?php if ($cat_label !== $cat_code): ?>
+                        <span style="color:var(--dim);font-size:12px;">(<?= htmlspecialchars($cat_code) ?>)</span>
+                    <?php endif; ?>
+                <?php else: ?>
+                    Khám phá câu chuyện trên KEWE — đọc miễn phí <?= FREE_CHAPTERS ?> chương đầu.
+                <?php endif; ?>
             </p>
             <div class="hero-actions">
                 <?php if ($first_chap): ?>
@@ -512,7 +565,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                 </a>
                 <?php endif; ?>
 
-                <?php if ($user_id): ?>
+                <?php if ($user_id && !$is_admin): ?>
                 <form method="POST" action="../frontend/luutruyen.php">
                     <input type="hidden" name="story_id" value="<?= $story_id ?>">
                     <button type="submit" class="btn-save <?= $is_saved ? 'saved' : '' ?>">
@@ -521,7 +574,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                     </button>
                 </form>
                 <?php else: ?>
-                <a href="../frontend/dangnhap_form.php" class="btn-save">
+                <a href="<?= htmlspecialchars(app_login_url($_SERVER['REQUEST_URI'])) ?>" class="btn-save">
                     <i class="fa-regular fa-heart"></i> Lưu truyện
                 </a>
                 <?php endif; ?>
@@ -547,7 +600,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
             <?php
             mysqli_data_seek($chapters, 0);
             while ($ch = mysqli_fetch_assoc($chapters)):
-                $is_free_chap = ($ch['chapter_number'] <= 3);
+                $is_free_chap = ($ch['chapter_number'] <= FREE_CHAPTERS);
                 $is_owned     = in_array($ch['id'], $bought_ids);
                 $num_class    = $is_free_chap ? 'free' : ($is_owned ? 'owned' : 'paid');
             ?>
@@ -564,7 +617,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                     <div class="chap-sub">
                         <?php if ($is_free_chap): ?>Miễn phí
                         <?php elseif ($is_owned): ?>Đã mua
-                        <?php else: ?>3 coin để mở khoá
+                        <?php else: ?><?= (int) COINS_PER_CHAPTER ?> coin để mở khoá
                         <?php endif; ?>
                     </div>
                 </div>
@@ -573,7 +626,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                 <?php elseif ($is_owned): ?>
                     <span class="badge badge-owned"><i class="fa-solid fa-check"></i> Đã mua</span>
                 <?php else: ?>
-                    <span class="badge badge-coin"><i class="fa-solid fa-coins"></i> 3</span>
+                    <span class="badge badge-coin"><i class="fa-solid fa-coins"></i> <?= (int) COINS_PER_CHAPTER ?></span>
                 <?php endif; ?>
             </a>
             <?php endwhile; ?>
@@ -590,7 +643,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
     <aside class="right-sidebar">
 
         <!-- Coin card (chỉ hiện khi đăng nhập) -->
-        <?php if ($user_id): ?>
+        <?php if ($user_id && !$is_admin): ?>
         <div class="coin-card">
             <div class="coin-card-lbl"><i class="fa-solid fa-coins"></i> Số dư coin</div>
             <div class="coin-amount"><i class="fa-solid fa-coins"></i> <?= number_format($user_coins) ?></div>
@@ -608,11 +661,11 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
             </div>
             <div class="info-row">
                 <div class="info-icon"><i class="fa-solid fa-unlock"></i></div>
-                <div><div class="info-lbl">Miễn phí</div><div class="info-val">3 chương đầu</div></div>
+                <div><div class="info-lbl">Miễn phí</div><div class="info-val"><?= (int) FREE_CHAPTERS ?> chương đầu</div></div>
             </div>
             <div class="info-row">
                 <div class="info-icon"><i class="fa-solid fa-coins"></i></div>
-                <div><div class="info-lbl">Giá mỗi chương</div><div class="info-val" style="color:var(--gold)">3 coin = 30 VND</div></div>
+                <div><div class="info-lbl">Giá mỗi chương</div><div class="info-val" style="color:var(--gold)"><?= (int) COINS_PER_CHAPTER ?> coin = <?= (int)(COINS_PER_CHAPTER * 10) ?> VND</div></div>
             </div>
             <?php if ($user_id && !empty($bought_ids)): ?>
             <div class="info-row">
@@ -643,13 +696,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                     <a href="../frontend/home.php" style="font-size:13px;font-weight:600;color:var(--dim);text-decoration:none">Trang chủ</a>
                 </div>
             </div>
-            <div class="info-row">
-                <div class="info-icon"><i class="fa-solid fa-book"></i></div>
-                <div>
-                    <div class="info-lbl">Tủ sách</div>
-                    <a href="../frontend/tusach.php" style="font-size:13px;font-weight:600;color:var(--dim);text-decoration:none">Xem tủ sách</a>
+            <?php if (!$is_admin): ?>
+                <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-book"></i></div>
+                    <div>
+                        <div class="info-lbl">Tủ sách</div>
+                        <a href="../frontend/tusach.php" style="font-size:13px;font-weight:600;color:var(--dim);text-decoration:none">Xem tủ sách</a>
+                    </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
 
     </aside>
@@ -693,7 +748,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
     <?php else: ?>
     <div class="login-prompt">
         <i class="fa-regular fa-comment" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>
-        <a href="../frontend/dangnhap_form.php?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>">Đăng nhập</a>
+        <a href="<?= htmlspecialchars(app_login_url($_SERVER['REQUEST_URI'])) ?>">Đăng nhập</a>
         để tham gia bình luận
     </div>
     <?php endif; ?>

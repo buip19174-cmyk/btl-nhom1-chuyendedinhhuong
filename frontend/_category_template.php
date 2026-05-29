@@ -2,28 +2,31 @@
 /**
  * Template dùng chung cho tất cả trang danh mục
  * Biến cần khai báo trước khi include:
- *   $page_title   — tiêu đề trang
- *   $category_key — giá trị description trong DB
+ *   $page_title   — tiêu đề trang, vd: "Thơ - Tản văn"
+ *   $category_key — giá trị description trong DB, vd: 'tho'
  *   $hero_desc    — mô tả ngắn hiển thị trong hero
  */
+
 session_start();
 include '../backend/dangky_logic.php';
 include '../backend/dangnhap_logic.php';
+require_once __DIR__ . '/includes/paths.php';
+/** @var mysqli $con */
 
+$adminUrl = app_url('frontend/admin/index.php');
+
+// Lấy sách theo danh mục
 $cat = mysqli_real_escape_string($con, $category_key);
 $sql = "SELECT id, title, cover FROM stories WHERE description = '$cat' LIMIT 21";
 $result = mysqli_query($con, $sql);
 $books = [];
-while ($row = mysqli_fetch_assoc($result)) $books[] = $row;
-
-$hero_books = array_slice($books, 0, 5);
-$first_book = $books[0] ?? null;
-
-$saved_story_ids = [];
-if (isset($_SESSION['user_id'])) {
-    $sv_q = mysqli_query($con, "SELECT story_id FROM user_stories WHERE user_id=" . intval($_SESSION['user_id']));
-    while ($sv = mysqli_fetch_assoc($sv_q)) $saved_story_ids[] = $sv['story_id'];
+while ($row = mysqli_fetch_assoc($result)) {
+    $books[] = $row;
 }
+
+// Lấy sách cho hero swiper (tối đa 6)
+$hero_books = array_slice($books, 0, 6);
+$first_book = $books[0] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -47,37 +50,37 @@ if (isset($_SESSION['user_id'])) {
     <nav>
         <ul>
             <li>
-                <a href="#">Sách <i class="fa-solid fa-chevron-down" style="font-size:10px;opacity:.5"></i></a>
+                <a href="#">Sách</a>
                 <div class="mega-menu">
-                    <div class="item"><a href="tho_tanvan.php"><i class="fa-solid fa-feather"></i>Thơ - Tản văn</a></div>
-                    <div class="item"><a href="trinhtham.php"><i class="fa-solid fa-magnifying-glass"></i>Trinh thám - Kinh dị</a> <span>NEW</span></div>
-                    <div class="item"><a href="mkt_banhang.php"><i class="fa-solid fa-chart-line"></i>Marketing - Bán hàng</a> <span>NEW</span></div>
-                    <div class="item"><a href="taichinhcanhan.php"><i class="fa-solid fa-coins"></i>Tài chính cá nhân</a></div>
-                    <div class="item"><a href="pt_canhan.php"><i class="fa-solid fa-seedling"></i>Phát triển cá nhân</a></div>
-                    <div class="item"><a href="doanh_nhan.php"><i class="fa-solid fa-briefcase"></i>Doanh nhân - Bài học KD</a></div>
-                    <div class="item"><a href="suckhoe_lamdep.php"><i class="fa-solid fa-heart-pulse"></i>Sức khỏe - Làm đẹp</a></div>
-                    <div class="item"><a href="khoahoc_congnghe.php"><i class="fa-solid fa-flask"></i>Khoa học - Công nghệ</a></div>
-                    <div class="item"><a href="tuduy_sangtao.php"><i class="fa-solid fa-lightbulb"></i>Tư duy sáng tạo</a></div>
-                    <div class="item"><a href="giaoduc_vanhoa.php"><i class="fa-solid fa-graduation-cap"></i>Giáo dục - Văn hóa</a></div>
-                    <div class="item"><a href="nghe_thuat_song.php"><i class="fa-solid fa-palette"></i>Nghệ thuật sống</a></div>
-                    <div class="item"><a href="tamlinh.php"><i class="fa-solid fa-yin-yang"></i>Tâm linh - Tôn giáo</a></div>
-                    <div class="item"><a href="chungkhoan_bds_dautu.php"><i class="fa-solid fa-building-columns"></i>Chứng khoán - BĐS</a></div>
-                    <div class="item"><a href="sach_ngoai_van.php"><i class="fa-solid fa-globe"></i>Sách Ngoại văn</a></div>
+                    <div class="item"><a href="tho_tanvan.php">Thơ - Tản văn</a></div>
+                    <div class="item"><a href="trinhtham.php">Trinh thám - Kinh dị</a> <span>NEW</span></div>
+                    <div class="item"><a href="mkt_banhang.php">Marketing - Bán hàng</a> <span>NEW</span></div>
+                    <div class="item"><a href="taichinhcanhan.php">Tài chính cá nhân</a> <span>NEW</span></div>
+                    <div class="item"><a href="pt_canhan.php">Phát triển cá nhân</a> <span>NEW</span></div>
+                    <div class="item"><a href="doanh_nhan.php">Doanh nhân - Bài học KD</a> <span>NEW</span></div>
+                    <div class="item"><a href="suckhoe_lamdep.php">Sức khỏe - Làm đẹp</a></div>
+                    <div class="item"><a href="khoahoc_congnghe.php">Khoa học - Công nghệ</a></div>
+                    <div class="item"><a href="tuduy_sangtao.php">Tư duy sáng tạo</a> <span>NEW</span></div>
+                    <div class="item"><a href="giaoduc_vanhoa.php">Giáo dục - Văn hóa & Xã hội</a></div>
+                    <div class="item"><a href="nghe_thuat_song.php">Nghệ thuật sống</a> <span>NEW</span></div>
+                    <div class="item"><a href="tamlinh.php">Tâm linh - Tôn giáo</a></div>
+                    <div class="item"><a href="chungkhoan_bds_dautu.php">Chứng khoán - BĐS - Đầu tư</a></div>
+                    <div class="item"><a href="sach_ngoai_van.php">Sách Ngoại văn</a> <span>NEW</span></div>
                 </div>
             </li>
             <li>
-                <a href="#">Truyện <i class="fa-solid fa-chevron-down" style="font-size:10px;opacity:.5"></i></a>
+                <a href="#">Truyện</a>
                 <div class="mega-menu">
-                    <div class="item"><a href="nam.php"><i class="fa-solid fa-mars"></i>Nam</a></div>
-                    <div class="item"><a href="nu.php"><i class="fa-solid fa-venus"></i>Nữ</a></div>
-                    <div class="item"><a href="xuyenkhong.php"><i class="fa-solid fa-clock-rotate-left"></i>Xuyên không</a></div>
-                    <div class="item"><a href="truyenma.php"><i class="fa-solid fa-ghost"></i>Truyện ma</a></div>
-                    <div class="item"><a href="tinhcam.php"><i class="fa-solid fa-heart"></i>Tình cảm</a></div>
-                    <div class="item"><a href="ngungon.php"><i class="fa-solid fa-dragon"></i>Ngụ ngôn</a></div>
-                    <div class="item"><a href="codai.php"><i class="fa-solid fa-scroll"></i>Cổ đại</a></div>
-                    <div class="item"><a href="thieunhi.php"><i class="fa-solid fa-child"></i>Thiếu nhi</a></div>
-                    <div class="item"><a href="haihuoc.php"><i class="fa-solid fa-face-laugh"></i>Hài hước</a></div>
-                    <div class="item"><a href="hanhdong.php"><i class="fa-solid fa-bolt"></i>Hành động</a></div>
+                    <div class="item"><a href="nam.php">Nam</a></div>
+                    <div class="item"><a href="nu.php">Nữ</a></div>
+                    <div class="item"><a href="xuyenkhong.php">Xuyên không</a></div>
+                    <div class="item"><a href="truyenma.php">Truyện ma</a></div>
+                    <div class="item"><a href="tinhcam.php">Tình cảm</a></div>
+                    <div class="item"><a href="ngungon.php">Ngụ ngôn</a></div>
+                    <div class="item"><a href="codai.php">Cổ đại</a></div>
+                    <div class="item"><a href="thieunhi.php">Thiếu nhi</a></div>
+                    <div class="item"><a href="haihuoc.php">Hài hước</a></div>
+                    <div class="item"><a href="hanhdong.php">Hành động</a></div>
                 </div>
             </li>
         </ul>
@@ -104,8 +107,12 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                     <ul class="dropdown-menu-list">
                         <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i> Tài khoản</a></li>
-                        <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
-                        <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
+                        <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                            <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                        <?php endif; ?>
+                        <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                            <li><a href="<?= htmlspecialchars($adminUrl) ?>"><i class="fa-solid fa-shield-halved"></i> Quản trị</a></li>
+                        <?php endif; ?>
                         <hr>
                         <li><a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>
@@ -117,8 +124,6 @@ if (isset($_SESSION['user_id'])) {
         <?php endif; ?>
     </div>
 </header>
-
-<!-- HERO BANNER -->
 <section class="cat-banner" style="--cat-cover:url('../code/images/<?= htmlspecialchars($first_book['cover'] ?? 'sach2.jpg', ENT_QUOTES) ?>')">
     <div class="cat-banner-bg"></div>
     <div class="cat-banner-inner">
@@ -133,12 +138,15 @@ if (isset($_SESSION['user_id'])) {
         <div class="slide-actions">
             <a href="<?= $first_book ? '../backend/read_story.php?story_id=' . $first_book['id'] : '#' ?>" class="slide-btn" id="heroReadBtn">
                 <i class="fa-solid fa-book-open"></i> Đọc sách
+
             </a>
-            <?php if ($first_book): ?>
-            <form method="POST" action="luutruyen.php" style="display:inline">
-                <input type="hidden" name="story_id" value="<?= $first_book['id'] ?>" id="heroSaveId">
-                <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
-            </form>
+            <?php if ($first_book && (($_SESSION['role'] ?? '') !== 'admin')): ?>
+                <form method="POST" action="luutruyen.php" id="heroSaveForm">
+                    <input type="hidden" name="story_id" value="<?= $first_book['id'] ?>" id="heroSaveId">
+                    <button type="submit" class="cat-btn-save">
+                        <i class="fa-solid fa-heart"></i> Lưu
+                    </button>
+                </form>
             <?php endif; ?>
         </div>
     </div>
@@ -147,6 +155,7 @@ if (isset($_SESSION['user_id'])) {
     <div class="cat-banner-showcase">
         <?php if (!empty($hero_books)): ?>
         <div class="swiper heroSwiper">
+
             <div class="swiper-wrapper">
                 <?php foreach ($hero_books as $b): ?>
                 <div class="swiper-slide"
@@ -167,37 +176,35 @@ if (isset($_SESSION['user_id'])) {
     </div>
 </section>
 
-<!-- BOOK GRID -->
-<section class="home-section">
-    <div class="section-header">
-        <h2><i class="fa-solid fa-layer-group"></i> <?= htmlspecialchars($page_title) ?></h2>
-        <span class="count"><?= count($books) ?> đầu sách</span>
+
+<!-- DANH SÁCH SÁCH -->
+<section class="content" id="content-section">
+    <div class="cat-section-header">
+        <h2><i class="fa-solid fa-layer-group"></i> Tất cả sách — <?= htmlspecialchars($page_title) ?></h2>
+        <span class="cat-count"><?= count($books) ?> đầu sách</span>
     </div>
 
-    <div class="book-grid">
+    <div class="container">
         <?php if (!empty($books)): ?>
             <?php foreach ($books as $book): ?>
-            <div class="book-card">
+            <div class="book">
                 <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>" alt="<?= htmlspecialchars($book['title']) ?>" onerror="this.src='img/sach2.jpg'">
+                    <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>"
+                         onerror="this.src='img/sach2.jpg'">
+                    <div class="title"><?= htmlspecialchars($book['title']) ?></div>
                 </a>
-                <div class="book-card-body">
-                    <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="book-card-title"><?= htmlspecialchars($book['title']) ?></a>
-                </div>
-                <div class="book-card-footer">
-                    <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm"><i class="fa-solid fa-book-open"></i> Đọc</a>
+                <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
                     <form action="luutruyen.php" method="POST">
                         <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
-                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
-                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                        <button type="submit" class="btn-save">
+                            <i class="fa-solid fa-heart"></i>
                         </button>
                     </form>
-                </div>
+                <?php endif; ?>
             </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <div class="empty-books">
+            <div class="cat-empty">
                 <i class="fa-solid fa-book-open"></i>
                 <p>Chưa có sách trong danh mục này</p>
             </div>
@@ -207,51 +214,20 @@ if (isset($_SESSION['user_id'])) {
 
 <!-- FOOTER -->
 <footer>
-    <div class="footer-inner">
-        <div class="footer-brand">
-            <div class="brand-name">KEWE</div>
-            <p>Nền tảng đọc sách & truyện online hàng đầu Việt Nam.</p>
-            <p><i class="fa fa-phone"></i> 0877 736 289</p>
-            <p><i class="fa fa-envelope"></i> support@kewe.vn</p>
-        </div>
-        <div class="footer-col">
-            <h4>Thể loại sách</h4>
-            <a href="taichinhcanhan.php">Tài chính cá nhân</a>
-            <a href="pt_canhan.php">Phát triển cá nhân</a>
-            <a href="doanh_nhan.php">Doanh nhân</a>
-            <a href="khoahoc_congnghe.php">Khoa học - Công nghệ</a>
-        </div>
-        <div class="footer-col">
-            <h4>Thể loại truyện</h4>
-            <a href="tinhcam.php">Tình cảm</a>
-            <a href="trinhtham.php">Trinh thám</a>
-            <a href="xuyenkhong.php">Xuyên không</a>
-            <a href="hanhdong.php">Hành động</a>
-        </div>
-        <div class="footer-col">
-            <h4>Tài khoản</h4>
-            <a href="taikhoan.php">Thông tin tài khoản</a>
-            <a href="tusach.php">Tủ sách cá nhân</a>
-            <a href="napcoin.php">Nạp Coin</a>
+    <div class="footer-top">
+        <div class="footer-logo">
+            <h2>KEWE</h2>
+            <p>Công ty cổ phần sách điện tử Kewe</p>
+            <p><i class="fa fa-phone"></i> 0877736289</p>
+            <p><i class="fa fa-envelope"></i> Support@kewe.vn</p>
         </div>
     </div>
-    <div class="footer-bottom"><span>© 2025 KEWE</span> — Công ty Cổ phần Sách điện tử Kewe – Hà Nội</div>
+    <div class="footer-bottom">Công ty Cổ phần Sách điện tử Kewe – Hà Nội</div>
 </footer>
-
-<!-- Modals -->
-<div id="registerModal" class="modal" style="display:none"><?php include 'dangky_form.php'; ?></div>
-<div id="loginModal" class="modal" style="display:none"><?php include 'dangnhap_form.php'; ?></div>
-
-<?php if (!empty($register_message)): ?>
-<script>alert("<?= addslashes($register_message) ?>");</script>
-<?php endif; ?>
-<?php if (!empty($message)): ?>
-<script>alert("<?= addslashes($message) ?>");</script>
-<?php endif; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-new Swiper(".heroSwiper", {
+const mySwiper = new Swiper(".mySwiper", {
     slidesPerView: 3,
     centeredSlides: true,
     loop: <?= count($hero_books) >= 3 ? 'true' : 'false' ?>,
@@ -262,14 +238,19 @@ new Swiper(".heroSwiper", {
     coverflowEffect: { rotate: 0, stretch: 138, depth: 280, modifier: 1.2, slideShadows: false },
     on: {
         slideChange: function () {
+            // Lấy slide đang active (realIndex để tránh lỗi với loop)
             const activeSlide = this.slides[this.activeIndex];
             if (!activeSlide) return;
+
             const title   = activeSlide.dataset.title   || '';
             const storyId = activeSlide.dataset.storyId || '';
             const url     = activeSlide.dataset.url     || '#';
+
+            // Cập nhật text hero
             const titleEl = document.getElementById('heroTitle');
             const btnEl   = document.getElementById('heroReadBtn');
             const saveId  = document.getElementById('heroSaveId');
+
             if (titleEl && title) {
                 titleEl.style.opacity = '0';
                 titleEl.style.transform = 'translateY(8px)';
@@ -285,9 +266,18 @@ new Swiper(".heroSwiper", {
     }
 });
 
-</script>
-
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
+<script>
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'login') {
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) loginModal.style.setProperty('display', 'flex', 'important');
+        const redirectInput = document.querySelector('#loginModal input[name="redirect"]');
+        if (redirectInput && params.get('redirect')) redirectInput.value = params.get('redirect');
+    }
+})();
+</script>
 </body>
 </html>

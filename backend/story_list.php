@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include('connect.php');
+include_once '../database/connect.php';
 
 $sql = "SELECT * FROM stories ORDER BY id DESC";
 $result = mysqli_query($con, $sql);
