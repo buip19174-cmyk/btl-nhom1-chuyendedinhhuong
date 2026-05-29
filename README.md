@@ -1,235 +1,391 @@
 # KEWE — Nền tảng đọc sách & truyện online
 
-Website đọc sách/truyện trực tuyến viết bằng **PHP thuần** và **MySQL**, phù hợp đồ án / BTL môn Lập trình web. Người dùng có thể đọc miễn phí một số chương đầu, mua chương bằng coin, lưu sách vào tủ sách, bình luận; quản trị viên quản lý truyện, chương và người dùng.
+Website đọc sách/truyện trực tuyến xây dựng bằng **PHP thuần** và **MySQL**, phục vụ đồ án / BTL môn **Lập trình Web**. Hệ thống cho phép người dùng đọc truyện theo chương, mua chương trả phí bằng coin, nạp coin qua QR (demo), lưu truyện vào tủ sách, bình luận; quản trị viên quản lý truyện, chương, người dùng và xem thống kê.
 
 ---
 
-## Tính năng chính
+## Mục lục
 
-### Người đọc
-- Đăng ký / đăng nhập / đăng xuất (mật khẩu mã hóa `password_hash`)
-- Trang chủ, danh mục sách (Thơ, Trinh thám, Tài chính, …)
-- Đọc truyện theo chương, chuyển chương trước/sau
-- **3 chương đầu miễn phí**, từ chương 4 trở đi mua bằng coin (3 coin/chương)
-- Nạp coin (mô phỏng, không tích hợp cổng thanh toán thật)
-- Tủ sách cá nhân (lưu / bỏ lưu truyện)
-- Tìm kiếm theo tên sách — **AJAX** (gợi ý trên header + trang tìm kiếm đầy đủ)
-- Bình luận truyện (có trả lời)
-
-### Quản trị viên
-- Dashboard, thống kê cơ bản
-- Quản lý truyện (thêm / sửa / xóa, upload ảnh bìa)
-- Quản lý chương, người dùng
+1. [Tính năng](#tính-năng)
+2. [Công nghệ](#công-nghệ)
+3. [Cấu trúc thư mục](#cấu-trúc-thư-mục)
+4. [Cơ sở dữ liệu](#cơ-sở-dữ-liệu)
+5. [Luồng nghiệp vụ](#luồng-nghiệp-vụ)
+6. [Cài đặt & chạy](#cài-đặt--chạy)
+7. [Tài khoản & phân quyền](#tài-khoản--phân-quyền)
+8. [Cấu hình](#cấu-hình)
+9. [API & endpoint chính](#api--endpoint-chính)
+10. [Hạn chế & ghi chú](#hạn-chế--ghi-chú)
 
 ---
 
-## Công nghệ sử dụng
+## Tính năng
+
+### Người đọc (`role = user`)
+
+| Chức năng | Mô tả |
+|-----------|--------|
+| Đăng ký / đăng nhập / đăng xuất | Mật khẩu mã hóa `password_hash`; tài khoản `banned` không đăng nhập được |
+| Trang chủ & danh mục | Banner, lọc theo thể loại (Thơ, Trinh thám, Tài chính, …) |
+| Đọc truyện | Trang chi tiết (`read_story.php`) + đọc chương (`read_chapter.php`) |
+| Paywall | **3 chương đầu miễn phí**, từ chương 4 mua bằng **3 coin/chương** |
+| Nạp coin | Chọn gói → tạo đơn → quét QR VietQR (demo) → xác nhận cộng coin |
+| Tủ sách | Lưu / bỏ lưu truyện yêu thích |
+| Tìm kiếm | Gợi ý AJAX trên header + trang `timkiem.php` |
+| Bình luận | Bình luận gốc & trả lời; xóa comment của chính mình |
+| Tài khoản | Xem coin, lịch sử giao dịch, thông tin cá nhân |
+
+### Quản trị viên (`role = admin`)
+
+| Chức năng | Mô tả |
+|-----------|--------|
+| Dashboard | Tổng user, truyện, lượt xem, bình luận |
+| Thống kê | Top truyện theo `luot_xem`, % user active, cơ cấu thể loại |
+| Quản lý truyện | CRUD, upload ảnh bìa, lọc theo tên/trạng thái |
+| Quản lý chương | Thêm/sửa/xóa chương theo truyện |
+| Quản lý user | CRUD, khóa (`banned`) / mở khóa, phân quyền |
+| Bypass paywall | Admin đọc mọi chương trả phí **không cần mua** (chỉ để kiểm duyệt nội dung) |
+
+> **Lưu ý:** Admin **không** dùng Nạp coin / Tủ sách — chỉ quản lý hệ thống.
+
+---
+
+## Công nghệ
 
 | Thành phần | Công nghệ |
 |------------|-----------|
-| Backend | PHP 7.4+ (mysqli) |
-| Database | MySQL / MariaDB, utf8mb4 |
+| Backend | PHP 7.4+ (mysqli, prepared statements) |
+| Database | MySQL / MariaDB, `utf8mb4` |
 | Frontend | HTML5, CSS3, JavaScript (Fetch API) |
-| Thư viện UI | Font Awesome 6, Swiper 11 |
+| Thư viện | Font Awesome 6, Swiper 11 |
+| Thanh toán demo | VietQR (`img.vietqr.io`) — không tích hợp cổng thật |
 
 ---
 
 ## Cấu trúc thư mục
 
 ```
-doanchuyende/
-├── backend/              # Xử lý logic, API, đọc chương
-│   ├── search_ajax.php   # API tìm kiếm JSON
-│   ├── buy_chapter.php   # Mua chương bằng coin
-│   ├── topup_coin.php    # Nạp coin
-│   ├── read_story.php    # Trang chi tiết truyện
-│   ├── read_chapter.php  # Trang đọc chương
-│   └── ...
-├── frontend/             # Giao diện người dùng
-│   ├── home.php          # Trang chủ
-│   ├── timkiem.php       # Tìm kiếm (AJAX)
-│   ├── admin/            # Panel quản trị
+btl chuyen de/
+├── backend/                    # Logic xử lý, API, trang đọc
+│   ├── require_admin.php       # Guard admin (pages + API JSON)
+│   ├── require_auth.php        # Guard user đăng nhập + status active
+│   ├── story_config.php        # FREE_CHAPTERS, COINS_PER_CHAPTER, mã danh mục
+│   ├── payment_config.php      # Cấu hình VietQR, gói nạp coin
+│   ├── dangnhap_logic.php      # Xử lý đăng nhập
+│   ├── dangky_logic.php        # Xử lý đăng ký
+│   ├── logout.php
+│   ├── read_story.php          # Chi tiết truyện, bình luận, luot_xem
+│   ├── read_chapter.php        # Đọc chương, paywall
+│   ├── buy_chapter.php         # Mua chương bằng coin
+│   ├── topup_create_order.php  # Tạo đơn nạp coin
+│   ├── topup_confirm_paid.php  # Xác nhận thanh toán demo
+│   ├── topup_coin.php          # Redirect legacy → napcoin.php
+│   ├── search_ajax.php         # API tìm kiếm JSON
+│   ├── add/edit/delete_*.php   # CRUD admin (story, chapter, user)
+│   └── uploads/                # Ảnh bìa upload từ admin
+│
+├── frontend/
+│   ├── home.php                # Trang chủ (modal đăng nhập/đăng ký)
+│   ├── timkiem.php             # Tìm kiếm đầy đủ
+│   ├── napcoin.php             # Chọn gói nạp coin
+│   ├── thanhtoan.php           # Trang QR thanh toán
+│   ├── taikhoan.php            # Thông tin tài khoản
+│   ├── tusach.php              # Tủ sách cá nhân
+│   ├── luutruyen.php           # API lưu truyện (POST)
+│   ├── _category_template.php  # Template danh mục dùng chung
+│   ├── tho_tanvan.php, trinhtham.php, …  # Trang theo thể loại
+│   ├── includes/paths.php      # app_url(), app_login_url()
+│   ├── admin/                  # Panel quản trị
+│   │   ├── index.php           # Dashboard
+│   │   ├── thongke.php         # Thống kê chi tiết
+│   │   ├── stories.php         # Quản lý truyện
+│   │   ├── chapter.php         # Quản lý chương
+│   │   └── users.php           # Quản lý người dùng
 │   ├── css/
-│   ├── js/
-│   │   └── search-ajax.js
-│   └── _category_template.php
-└── database/
-    ├── connect.php       # Kết nối DB (dùng chính)
-    ├── db_connect.php    # Tạo DB/bảng lần đầu (tùy chọn)
-    └── update_schema.sql # Migration bổ sung
+│   └── js/search-ajax.js
+│
+├── database/
+│   ├── connect.php             # Kết nối DB + auto-migration (dùng chính)
+│   ├── db_connect.php          # Tạo DB/bảng lần đầu (bootstrap)
+│   └── update_schema.sql       # Migration bổ sung (coin, orders, …)
+│
+├── code/images/                # Ảnh bìa mặc định hiển thị trên site
+└── README.md
 ```
 
 ---
 
-## Yêu cầu hệ thống
+## Cơ sở dữ liệu
 
-- [XAMPP](https://www.apachefriends.org/) (hoặc WAMP/Laragon) với **Apache** + **MySQL**
-- PHP **7.4** trở lên (khuyến nghị 8.x)
-- Trình duyệt hiện đại (Chrome, Edge, Firefox)
+**Database:** `db_BTL5` (cấu hình tại `database/connect.php`)
+
+### Bảng chính
+
+| Bảng | Mô tả |
+|------|--------|
+| `users` | Tài khoản: username, email, sdt, password, coins, role, status |
+| `stories` | Truyện: title, description (mã danh mục), cover, status, luot_xem |
+| `chapters` | Chương: story_id, title, content, chapter_number |
+| `user_stories` | Truyện đã lưu vào tủ sách |
+| `purchased_chapters` | Chương đã mua bằng coin |
+| `coin_transactions` | Lịch sử nạp/tiêu coin |
+| `topup_orders` | Đơn nạp coin (pending / paid) |
+| `comments` | Bình luận (hỗ trợ parent_id cho reply) |
+
+### Auto-migration
+
+File `database/connect.php` tự thêm cột/bảng thiếu khi chạy (coins, role, status, luot_xem, purchased_chapters, …) — phù hợp môi trường demo trên XAMPP.
 
 ---
 
-## Cài đặt
+## Luồng nghiệp vụ
 
-### 1. Clone / copy project
-
-Đặt thư mục project vào `htdocs` (ví dụ):
+### Đăng nhập
 
 ```
-D:\xampp\htdocs\doanchuyende
+User → home.php (modal) → POST dangnhap_logic.php
+  → Kiểm tra password + status ≠ banned
+  → Set session (user_id, username, role)
+  → Redirect về trang trước (napcoin, read_chapter, …) hoặc home
 ```
 
-### 2. Bật dịch vụ
+Trang yêu cầu đăng nhập dùng `require_active_user()` — user bị ban giữa phiên sẽ bị logout ngay.
 
-Mở **XAMPP Control Panel** → Start **Apache** và **MySQL**.
+### Đọc & mua chương
 
-### 3. Cấu hình database
+```
+read_story.php → tăng luot_xem (GET)
+read_chapter.php → chương ≤ 3: free
+                 → chương > 3: kiểm tra purchased_chapters hoặc khóa paywall
+                 → admin: bypass paywall
+buy_chapter.php  → trừ coin (transaction) + ghi purchased_chapters
+```
 
-Mặc định trong `database/connect.php`:
+Hằng số nghiệp vụ tập trung tại `backend/story_config.php`:
+
+```php
+FREE_CHAPTERS = 3
+COINS_PER_CHAPTER = 3
+```
+
+### Nạp coin (demo VietQR)
+
+```
+napcoin.php → POST topup_create_order.php → thanhtoan.php?order_id=…
+           → Hiển thị QR VietQR (img.vietqr.io)
+           → POST topup_confirm_paid.php → cộng coin + ghi coin_transactions
+           → Quay lại napcoin.php?success=1
+```
+
+> Đây là **mô phỏng**: người dùng bấm xác nhận đã chuyển khoản, hệ thống cộng coin — **không** có webhook ngân hàng thật.
+
+### Admin CRUD
+
+```
+frontend/admin/*.php → require_admin()
+backend/*_story|chapter|user.php → require_admin_api()
+Xóa truyện → cascade: chapters, comments, user_stories (transaction)
+```
+
+---
+
+## Cài đặt & chạy
+
+### Yêu cầu
+
+- [XAMPP](https://www.apachefriends.org/) (Apache + MySQL) hoặc WAMP / Laragon
+- PHP **7.4+** (khuyến nghị 8.x)
+- Trình duyệt Chrome / Edge / Firefox
+
+### Bước 1 — Copy project
+
+Đặt thư mục vào `htdocs`, ví dụ:
+
+```
+C:\xampp\htdocs\btl chuyen de
+```
+
+Hoặc tạo **junction/symlink** trỏ tới thư mục gốc (URL ngắn hơn):
+
+```
+http://localhost/btl-nhom1-chuyendedinhhuong/frontend/home.php
+```
+
+### Bước 2 — Bật dịch vụ
+
+XAMPP Control Panel → **Start Apache** và **MySQL**.
+
+### Bước 3 — Database
+
+**Cách 1 (khuyến nghị):** Truy cập bất kỳ trang nào có include `database/connect.php` — hệ thống tự migrate.
+
+**Cách 2:** Chạy `database/db_connect.php` một lần để tạo DB + bảng gốc, sau đó import `database/update_schema.sql` nếu cần.
+
+**Cấu hình mặc định** (`database/connect.php`):
 
 | Tham số | Giá trị |
 |---------|---------|
 | Host | `localhost` |
 | User | `root` |
-| Password | *(để trống)* |
+| Password | *(trống)* |
 | Database | `db_BTL5` |
 
-**Cách 1 — Tự tạo khi chạy lần đầu**
+### Bước 4 — Ảnh bìa
 
-Truy cập một trang có include `database/db_connect.php` hoặc mở project; file này có thể tạo database và các bảng cơ bản.
+- Ảnh có sẵn: `code/images/`
+- Ảnh upload admin: `backend/uploads/`
 
-**Cách 2 — Import thủ công**
+Tạo thư mục `code/images/` nếu chưa có và thêm ảnh mẫu.
 
-1. Mở [phpMyAdmin](http://localhost/phpmyadmin)
-2. Tạo database `db_BTL5`, collation `utf8mb4_unicode_ci`
-3. Chạy script trong `database/db_connect.php` (logic CREATE TABLE) hoặc `database/update_schema.sql` cho bảng coin/bình luận
+### Bước 5 — Truy cập
 
-**Cột `role` cho admin** (nếu chưa có):
+| Trang | URL mẫu |
+|-------|---------|
+| Trang chủ | `http://localhost/btl chuyen de/frontend/home.php` |
+| Tìm kiếm | `…/frontend/timkiem.php` |
+| Nạp coin | `…/frontend/napcoin.php` |
+| Admin | `…/frontend/admin/index.php` |
+
+*(Thay path theo tên thư mục hoặc junction của bạn.)*
+
+---
+
+## Tài khoản & phân quyền
+
+### Tạo user thường
+
+Form **Đăng ký** trên trang chủ (modal) hoặc admin thêm user tại `admin/users.php`.
+
+### Tạo admin
+
+1. Đăng ký tài khoản bình thường
+2. Trong phpMyAdmin:
 
 ```sql
-ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'user';
-UPDATE users SET role = 'admin' WHERE username = 'ten_admin';
+UPDATE users SET role = 'admin' WHERE username = 'ten_tai_khoan';
 ```
 
-### 4. Ảnh bìa sách
+3. Đăng nhập lại
 
-- Ảnh mặc định đặt tại: `code/images/` (đường dẫn tương đối từ `frontend/`)
-- Ảnh upload từ admin lưu tại: `backend/uploads/`
+### Phân quyền
 
-Nếu thiếu thư mục `code/images`, tạo thủ công và thêm ảnh mẫu hoặc upload qua admin.
+| Role | Quyền |
+|------|--------|
+| `user` | Đọc, mua chương, nạp coin, tủ sách, bình luận |
+| `admin` | Toàn bộ panel admin; **không** nạp coin / tủ sách |
 
-### 5. Truy cập website
+### Khóa tài khoản
 
-| Trang | URL |
-|-------|-----|
-| Trang chủ | http://localhost/doanchuyende/frontend/home.php |
-| Tìm kiếm | http://localhost/doanchuyende/frontend/timkiem.php |
-| Admin | http://localhost/doanchuyende/frontend/admin/index.php |
-
-*(Đổi `doanchuyende` nếu tên thư mục của bạn khác.)*
+Admin đặt `status = 'banned'` → user không đăng nhập được; session cũ bị chặn khi truy cập trang bảo vệ.
 
 ---
 
-## Tài khoản demo
+## Cấu hình
 
-Tạo tài khoản qua form **Đăng ký** trên trang chủ.
+### Coin & paywall — `backend/story_config.php`
 
-Tài khoản **admin**: sau khi đăng ký, gán `role = 'admin'` trong bảng `users` (xem SQL ở trên), rồi đăng nhập lại.
+```php
+define('FREE_CHAPTERS', 3);      // Số chương miễn phí đầu
+define('COINS_PER_CHAPTER', 3);  // Giá mỗi chương trả phí
+```
+
+### Thanh toán demo — `backend/payment_config.php`
+
+```php
+PAYMENT_BANK          // Mã ngân hàng (vd: MB)
+PAYMENT_ACCOUNT       // Số tài khoản nhận
+PAYMENT_ACCOUNT_NAME  // Tên chủ TK
+payment_valid_packs() // [10, 30, 50, 100, 200, 500] coin
+```
+
+Tỷ giá demo: **1 coin = 10 VND**.
+
+### Mã danh mục — `stories.description`
+
+Cột `description` lưu **mã thể loại** (không phải mô tả dài). Ví dụ:
+
+| Mã | Trang frontend |
+|----|----------------|
+| `home` | Trang chủ / nổi bật |
+| `tho` | `tho_tanvan.php` |
+| `trinhtham` | `trinhtham.php` |
+| `taichinh` | `taichinhcanhan.php` |
+| `tinhcam` | `tinhcam.php` |
+| `nam` / `nu` | `nam.php` / `nu.php` |
+| … | Xem đầy đủ trong `story_config.php` |
 
 ---
 
-## API tìm kiếm AJAX
+## API & endpoint chính
+
+### Tìm kiếm AJAX
 
 ```
-GET /backend/search_ajax.php?q={từ_khóa}&limit={số_lượng}
+GET /backend/search_ajax.php?q={từ_khóa}&limit={1-50}
 ```
 
-| Tham số | Mô tả |
-|---------|--------|
-| `q` | Từ khóa (tối thiểu 2 ký tự) |
-| `limit` | Số kết quả tối đa (1–50, mặc định 12) |
+Phản hồi JSON: `{ success, count, keyword, items[] }`.
 
-**Ví dụ:**
+### Nạp coin
 
-```
-http://localhost/doanchuyende/backend/search_ajax.php?q=thơ&limit=8
-```
+| Method | File | Mô tả |
+|--------|------|--------|
+| POST | `topup_create_order.php` | Tạo đơn, redirect `thanhtoan.php` |
+| POST | `topup_confirm_paid.php` | Xác nhận demo, cộng coin |
 
-**Phản hồi JSON:**
+### Mua chương
 
-```json
-{
-  "success": true,
-  "count": 2,
-  "keyword": "thơ",
-  "items": [
-    {
-      "id": 1,
-      "title": "Tên sách",
-      "cover": "../code/images/ten_anh.jpg",
-      "category": "Thơ - Tản văn",
-      "url": "../backend/read_story.php?story_id=1"
-    }
-  ]
-}
-```
+| Method | File | Mô tả |
+|--------|------|--------|
+| POST | `buy_chapter.php` | Trừ coin, ghi `purchased_chapters` |
+
+### Admin API (JSON, cần session admin)
+
+| File | Chức năng |
+|------|-----------|
+| `add/edit/delete_story.php` | CRUD truyện |
+| `edit_chapter.php`, `delete_chapter.php` | CRUD chương |
+| `add/edit/delete_user.php` | CRUD user |
 
 ---
 
-## Mô hình coin (demo)
+## Hạn chế & ghi chú
 
-| Quy tắc | Giá trị |
-|---------|---------|
-| Chương miễn phí | 3 chương đầu |
-| Giá mỗi chương | 3 coin |
-| Tỷ giá nạp (demo) | 1 coin = 10 VND |
-| Gói nạp | 10, 30, 50, 100, 200, 500 coin |
-
-> **Lưu ý:** Nạp coin hiện chỉ **mô phỏng** (cộng coin khi submit form), chưa tích hợp VNPay/Momo.
+| Hạng mục | Ghi chú |
+|----------|---------|
+| Thanh toán | Demo VietQR — không xác minh chuyển khoản thật |
+| Bảo mật | Chưa có CSRF token; phù hợp môi trường đồ án / localhost |
+| Ảnh bìa | Upload admin (`backend/uploads/`) và hiển thị (`code/images/`) có thể cần đồng bộ path thủ công |
+| `topup_coin.php` | File legacy, chỉ redirect sang `napcoin.php` |
 
 ---
 
-## Danh mục sách (`stories.description`)
+## Kiểm thử nhanh (checklist)
 
-Cột `description` trong bảng `stories` được dùng làm **mã danh mục**, ví dụ:
-
-| Mã | Trang |
-|----|--------|
-| `home` | Trang chủ (nổi bật) |
-| `tho` | Thơ - Tản văn |
-| `trinhtham` | Trinh thám |
-| `taichinh` | Tài chính cá nhân |
-| … | Các file `frontend/*.php` tương ứng |
-
----
-
-## Hạn chế đã biết
-
-- Một số API backend admin chưa kiểm tra session admin đầy đủ — chỉ nên dùng trong môi trường demo/đồ án.
-- Chưa có CSRF token trên form POST.
-- Nạp coin không phải thanh toán thật.
-- Có nhiều file kết nối DB (`connect.php`, `db_connect.php`) — nên thống nhất cấu hình tại `database/connect.php`.
-
----
-
-## Phát triển thêm (gợi ý)
-
-- [ ] Middleware `require_admin.php` cho toàn bộ API admin
-- [ ] Tách cấu hình DB ra `config.php` / biến môi trường
-- [ ] Tích hợp VNPay / Momo cho nạp coin
-- [ ] Bảng `categories` riêng thay vì dùng `description`
-- [ ] File `.gitignore` (bỏ qua `uploads/`, config local)
+- [ ] Đăng ký / đăng nhập / đăng xuất
+- [ ] Đọc 3 chương đầu miễn phí; chương 4 yêu cầu coin
+- [ ] Nạp coin qua QR → coin tăng
+- [ ] Mua chương → đọc được nội dung
+- [ ] Lưu truyện vào tủ sách
+- [ ] Bình luận & trả lời
+- [ ] Admin: CRUD truyện/chương/user, xem thống kê
+- [ ] User `banned` không đăng nhập / bị chặn khi đang online
+- [ ] `luot_xem` tăng khi mở trang truyện
 
 ---
 
 ## Tác giả
 
-- Họ tên: *(điền tên nhóm / cá nhân)*
-- Lớp / Trường: *(điền thông tin đồ án)*
-- Năm: 2025–2026
+| | |
+|---|---|
+| **Đề tài** | Xây dựng website đọc sách/truyện online KEWE |
+| **Môn học** | Chuyên đề định hướnghướng |
+| **Nhóm** | Nhóm 1|
+| **Giảng viên hướng dẫndẫn** | *Ths. Ngô Ngọc AnhAnh* |
+| **Năm học** | 2025 – 2026 |
 
 ---
 
 ## Giấy phép
 
-Dự án phục vụ mục đích **học tập / đồ án**. Vui lòng không sử dụng cho mục đích thương mại khi chưa hoàn thiện bảo mật.
+Dự án phục vụ mục đích **học tập / đồ án chuyên đề**. Không khuyến khích triển khai production khi chưa hoàn thiện bảo mật và tích hợp thanh toán thật.

@@ -4,9 +4,8 @@ include '../backend/dangnhap_logic.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 include_once '../database/connect.php';
-
-const FREE_CHAPTERS     = 3;
-const COINS_PER_CHAPTER = 3;
+require_once __DIR__ . '/story_config.php';
+require_once __DIR__ . '/../frontend/includes/paths.php';
 
 if (!isset($_GET['chapter_id'])) die("Thiếu ID chương");
 $chapter_id = intval($_GET['chapter_id']);
@@ -22,6 +21,7 @@ $current_no = $chapter['chapter_number'];
 $is_free   = ($current_no <= FREE_CHAPTERS);
 $is_locked = false;
 $user_id   = $_SESSION['user_id'] ?? null;
+$is_admin  = (($_SESSION['role'] ?? '') === 'admin');
 $user_coins = 0;
 
 if (!$is_free) {
@@ -35,6 +35,10 @@ if (!$is_free) {
             $user_coins = $u['coins'] ?? 0;
         }
     }
+}
+
+if ($is_admin) {
+    $is_locked = false;
 }
 
 // Nav
@@ -364,11 +368,12 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     <span class="sep">/</span>
     <span style="color:var(--text-dim);font-size:12px">Ch.<?= $current_no ?></span>
 
-    <?php if ($user_id): ?>
+    <?php if ($user_id && !$is_admin): ?>
         <a href="../frontend/napcoin.php" class="coin-pill">
             <i class="fa-solid fa-coins"></i> <?= number_format($display_coins) ?>
         </a>
     <?php else: ?>
+
         <a href="#" class="coin-pill js-open-login" style="color:#666;border-color:#333;background:transparent">
             <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
         </a>
@@ -483,19 +488,25 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
                                 <i class="fa-solid fa-coins"></i> Dùng <?= COINS_PER_CHAPTER ?> coin để đọc
                             </button>
                         </form>
-                        <a href="../frontend/napcoin.php" class="btn-topup"><i class="fa-solid fa-plus"></i> Nạp thêm</a>
+                        <?php if (!$is_admin): ?>
+                            <a href="../frontend/napcoin.php" class="btn-topup"><i class="fa-solid fa-plus"></i> Nạp thêm</a>
+                        <?php endif; ?>
                     <?php else: ?>
-                        <a href="../frontend/napcoin.php?chapter_id=<?= $chapter_id ?>&need=<?= COINS_PER_CHAPTER ?>" class="btn-unlock">
-                            <i class="fa-solid fa-coins"></i> Nạp coin để đọc
-                        </a>
+                        <?php if (!$is_admin): ?>
+                            <a href="../frontend/napcoin.php?chapter_id=<?= $chapter_id ?>&need=<?= COINS_PER_CHAPTER ?>" class="btn-unlock">
+                                <i class="fa-solid fa-coins"></i> Nạp coin để đọc
+                            </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="paywall-actions">
                     <a href="#" class="btn-login js-open-login">
-                        <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập để đọc
+                    <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập để đọc
                     </a>
-                    <a href="../frontend/napcoin.php" class="btn-topup"><i class="fa-solid fa-circle-info"></i> Về coin</a>
+                    <?php if (!$is_admin): ?>
+                        <a href="../frontend/napcoin.php" class="btn-topup"><i class="fa-solid fa-circle-info"></i> Về coin</a>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
