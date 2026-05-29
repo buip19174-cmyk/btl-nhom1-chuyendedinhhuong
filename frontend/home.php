@@ -2,10 +2,6 @@
 session_start();
 include '../backend/dangky_logic.php';
 include '../backend/dangnhap_logic.php';
-require_once __DIR__ . '/includes/paths.php';
-/** @var mysqli $con */
-
-$adminUrl = app_url('frontend/admin/index.php');
 
 // Banner — 4 truyện đầu
 $banner_result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 4");
@@ -447,7 +443,10 @@ $categories = [
         <div class="search-form-wrap">
             <form action="timkiem.php" method="GET" class="search-form" data-ajax-search>
                 <input type="text" name="q" placeholder="Tìm sách, truyện..." autocomplete="off">
-                <button type="submit" class="btn-timkiem"><i class="fas fa-search"></i> Tìm</button>
+
+                <button type="submit" class="btn-timkiem">
+                    <i class="fas fa-search"></i> Tìm
+                </button>
             </form>
         </div>
     </div>
@@ -464,13 +463,8 @@ $categories = [
                     </div>
                     <ul class="dropdown-menu-list">
                         <li><a href="taikhoan.php"><i class="fas fa-user-cog"></i> Tài khoản</a></li>
-                        <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
-                            <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
-                            <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
-                        <?php endif; ?>
-                        <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
-                            <li><a href="<?= htmlspecialchars($adminUrl) ?>"><i class="fa-solid fa-shield-halved"></i> Quản trị</a></li>
-                        <?php endif; ?>
+                        <li><a href="tusach.php"><i class="fas fa-book"></i> Tủ sách cá nhân</a></li>
+                        <li><a href="napcoin.php"><i class="fas fa-coins"></i> Nạp Coin</a></li>
                         <hr>
                         <li><a href="../backend/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>
@@ -502,12 +496,10 @@ $categories = [
                         <p class="slide-desc">Khám phá ngay câu chuyện hấp dẫn này trên KEWE — đọc miễn phí 3 chương đầu.</p>
                         <div class="slide-actions">
                             <a href="<?= $url ?>" class="slide-btn"><i class="fa-solid fa-book-open"></i> Đọc ngay</a>
-                            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
-                                <form method="POST" action="luutruyen.php" style="display:inline">
-                                    <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
-                                    <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
-                                </form>
-                            <?php endif; ?>
+                            <form method="POST" action="luutruyen.php" style="display:inline">
+                                <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
+                                <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -571,17 +563,16 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
-                    <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
-                        <form action="luutruyen.php" method="POST">
-                            <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                            <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
-                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
-                                <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
-                            </button>
-                        </form>
-                    <?php endif; ?>
+                    <form action="luutruyen.php" method="POST">
+                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
+                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
+                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
+                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
+            
             <?php endforeach; ?>
         <?php else: ?>
             <div class="empty-books">
@@ -621,12 +612,10 @@ $categories = [
         <div class="footer-col">
             <h4>Tài khoản</h4>
             <a href="taikhoan.php">Thông tin tài khoản</a>
-            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
-                <a href="tusach.php">Tủ sách cá nhân</a>
-                <a href="napcoin.php">Nạp Coin</a>
-            <?php endif; ?>
-            <a href="javascript:void(0);" id="footer-open-register">Đăng ký</a>
-            <a href="javascript:void(0);" id="footer-open-login">Đăng nhập</a>
+            <a href="tusach.php">Tủ sách cá nhân</a>
+            <a href="napcoin.php">Nạp Coin</a>
+            <a href="dangky_form.php">Đăng ký</a>
+            <a href="dangnhap_form.php">Đăng nhập</a>
         </div>
     </div>
     <div class="footer-bottom">
@@ -642,12 +631,10 @@ $categories = [
 <script>alert("<?= addslashes($register_message) ?>");</script>
 <?php endif; ?>
 
-<?php if (!empty($login_message)): ?>
-<script>alert("<?= addslashes($login_message) ?>");</script>
-<?php endif; ?>
 
-<?php if (isset($_GET['banned']) && $_GET['banned'] === '1'): ?>
-<script>alert("Tài khoản đã bị khóa.");</script>
+<?php if (!empty($message)): ?>
+<script>alert("<?= addslashes($message) ?>");</script>
+>>>>>>> 12e755f37db22e451acc4f09cc3ed189d7acbba5
 <?php endif; ?>
 
 <?php if (isset($_GET['login']) && $_GET['login'] === 'success'): ?>
@@ -668,6 +655,7 @@ new Swiper(".bannerSwiper", {
 </script>
 <script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
+
 <script>
 (function() {
     const params = new URLSearchParams(window.location.search);
@@ -690,50 +678,7 @@ new Swiper(".bannerSwiper", {
         if (m) m.style.setProperty('display', 'flex', 'important');
     });
 })();
-// Live search
-const searchInput = document.getElementById('searchInput');
-const dropdown    = document.getElementById('searchDropdown');
-let debounceTimer;
-
-searchInput.addEventListener('input', function() {
-    clearTimeout(debounceTimer);
-    const q = this.value.trim();
-    if (q.length < 1) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
-
-    debounceTimer = setTimeout(() => {
-        fetch('../backend/search_ajax.php?q=' + encodeURIComponent(q))
-            .then(r => r.json())
-            .then(data => {
-                if (data.length === 0) {
-                    dropdown.innerHTML = '<div class="sd-empty"><i class="fa-solid fa-search" style="opacity:.3;margin-right:6px"></i>Không tìm thấy "' + q + '"</div>';
-                } else {
-                    let html = '';
-                    data.forEach(item => {
-                        html += '<a href="../backend/read_story.php?story_id=' + item.id + '" class="sd-item">';
-                        html += '<img src="../code/images/' + item.cover + '" onerror="this.src=\'img/sach2.jpg\'">';
-                        html += '<span class="sd-title">' + item.title + '</span>';
-                        html += '</a>';
-                    });
-                    html += '<div class="sd-footer"><a href="timkiem.php?q=' + encodeURIComponent(q) + '">Xem tất cả kết quả →</a></div>';
-                    dropdown.innerHTML = html;
-                }
-                dropdown.classList.add('open');
-            })
-            .catch(() => { dropdown.classList.remove('open'); });
-    }, 250);
-});
-
-// Đóng dropdown khi click ngoài
-document.addEventListener('click', function(e) {
-    if (!document.getElementById('searchForm').contains(e.target)) {
-        dropdown.classList.remove('open');
-    }
-});
-
-// Mở lại khi focus vào input có text
-searchInput.addEventListener('focus', function() {
-    if (this.value.trim().length >= 1 && dropdown.innerHTML) dropdown.classList.add('open');
-});
 </script>
+
 </body>
 </html>

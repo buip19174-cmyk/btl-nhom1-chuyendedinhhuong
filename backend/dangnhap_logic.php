@@ -17,7 +17,8 @@ $login_message = '';
 
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login']))
+{
 
     $username = trim($_POST['username'] ?? '');
 
@@ -36,44 +37,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
     if ($user = $result->fetch_assoc()) {
 
-        if (password_verify($password, $user['password'])) {
+    if (password_verify($password, $user['password'])) {
 
-            if (($user['status'] ?? 'active') === 'banned') {
+        if (($user['status'] ?? 'active') === 'banned') {
 
-                $login_message = "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.";
+            $login_message = "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.";
+
+        } else {
+
+            // Lưu session trước
+            $_SESSION['user_id']  = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role']     = $user['role'];
+
+            // Redirect
+            $redirect = $_POST['redirect'] ?? $_GET['redirect'] ?? '';
+
+            if (
+                $redirect !== '' &&
+                strpos($redirect, "\n") === false &&
+                strpos($redirect, "\r") === false &&
+                !preg_match('/^https?:\/\//i', $redirect) &&
+                strpos($redirect, '//') !== 0
+            ) {
+
+                header("Location: " . $redirect);
 
             } else {
 
-                $_SESSION['user_id'] = $user['id'];
-
-                $_SESSION['username'] = $user['username'];
-
-                $_SESSION['role'] = $user['role'];
-
-
-
-                $redirect = trim($_POST['redirect'] ?? '');
-
-                header('Location: ' . app_safe_redirect($redirect));
-
-                exit();
+                header("Location: ../frontend/home.php?login=success");
 
             }
-        } else {
 
-            $login_message = "Sai mật khẩu, vui lòng thử lại!";
-
+            exit();
         }
 
     } else {
 
-        $login_message = "Tài khoản không tồn tại! Bạn cần đăng ký.";
+        $login_message = "Sai mật khẩu, vui lòng thử lại!";
 
     }
 
-    $stmt->close();
+} else {
 
+    $login_message = "Tài khoản không tồn tại! Bạn cần đăng ký.";
+
+}
 }
 
 ?>
+
+
 
