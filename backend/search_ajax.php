@@ -1,27 +1,12 @@
 <?php
+// API tìm kiếm AJAX - trả về JSON hợp lệ cho dropdown và trang tìm kiếm.
 header('Content-Type: application/json; charset=utf-8');
+include_once __DIR__ . '/../database/connect.php';
 
-include_once '../database/connect.php';
-
-$keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
-$limit   = isset($_GET['limit']) ? (int) $_GET['limit'] : 12;
-$limit   = max(1, min($limit, 50));
-
-if ($keyword === '') {
-    echo json_encode(['success' => true, 'count' => 0, 'items' => [], 'keyword' => '']);
-    exit;
-}
-
-if (mb_strlen($keyword) < 2) {
-    echo json_encode([
-        'success' => true,
-        'count'   => 0,
-        'items'   => [],
-        'keyword' => $keyword,
-        'message' => 'Nhập ít nhất 2 ký tự để tìm kiếm',
-    ]);
-    exit;
-}
+$keyword  = isset($_GET['q']) ? trim($_GET['q']) : '';
+$hasLimit = isset($_GET['limit']);
+$limit    = $hasLimit ? (int) $_GET['limit'] : 8;
+$limit    = max(1, min($limit, 50));
 
 $catLabels = [
     'home'      => 'Nổi bật',
@@ -53,6 +38,29 @@ function search_cover_url(string $cover): string
     return '../code/images/' . $cover;
 }
 
+function send_json($data): void
+{
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($keyword === '') {
+    send_json($hasLimit
+        ? ['success' => true, 'count' => 0, 'items' => [], 'keyword' => '']
+        : []
+    );
+}
+
+if ($hasLimit && mb_strlen($keyword) < 2) {
+    send_json([
+        'success' => true,
+        'count'   => 0,
+        'items'   => [],
+        'keyword' => $keyword,
+        'message' => 'Nhập ít nhất 2 ký tự để tìm kiếm',
+    ]);
+}
+
 $like = '%' . $keyword . '%';
 $sql  = "SELECT id, title, cover, description
          FROM stories
@@ -63,8 +71,10 @@ $stmt = mysqli_prepare($con, $sql);
 
 if (!$stmt) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Lỗi truy vấn']);
-    exit;
+    send_json($hasLimit
+        ? ['success' => false, 'message' => 'Lỗi truy vấn']
+        : []
+    );
 }
 
 mysqli_stmt_bind_param($stmt, 's', $like);
@@ -73,20 +83,27 @@ $result = mysqli_stmt_get_result($stmt);
 
 $items = [];
 while ($row = mysqli_fetch_assoc($result)) {
-    $desc = $row['description'] ?? '';
-    $items[] = [
-        'id'       => (int) $row['id'],
-        'title'    => $row['title'],
-        'cover'    => search_cover_url($row['cover'] ?? ''),
-        'category' => $catLabels[$desc] ?? ($desc !== '' ? $desc : 'Sách'),
-        'url'      => '../backend/read_story.php?story_id=' . (int) $row['id'],
-    ];
+    $id = (int) $row['id'];
+    if ($hasLimit) {
+        $desc = $row['description'] ?? '';
+        $items[] = [
+            'id'       => $id,
+            'title'    => $row['title'],
+            'cover'    => search_cover_url($row['cover'] ?? ''),
+            'category' => $catLabels[$desc] ?? ($desc !== '' ? $desc : 'Sách'),
+            'url'      => '../backend/read_story.php?story_id=' . $id,
+        ];
+    } else {
+        $items[] = [
+            'id'    => $id,
+            'title' => $row['title'],
+            'cover' => $row['cover'],
+        ];
+    }
 }
 mysqli_stmt_close($stmt);
 
-echo json_encode([
-    'success' => true,
-    'count'   => count($items),
-    'items'   => $items,
-    'keyword' => $keyword,
-], JSON_UNESCAPED_UNICODE);
+send_json($hasLimit
+    ? ['success' => true, 'count' => count($items), 'items' => $items, 'keyword' => $keyword]
+    : $items
+);
