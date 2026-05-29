@@ -569,6 +569,7 @@ $categories = [
                     </form>
                 </div>
             </div>
+            
             <?php endforeach; ?>
         <?php else: ?>
             <div class="empty-books">
