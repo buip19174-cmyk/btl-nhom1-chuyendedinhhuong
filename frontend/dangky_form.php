@@ -1,13 +1,12 @@
-
+<div id="registerModal" class="modal" style="display:none">
 <div class="modal-content-inner">
     <span class="close-btn">&times;</span> 
 
-    <form method="POST" action="home.php"> 
+    <form method="POST" action="<?= htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8') ?>"> 
         <h2>Đăng kí tài khoản</h2>
         <input type="tel" name="sdt" placeholder="Số điện thoại" pattern="[0-9]{10}" maxlength="10" required >
         <input type="text" name="username" placeholder="Tên đăng nhập" required>
         <input type="email" name="email" placeholder="Email" required>
-
         <div class="input-group">
             <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
             <i class="fa-solid fa-eye toggle-eye" id="toggleEye"></i>
@@ -22,7 +21,7 @@
 </p>
     </form>
 </div>
-
+</div> 
 <script>
     const passwordInput = document.getElementById("password");
     const toggleEye = document.getElementById("toggleEye");

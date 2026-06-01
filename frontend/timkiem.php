@@ -278,21 +278,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
     </div>
     <?php endif; ?>
 
-    <!-- Gợi ý danh mục -->
-    <div class="suggestions">
-        <h3><i class="fa-solid fa-compass"></i> Gợi ý danh mục</h3>
-        <div class="suggest-chips">
-            <a href="tho_tanvan.php" class="suggest-chip"><i class="fa-solid fa-feather"></i> Thơ - Tản văn</a>
-            <a href="trinhtham.php" class="suggest-chip"><i class="fa-solid fa-magnifying-glass"></i> Trinh thám</a>
-            <a href="taichinhcanhan.php" class="suggest-chip"><i class="fa-solid fa-coins"></i> Tài chính</a>
-            <a href="pt_canhan.php" class="suggest-chip"><i class="fa-solid fa-seedling"></i> Phát triển cá nhân</a>
-            <a href="doanh_nhan.php" class="suggest-chip"><i class="fa-solid fa-briefcase"></i> Doanh nhân</a>
-            <a href="khoahoc_congnghe.php" class="suggest-chip"><i class="fa-solid fa-flask"></i> Khoa học</a>
-            <a href="tamlinh.php" class="suggest-chip"><i class="fa-solid fa-yin-yang"></i> Tâm linh</a>
-            <a href="suckhoe_lamdep.php" class="suggest-chip"><i class="fa-solid fa-heart-pulse"></i> Sức khỏe</a>
-        </div>
-    </div>
-
 </div>
 
 </body>

@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 $message = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 

@@ -270,7 +270,7 @@ $packs = [
                 <i class="fa-solid fa-coins"></i>
                 <?= number_format($current_coins) ?>
             </div>
-            <div class="balance-sub">≈ <?= number_format($current_coins * 10) ?> VND &nbsp;|&nbsp; 1 coin = 10 VND</div>
+            <div class="balance-sub">≈ <?= number_format($current_coins * 100) ?> VND &nbsp;|&nbsp; 1 coin = 100 VND</div>
         </div>
         <div style="text-align:right;color:var(--dim);font-size:13px;">
             <div>📖 3 chương đầu <strong style="color:var(--green)">MIỄN PHÍ</strong></div>

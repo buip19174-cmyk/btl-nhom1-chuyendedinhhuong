@@ -7,7 +7,7 @@ define('PAYMENT_BANK', 'MB');
 define('PAYMENT_ACCOUNT', '0123456789');
 define('PAYMENT_ACCOUNT_NAME', 'KEWE PLATFORM');
 
-/** Gói nạp hợp lệ: coin => VND (1 coin = 10 VND) */
+/** Gói nạp hợp lệ: coin => VND (1 coin = 100 VND) */
 function payment_valid_packs(): array
 {
     return [10, 30, 50, 100, 200, 500];
@@ -15,7 +15,7 @@ function payment_valid_packs(): array
 
 function payment_vnd_for_coins(int $coins): int
 {
-    return $coins * 10;
+    return $coins * 100;
 }
 
 /** Tạo mã đơn nạp duy nhất */

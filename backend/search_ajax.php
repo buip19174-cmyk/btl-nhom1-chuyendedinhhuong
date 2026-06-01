@@ -8,21 +8,7 @@ $hasLimit = isset($_GET['limit']);
 $limit    = $hasLimit ? (int) $_GET['limit'] : 8;
 $limit    = max(1, min($limit, 50));
 
-$catLabels = [
-    'home'      => 'Nổi bật',
-    'tho'       => 'Thơ - Tản văn',
-    'trinhtham' => 'Trinh thám',
-    'taichinh'  => 'Tài chính',
-    'ptcanhan'  => 'Phát triển cá nhân',
-    'doanhnhan' => 'Doanh nhân',
-    'suckhoe'   => 'Sức khỏe',
-    'khoahoc'   => 'Khoa học',
-    'tamlinh'   => 'Tâm linh',
-    'giaoduc'   => 'Giáo dục',
-    'mkt'       => 'Marketing',
-    'tuduy'     => 'Tư duy sáng tạo',
-    'nghethuat' => 'Nghệ thuật sống',
-];
+
 
 function search_cover_url(string $cover): string
 {
@@ -62,11 +48,15 @@ if ($hasLimit && mb_strlen($keyword) < 2) {
 }
 
 $like = '%' . $keyword . '%';
-$sql  = "SELECT id, title, cover, description
-         FROM stories
-         WHERE title LIKE ?
-         ORDER BY title ASC
-         LIMIT {$limit}";
+$sql = "SELECT MIN(id) AS id,
+               TRIM(title) AS title,
+               MIN(cover) AS cover,
+               MIN(description) AS description
+        FROM stories
+        WHERE title LIKE ?
+        GROUP BY LOWER(TRIM(title))
+        ORDER BY title ASC
+        LIMIT {$limit}";
 $stmt = mysqli_prepare($con, $sql);
 
 if (!$stmt) {
@@ -80,27 +70,38 @@ if (!$stmt) {
 mysqli_stmt_bind_param($stmt, 's', $like);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
-
+$seen = [];
 $items = [];
+
 while ($row = mysqli_fetch_assoc($result)) {
+    $titleKey = mb_strtolower(trim($row['title']));
+
+    if (isset($seen[$titleKey])) {
+        continue;
+    }
+
+    $seen[$titleKey] = true;
+
     $id = (int) $row['id'];
+
     if ($hasLimit) {
         $desc = $row['description'] ?? '';
         $items[] = [
             'id'       => $id,
-            'title'    => $row['title'],
+            'title'    => trim($row['title']),
             'cover'    => search_cover_url($row['cover'] ?? ''),
-            'category' => $catLabels[$desc] ?? ($desc !== '' ? $desc : 'Sách'),
+            'category' => $desc !== '' ? $desc : 'Sách',
             'url'      => '../backend/read_story.php?story_id=' . $id,
         ];
     } else {
         $items[] = [
             'id'    => $id,
-            'title' => $row['title'],
+            'title' => trim($row['title']),
             'cover' => $row['cover'],
         ];
     }
 }
+
 mysqli_stmt_close($stmt);
 
 send_json($hasLimit

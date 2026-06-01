@@ -1,5 +1,5 @@
 
-<div id="loginModal" class="modal"> 
+<div id="loginModal" class="modal" style="display:none"> 
     <div class="modal-content-inner">
         <span class="close-btn">&times;</span> 
 
@@ -30,7 +30,6 @@
     </div>
 
     <script>
-        
         (function() {
             // Tìm các phần tử trong phạm vi của form này thôi
             const container = document.currentScript.parentElement;
