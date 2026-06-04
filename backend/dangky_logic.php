@@ -21,19 +21,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     } 
     else {
         
-        $stmt_check = $con->prepare("SELECT username FROM users WHERE username = ? OR email = ?");
-        
-       
+        $stmt_check = $con->prepare("SELECT username, email FROM users WHERE username = ? OR email = ?");
+
         if (!$stmt_check) {
             die("Lỗi SQL (Prepare check): " . $con->error);
         }
 
         $stmt_check->bind_param("ss", $username, $email);
         $stmt_check->execute();
-        $stmt_check->store_result();
-        
-        if ($stmt_check->num_rows > 0) {
-            $register_message = "Username hoặc email đã tồn tại!";
+        $result_check = $stmt_check->get_result();
+
+        if ($result_check->num_rows > 0) {
+            $row_check = $result_check->fetch_assoc();
+            if ($row_check['username'] === $username) {
+                $register_message = "Tên đăng nhập \"$username\" đã được sử dụng!";
+            } else {
+                $register_message = "Email \"$email\" đã được đăng ký!";
+            }
         } else {
             
 

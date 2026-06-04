@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../database/connect.php';
+require_once __DIR__ . '/includes/paths.php';
 
 // Phân trang: 3 hàng x 6 = 18 truyện mỗi trang
 $per_page = 21;
@@ -155,7 +156,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
         <?php foreach ($books as $book): ?>
         <div class="book-card">
             <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
-                <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>"
+                <img src="<?= htmlspecialchars(cover_url($book['cover'])) ?>"
                      alt="<?= htmlspecialchars($book['title']) ?>"
                      onerror="this.src='img/sach2.jpg'">
             </a>
@@ -168,13 +169,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                 <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read">
                     <i class="fa-solid fa-book-open"></i> Đọc
                 </a>
-                <form action="luutruyen.php" method="POST">
-                    <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                    <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
-                    <button type="submit" class="btn-save <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
-                        <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
-                    </button>
-                </form>
+                <?php if (($_SESSION['role'] ?? '') !== 'admin'):
+                    $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
+                    <form action="luutruyen.php" method="POST">
+                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
+                        <button type="submit" class="btn-save <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
+                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                        </button>
+                    </form>
+                <?php endif; ?>
             </div>
         </div>
         <?php endforeach; ?>

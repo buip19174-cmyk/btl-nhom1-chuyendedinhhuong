@@ -373,11 +373,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
             <i class="fa-solid fa-coins"></i> <?= number_format($display_coins) ?>
         </a>
     <?php else: ?>
-<<<<<<< HEAD
         <a href="<?= htmlspecialchars(app_login_url($_SERVER['REQUEST_URI'])) ?>" class="coin-pill" style="color:#666;border-color:#333;background:transparent">
-=======
-        <a href="#" class="coin-pill js-open-login" style="color:#666;border-color:#333;background:transparent">
->>>>>>> bpa
             <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
         </a>
     <?php endif; ?>
@@ -504,11 +500,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
                 </div>
             <?php else: ?>
                 <div class="paywall-actions">
-<<<<<<< HEAD
                     <a href="<?= htmlspecialchars(app_login_url($_SERVER['REQUEST_URI'])) ?>" class="btn-login">
-=======
-                    <a href="#" class="btn-login js-open-login">
->>>>>>> bpa
                         <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập để đọc
                     </a>
                     <?php if (!$is_admin): ?>
@@ -525,22 +517,22 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
 <?php if (!$user_id): ?>
 <div id="loginModal" class="modal" style="display:none">
     <div class="reader-modal-content">
-        <span class="close-btn" aria-label="Dong">&times;</span>
+        <span class="close-btn" aria-label="Đóng">&times;</span>
         <form method="POST" action="read_chapter.php?chapter_id=<?= $chapter_id ?>">
-            <h2>Dang nhap</h2>
-            <input type="hidden" name="redirect" value="read_chapter.php?chapter_id=<?= $chapter_id ?>">
-            <input type="text" name="username" placeholder="Ten dang nhap" required>
+            <h2>Đăng nhập</h2>
+            <input type="hidden" name="redirect" value="<?= htmlspecialchars(app_url('backend/read_chapter.php') . '?chapter_id=' . $chapter_id) ?>">
+            <input type="text" name="username" placeholder="Tên đăng nhập" required>
             <div class="input-group">
-                <input type="password" name="password" id="readerLoginPassword" placeholder="Nhap mat khau" required>
+                <input type="password" name="password" id="readerLoginPassword" placeholder="Nhập mật khẩu" required>
                 <i class="fa-solid fa-eye" id="readerTogglePassword" aria-hidden="true"></i>
             </div>
-            <button type="submit" name="login">Dang nhap</button>
+            <button type="submit" name="login">Đăng nhập</button>
             <?php if (!empty($message)): ?>
                 <p class="message"><?= htmlspecialchars($message) ?></p>
             <?php endif; ?>
             <p style="margin-top: 15px; text-align: center;">
-                Chua co tai khoan?
-                <a href="../frontend/home.php">Dang ky</a>
+                Chưa có tài khoản?
+                <a href="<?= htmlspecialchars(app_url('frontend/home.php')) ?>?open=register">Đăng ký</a>
             </p>
         </form>
     </div>

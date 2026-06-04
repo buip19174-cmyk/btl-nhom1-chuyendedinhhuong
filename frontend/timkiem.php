@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../database/connect.php';
+require_once __DIR__ . '/includes/paths.php';
 
 $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
 $safe_kw = mysqli_real_escape_string($con, $keyword);
@@ -237,7 +238,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
             <?php foreach ($results as $book): ?>
             <div class="result-card">
                 <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>">
-                    <img src="../code/images/<?= htmlspecialchars($book['cover']) ?>"
+                    <img src="<?= htmlspecialchars(cover_url($book['cover'])) ?>"
                          alt="<?= htmlspecialchars($book['title']) ?>"
                          onerror="this.src='img/sach2.jpg'">
                 </a>

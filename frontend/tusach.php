@@ -414,7 +414,7 @@ $avatar_letter = mb_strtoupper(mb_substr($username, 0, 1));
             <?php while ($s = mysqli_fetch_assoc($saved_stories)): ?>
             <div class="story-card">
                 <?php if ($s['cover']): ?>
-                    <img src="../code/images/<?php echo htmlspecialchars($s['cover']); ?>"
+                    <img src="<?php echo htmlspecialchars(cover_url($s['cover'])); ?>"
                          class="story-cover"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                     <div class="story-cover-placeholder" style="display:none">
@@ -492,7 +492,7 @@ $avatar_letter = mb_strtoupper(mb_substr($username, 0, 1));
         <div class="bought-group">
             <div class="bought-group-header">
                 <?php if ($g['cover']): ?>
-                    <img src="../code/images/<?php echo htmlspecialchars($g['cover']); ?>"
+                    <img src="<?php echo htmlspecialchars(cover_url($g['cover'])); ?>"
                          class="bought-cover"
                          onerror="this.style.display='none'">
                 <?php endif; ?>

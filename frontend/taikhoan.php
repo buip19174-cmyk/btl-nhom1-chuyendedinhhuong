@@ -370,7 +370,7 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
                 <a href="tusach.php" class="nav-link">
                     <i class="fa-solid fa-book-open"></i> Tủ sách cá nhân
                 </a>
-                <a href="napcoin.php" class="nav-link">
+                <a href="#giao-dich" class="nav-link">
                     <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử giao dịch
                 </a>
             <?php endif; ?>
@@ -439,7 +439,7 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
 
         <?php if (!$is_admin): ?>
             <!-- Lịch sử giao dịch -->
-            <div class="section-card">
+            <div class="section-card" id="giao-dich">
                 <div class="section-head">
                     <i class="fa-solid fa-receipt"></i> Giao dịch gần đây
                 </div>
@@ -461,7 +461,7 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
                     <?php endwhile; ?>
                     <div style="padding:12px 22px;border-top:1px solid var(--border)">
                         <a href="napcoin.php" style="font-size:13px;color:var(--dim);text-decoration:none">
-                            Xem tất cả <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+                            Nạp thêm Coin <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
                         </a>
                     </div>
                 <?php else: ?>

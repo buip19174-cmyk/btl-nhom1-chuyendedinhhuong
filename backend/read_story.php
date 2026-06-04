@@ -527,10 +527,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 
 <!-- HERO -->
 <section class="story-hero">
-    <div class="hero-bg" style="background-image:url('../code/images/<?= htmlspecialchars($story['cover']) ?>')"></div>
+    <div class="hero-bg" style="background-image:url('<?= htmlspecialchars(cover_url($story['cover'])) ?>')"></div>
     <div class="hero-overlay"></div>
     <div class="hero-content">
-        <img src="../code/images/<?= htmlspecialchars($story['cover']) ?>"
+        <img src="<?= htmlspecialchars(cover_url($story['cover'])) ?>"
              class="cover-img"
              alt="<?= htmlspecialchars($story['title']) ?>"
              onerror="this.src='../frontend/img/sach2.jpg'">
