@@ -9,8 +9,12 @@ $story_id = isset($_POST['story_id']) ? intval($_POST['story_id']) : 0;
 $title_raw = trim($_POST['title'] ?? '');
 $content_raw = trim($_POST['content'] ?? '');
 
+header('Content-Type: application/json; charset=utf-8');
 if ($story_id <= 0) {
-    echo "Thiếu story_id hợp lệ!";
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Thiếu story_id hợp lệ!'
+    ]);
     exit;
 }
 if ($title_raw === '') {
@@ -31,9 +35,15 @@ if($id > 0){
                 content = '$content'
             WHERE id = $id AND story_id = $story_id";
     if(mysqli_query($con, $sql)){
-        echo "Cập nhật thành công!";
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Cập nhật thành công!'
+    ]);
     }else{
-        echo "Lỗi: " . mysqli_error($con);
+        echo json_encode([
+            'status' => 'error',
+            'message' => mysqli_error($con)
+        ]);
     }
 }else{
     // ===== INSERT =====
@@ -51,9 +61,15 @@ if($id > 0){
             VALUES
             ('$story_id', '$next_number', '$title', '$content')";
     if(mysqli_query($con, $sql)){
-        echo "Thêm chương thành công!";
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Thêm chương thành công!'
+    ]);
     }else{
-        echo "Lỗi: " . mysqli_error($con);
+        echo json_encode([
+            'status' => 'error',
+            'message' => mysqli_error($con)
+        ]);
     }
 }
 ?>
