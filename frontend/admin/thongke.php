@@ -45,6 +45,18 @@ $total_chapter_unlocks = get_count(
 
 // Xác định bộ lọc thời gian doanh thu (mặc định là 7 ngày)
 $filter = $_GET['filter'] ?? '7_days';
+$custom_start = $_GET['custom_start'] ?? '';
+$custom_end = $_GET['custom_end'] ?? '';
+$valid_filters = ['7_days', 'this_month', 'this_year', 'custom'];
+if (!in_array($filter, $valid_filters, true)) {
+    $filter = '7_days';
+}
+
+function thongke_valid_date(string $date): bool
+{
+    $dt = DateTime::createFromFormat('Y-m-d', $date);
+    return $dt && $dt->format('Y-m-d') === $date;
+}
 
 // Cấu hình khoảng thời gian và định dạng SQL/Hiển thị dựa theo bộ lọc
 switch ($filter) {
@@ -60,6 +72,24 @@ switch ($filter) {
         $interval_format = 'Y-m';
         $display_format = 'm/Y';
         break;
+    case 'custom':
+        if (thongke_valid_date($custom_start) && thongke_valid_date($custom_end)) {
+            $start_date = $custom_start;
+            $end_date = $custom_end;
+            if ($start_date > $end_date) {
+                [$start_date, $end_date] = [$end_date, $start_date];
+                [$custom_start, $custom_end] = [$start_date, $end_date];
+            }
+        } else {
+            $start_date = date('Y-m-d', strtotime('-6 days'));
+            $end_date = date('Y-m-d');
+            $filter = '7_days';
+            $custom_start = '';
+            $custom_end = '';
+        }
+        $interval_format = 'Y-m-d';
+        $display_format = 'd/m';
+        break;
     case '7_days':
     default:
         $start_date = date('Y-m-d', strtotime('-6 days'));
@@ -69,8 +99,15 @@ switch ($filter) {
         break;
 }
 
-// Định nghĩa cách gom nhóm trong câu lệnh SQL tùy theo bộ lọc ngày hay tháng
-$group_by_sql = ($filter === 'this_year') ? "DATE_FORMAT(created_at, '%Y-%m')" : "DATE(created_at)";
+// Nếu khoảng cách ngày ở chế độ custom > 366 ngày, tự động chuyển sang gom nhóm theo tháng để tránh quá tải biểu đồ
+$diff_days = (strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24);
+if ($filter === 'custom' && $diff_days > 366) {
+    $group_by_sql = "DATE_FORMAT(created_at, '%Y-%m')";
+    $interval_format = 'Y-m';
+    $display_format = 'm/Y';
+} else {
+    $group_by_sql = ($filter === 'this_year') ? "DATE_FORMAT(created_at, '%Y-%m')" : "DATE(created_at)";
+}
 
 // Truy vấn lấy dữ liệu doanh thu thực tế từ cơ sở dữ liệu
 $query_revenue = "
@@ -97,7 +134,7 @@ $revenue_chart = [];
 $period_start = new DateTime($start_date);
 $period_end = new DateTime($end_date);
 $period_end->modify('+1 day');
-$interval_step = ($filter === 'this_year') ? new DateInterval('P1M') : new DateInterval('P1D');
+$interval_step = ($filter === 'this_year' || ($filter === 'custom' && $diff_days > 366)) ? new DateInterval('P1M') : new DateInterval('P1D');
 $period = new DatePeriod($period_start, $interval_step, $period_end);
 
 foreach ($period as $date) {
@@ -434,13 +471,22 @@ function thongke_status_class(string $status): string
         </div>
 
         <div class="box" style="margin-top:20px; margin-bottom:20px;">
-            <div class="title" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <b>Biến động doanh thu hệ thống</b>
-                <form method="GET" action="" id="filterForm">
-                    <select name="filter" onchange="document.getElementById('filterForm').submit();" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.9em;">
+                
+                <form method="GET" action="" id="filterForm" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <div id="customDateInputs" style="display: <?= $filter === 'custom' ? 'flex' : 'none' ?>; gap: 5px; align-items: center;">
+                        <input type="date" name="custom_start" id="custom_start" value="<?= htmlspecialchars($custom_start) ?>" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.9em;">
+                        <span>đến</span>
+                        <input type="date" name="custom_end" id="custom_end" value="<?= htmlspecialchars($custom_end) ?>" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.9em;">
+                        <button type="submit" style="padding: 5px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">Lọc</button>
+                    </div>
+
+                    <select name="filter" id="filterSelect" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.9em;">
                         <option value="7_days" <?= $filter === '7_days' ? 'selected' : '' ?>>7 ngày gần đây</option>
                         <option value="this_month" <?= $filter === 'this_month' ? 'selected' : '' ?>>Tháng này</option>
                         <option value="this_year" <?= $filter === 'this_year' ? 'selected' : '' ?>>Cả năm nay</option>
+                        <option value="custom" <?= $filter === 'custom' ? 'selected' : '' ?>>Khoảng ngày tùy chọn...</option>
                     </select>
                 </form>
             </div>
@@ -512,14 +558,43 @@ function thongke_status_class(string $status): string
 </div>
 
 <?php
-// Đồng bộ danh sách các mảng dữ liệu phục vụ xử lý đồ họa javascript
 $chart_labels = array_column($revenue_chart, 'label');
 $chart_values = array_column($revenue_chart, 'total');
 ?>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Khởi tạo và kết xuất cấu trúc biểu đồ cột doanh thu hệ thống
+    // === ĐIỀU KHIỂN ĐỔI CHẾ ĐỘ LỌC NGÀY THÁNG LỊCH ===
+    var filterSelect = document.getElementById('filterSelect');
+    var customDateInputs = document.getElementById('customDateInputs');
+    var form = document.getElementById('filterForm');
+
+    filterSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            customDateInputs.style.display = 'flex';
+        } else {
+            customDateInputs.style.display = 'none';
+            form.submit();
+        }
+    });
+
+    form.addEventListener('submit', function(e) {
+        if (filterSelect.value === 'custom') {
+            var start = document.getElementById('custom_start').value;
+            var end = document.getElementById('custom_end').value;
+            if (!start || !end) {
+                e.preventDefault();
+                alert('Vui lòng chọn đầy đủ cả Ngày bắt đầu và Ngày kết thúc!');
+                return;
+            }
+            if (start > end) {
+                e.preventDefault();
+                alert('Ngày bắt đầu không được lớn hơn Ngày kết thúc!');
+            }
+        }
+    });
+
+    // === BIỂU ĐỒ DOANH THU HỆ THỐNG APEXCHARTS ===
     var revenueOptions = {
         series: [{
             name: 'Doanh thu',
@@ -562,7 +637,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var revenueChart = new ApexCharts(document.querySelector("#revenueChartApex"), revenueOptions);
     revenueChart.render();
 
-    // Khởi tạo và kết xuất cấu trúc biểu đồ vòng cung người dùng hoạt động
+    // === BIỂU ĐỒ TRÒN USER HOẠT ĐỘNG APEXCHARTS ===
     var donutOptions = {
         series: [<?= (int)$active_users ?>, <?= (int)$inactive_users ?>],
         chart: {
