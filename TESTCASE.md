@@ -1,217 +1,220 @@
+
 # KEWE — Báo cáo Test Case (Đã kiểm thử)
 
-| | |
-|---|---|
-| **Dự án** | KEWE — Website đọc sách/truyện online |
-| **Môn học** | Chuyên đề định hướng — Nhóm 1 |
-| **Môi trường** | XAMPP, `http://localhost/chuyende/` |
-| **Database** | `db_BTL5` |
-| **Ngày kiểm thử** | 08/06/2026 |
-| **Người kiểm thử** | Nhóm 1 |
-| **Phương pháp** | Kiểm thử thủ công + `tests/run_smoke_test.php` |
+
+|                    |                                                                                |
+| ------------------ | ------------------------------------------------------------------------------ |
+| **Dự án**          | KEWE — Website đọc sách/truyện online                                          |
+| **Môn học**        | Chuyên đề định hướng — Nhóm 1                                                  |
+| **Môi trường**     | XAMPP (Apache + MySQL), `http://localhost/chuyende/`                           |
+| **Database**       | `db_BTL5`                                                                      |
+| **Ngày kiểm thử**  | 08/06/2026                                                                     |
+| **Người kiểm thử** | Nhóm 1                                                                         |
+| **Phương pháp**    | Kiểm thử thủ công trên trình duyệt |
+
 
 ### Tổng kết
 
-| Chỉ số | Giá trị |
-|--------|---------|
-| Tổng số test case | **62** |
-| **Pass** | **62** |
-| **Fail** | **0** |
-| **N/A** | **0** |
-| **Tỷ lệ đạt** | **100%** |
+
+| Chỉ số            | Giá trị  |
+| ----------------- | -------- |
+| Tổng số test case | **62**   |
+| **Pass**          | **62**   |
+| **Fail**          | **0**    |
+| **N/A**           | **0**    |
+| Tỷ lệ đạt         | **100%** |
+
 
 ---
 
 ## 1. Đăng ký & đăng nhập (AUTH)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| AUTH-01 | Đăng ký thành công | Cao | Đăng ký user mới đủ thông tin | Thông báo thành công; bản ghi `users` | User tạo OK; toast "Đăng ký thành công!" | **Pass** |
-| AUTH-02 | Đăng ký — MK ngắn | Cao | Nhập MK 5 ký tự | "Mật khẩu phải có ít nhất 6 ký tự!" | Toast lỗi đúng; không tạo user | **Pass** |
-| AUTH-03 | Đăng ký — SĐT sai | Cao | Nhập SĐT `12345` | "Số điện thoại phải gồm đúng 10 chữ số!" | Toast lỗi đúng | **Pass** |
-| AUTH-04 | Đăng ký — username trùng | Cao | Username đã tồn tại | "Tên đăng nhập … đã được sử dụng!" | Thông báo đúng | **Pass** |
-| AUTH-05 | Đăng ký — email trùng | Cao | Email đã tồn tại | "Email … đã được đăng ký!" | Thông báo đúng | **Pass** |
-| AUTH-06 | Đăng nhập thành công | Cao | Nhập đúng username/password | Redirect; header hiện tên user | HTTP 302; session OK | **Pass** |
-| AUTH-07 | Đăng nhập — sai MK | Cao | Username đúng, MK sai | "Sai mật khẩu…" | Toast lỗi; không redirect | **Pass** |
-| AUTH-08 | Đăng nhập — TK không tồn tại | Cao | Username chưa đăng ký | "Tài khoản không tồn tại!" | Thông báo đúng | **Pass** |
-| AUTH-09 | Đăng nhập — TK bị khóa | Cao | `status=banned` | "Tài khoản đã bị khóa…" | Không đăng nhập được | **Pass** |
-| AUTH-10 | Đăng xuất | Cao | Bấm Đăng xuất | Session hủy; về trang chủ | OK | **Pass** |
-| AUTH-11 | Redirect sau đăng nhập | TB | Login từ chương trả phí | Quay lại đúng trang | `?open=login&redirect=` hoạt động | **Pass** |
-| AUTH-12 | User bị ban giữa phiên | Cao | Admin khóa user online | Session hủy; redirect login | `require_active_user()` OK | **Pass** |
+
+| ID      | Tên test case                | Ưu tiên | Các bước                                                  | Kết quả mong đợi                               | Kết quả thực tế                                                               | Trạng thái |
+| ------- | ---------------------------- | ------- | --------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------- | ---------- |
+| AUTH-01 | Đăng ký thành công           | Cao     | Đăng ký user mới: username, email, SĐT 10 số, MK ≥6 ký tự | Thông báo thành công; có bản ghi trong `users` | User `kewe_test_auto` tạo thành công (id=12), thông báo "Đăng ký thành công!" | **Pass**   |
+| AUTH-02 | Đăng ký — mật khẩu ngắn      | Cao     | Nhập MK 5 ký tự                                           | "Mật khẩu phải có ít nhất 6 ký tự!"            | Hiển thị đúng thông báo, không tạo user                                       | **Pass**   |
+| AUTH-03 | Đăng ký — SĐT sai            | Cao     | Nhập SĐT `12345`                                          | "Số điện thoại phải gồm đúng 10 chữ số!"       | Hiển thị đúng thông báo, không tạo user                                       | **Pass**   |
+| AUTH-04 | Đăng ký — username trùng     | Cao     | Dùng username đã tồn tại                                  | "Tên đăng nhập … đã được sử dụng!"             | Hiển thị đúng thông báo khi username trùng                                    | **Pass**   |
+| AUTH-05 | Đăng ký — email trùng        | Cao     | Dùng email đã tồn tại                                     | "Email … đã được đăng ký!"                     | Hiển thị đúng thông báo khi email trùng                                       | **Pass**   |
+| AUTH-06 | Đăng nhập thành công         | Cao     | Nhập đúng username/password                               | Redirect về trang chủ; header hiện tên user    | HTTP 302 redirect; session có `user_id`, `username`                           | **Pass**   |
+| AUTH-07 | Đăng nhập — sai mật khẩu     | Cao     | Username đúng, MK sai                                     | "Sai mật khẩu, vui lòng thử lại!"              | HTTP 200, không redirect; thông báo lỗi hiển thị                              | **Pass**   |
+| AUTH-08 | Đăng nhập — TK không tồn tại | Cao     | Username chưa đăng ký                                     | "Tài khoản không tồn tại! Bạn cần đăng ký."    | Thông báo đúng, không set session                                             | **Pass**   |
+| AUTH-09 | Đăng nhập — TK bị khóa       | Cao     | User `status=banned`                                      | "Tài khoản đã bị khóa…"                        | Không redirect; không đăng nhập được                                          | **Pass**   |
+| AUTH-10 | Đăng xuất                    | Cao     | Bấm Đăng xuất                                             | Session hủy; về trang chủ                      | HTTP 200, session cleared, header không còn user                              | **Pass**   |
+| AUTH-11 | Redirect sau đăng nhập       | TB      | Mở chương trả phí → Đăng nhập                             | Quay lại đúng trang chương                     | URL `?open=login&redirect=…` hoạt động, quay lại `read_chapter.php`           | **Pass**   |
+| AUTH-12 | User bị ban giữa phiên       | Cao     | Admin khóa user đang online                               | Session hủy; redirect login                    | `require_active_user()` logout ngay, redirect `banned=1`                      | **Pass**   |
+
 
 ---
 
 ## 2. Trang chủ & danh mục (HOME / CAT)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| HOME-01 | Tải trang chủ | Cao | Mở `home.php` | Banner, grid, không lỗi PHP | HTTP 200 | **Pass** |
-| HOME-02 | Banner Swiper | TB | Prev/next banner | Slide chuyển mượt | Swiper hoạt động | **Pass** |
-| HOME-03 | Modal đăng nhập/đăng ký | Cao | Bấm Đăng nhập / Đăng ký | Modal mở đầy đủ | OK | **Pass** |
-| HOME-04 | Mở modal qua URL | Thấp | `home.php?open=login` | Modal tự mở | OK | **Pass** |
-| CAT-01 | Trang danh mục | Cao | Mở `tinhcam.php` | Lọc đúng thể loại | HTTP 200 | **Pass** |
-| CAT-02 | Trang tất cả sách | TB | Mở `tatca.php` | Phân trang | OK | **Pass** |
-| CAT-03 | Nút Lưu — user | TB | User xem danh mục | Có nút tim/Lưu | Hiển thị đúng | **Pass** |
-| CAT-04 | Nút Lưu — admin | TB | Admin xem danh mục | Không có nút Lưu | Ẩn đúng | **Pass** |
-| CAT-05 | Dropdown admin | Cao | Admin mở menu | Chỉ Quản trị viên | Không có Tủ sách/Nạp Coin | **Pass** |
-| CAT-06 | Dropdown user | Cao | User mở menu | Đủ menu user | OK | **Pass** |
+
+| ID      | Tên test case           | Ưu tiên | Các bước                | Kết quả mong đợi                 | Kết quả thực tế                              | Trạng thái |
+| ------- | ----------------------- | ------- | ----------------------- | -------------------------------- | -------------------------------------------- | ---------- |
+| HOME-01 | Tải trang chủ           | Cao     | Mở `home.php`           | Banner, lưới sách, không lỗi PHP | HTTP 200; nội dung KEWE hiển thị bình thường | **Pass**   |
+| HOME-02 | Banner Swiper           | TB      | Bấm prev/next banner    | Slide chuyển mượt                | Có thư viện Swiper; carousel hoạt động       | **Pass**   |
+| HOME-03 | Modal đăng nhập/đăng ký | Cao     | Bấm Đăng nhập / Đăng ký | Modal mở đầy đủ form             | Modal hiển thị form đúng                     | **Pass**   |
+| HOME-04 | Mở modal qua URL        | Thấp    | `home.php?open=login`   | Modal login tự mở                | Modal đăng nhập mở khi có param `open=login` | **Pass**   |
+| CAT-01  | Trang danh mục          | Cao     | Mở `tinhcam.php`        | Chỉ truyện thể loại Tình cảm     | HTTP 200; lọc đúng thể loại                  | **Pass**   |
+| CAT-02  | Trang tất cả sách       | TB      | Mở `tatca.php`          | Danh sách + phân trang           | HTTP 200; danh sách và phân trang OK         | **Pass**   |
+| CAT-03  | Nút Lưu — user          | TB      | User xem danh mục       | Có nút Lưu truyện                | Nút tim/Lưu hiển thị trên thẻ truyện         | **Pass**   |
+| CAT-04  | Nút Lưu — admin         | TB      | Admin xem danh mục      | Không có nút Lưu                 | Nút Lưu bị ẩn với role admin                 | **Pass**   |
+| CAT-05  | Dropdown admin          | Cao     | Admin mở menu user      | Chỉ có Quản trị viên             | Không có Tủ sách / Nạp Coin                  | **Pass**   |
+| CAT-06  | Dropdown user           | Cao     | User mở menu            | Có Tủ sách, Nạp Coin, Tài khoản  | Menu đầy đủ chức năng user                   | **Pass**   |
+
 
 ---
 
 ## 3. Đọc truyện & paywall (READ)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| READ-01 | Xem chi tiết truyện | Cao | Bấm 1 truyện | Danh sách chương | HTTP 200 | **Pass** |
-| READ-02 | Tăng lượt xem | TB | F5 trang truyện | `luot_xem` tăng | +1 mỗi GET | **Pass** |
-| READ-03 | Đọc chương 1–3 | Cao | Mở chương 1–3 | Nội dung đầy đủ | Không paywall | **Pass** |
-| READ-04 | Paywall — chưa login | Cao | Chương 4, chưa login | Paywall + đăng nhập | "Nội dung trả phí" | **Pass** |
-| READ-05 | Paywall — đủ coin | Cao | User ≥3 coin | Nút mua chương | Có nút Mở khóa | **Pass** |
-| READ-06 | Paywall — thiếu coin | Cao | User <3 coin | Hướng dẫn nạp | Redirect `napcoin.php` | **Pass** |
-| READ-07 | Đọc chương đã mua | Cao | Sau mua chương 4 | Đọc được; không trừ thêm | OK | **Pass** |
-| READ-08 | Admin bypass | Cao | Admin mở chương trả phí | Đọc không cần coin | OK | **Pass** |
-| READ-09 | Chương không tồn tại | TB | `chapter_id=999999` | Báo lỗi hợp lệ | OK | **Pass** |
-| READ-10 | Prev/next chương | TB | Bấm prev/next | Chuyển đúng chương | OK | **Pass** |
+
+| ID      | Tên test case                 | Ưu tiên | Các bước                | Kết quả mong đợi                   | Kết quả thực tế                                 | Trạng thái |
+| ------- | ----------------------------- | ------- | ----------------------- | ---------------------------------- | ----------------------------------------------- | ---------- |
+| READ-01 | Xem chi tiết truyện           | Cao     | Bấm 1 truyện            | `read_story.php`, danh sách chương | HTTP 200, story_id=1, danh sách chương hiển thị | **Pass**   |
+| READ-02 | Tăng lượt xem                 | TB      | F5 trang truyện         | `luot_xem` tăng                    | Mỗi lần GET tăng 1 lượt xem                     | **Pass**   |
+| READ-03 | Đọc chương 1–3 miễn phí       | Cao     | Mở chương 1, 2, 3       | Nội dung đầy đủ                    | Chương 1–3 hiển thị full nội dung, không khóa   | **Pass**   |
+| READ-04 | Paywall chương 4 — chưa login | Cao     | Mở chương 4, chưa login | Paywall + Đăng nhập để đọc         | Hiện "Nội dung trả phí", nút đăng nhập          | **Pass**   |
+| READ-05 | Paywall — đủ coin             | Cao     | User ≥3 coin, chương 4  | Nút Mở khóa / mua                  | Có nút mua chương khi đủ 3 coin                 | **Pass**   |
+| READ-06 | Paywall — thiếu coin          | Cao     | User <3 coin            | Hướng dẫn nạp coin                 | Redirect/link tới `napcoin.php`                 | **Pass**   |
+| READ-07 | Đọc chương đã mua             | Cao     | Sau khi mua chương 4    | Đọc được, không trừ coin thêm      | Nội dung mở khóa; coin không giảm lần 2         | **Pass**   |
+| READ-08 | Admin bypass paywall          | Cao     | Admin mở chương trả phí | Đọc được không cần coin            | Admin đọc full nội dung chương trả phí          | **Pass**   |
+| READ-09 | Chương không tồn tại          | TB      | `chapter_id=999999`     | Thông báo lỗi, không crash         | Trang báo lỗi hợp lệ                            | **Pass**   |
+| READ-10 | Điều hướng prev/next          | TB      | Bấm chương trước/sau    | Chuyển đúng chương                 | Nút prev/next hoạt động đúng                    | **Pass**   |
+
 
 ---
 
 ## 4. Nạp coin & mua chương (COIN)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| COIN-01 | Nạp coin — chưa login | Cao | Mở `napcoin.php` | Redirect login | OK | **Pass** |
-| COIN-02 | Tạo đơn nạp | Cao | Chọn gói 30 coin | Đơn pending; QR | OK | **Pass** |
-| COIN-03 | Hiển thị QR VietQR | TB | Trang thanh toán | QR + số tiền đúng | OK | **Pass** |
-| COIN-04 | Xác nhận thanh toán demo | Cao | "Tôi đã thanh toán" | Coin tăng; đơn paid | OK | **Pass** |
-| COIN-05 | Xác nhận lại đơn paid | TB | POST lại order_id | Không cộng coin lần 2 | OK | **Pass** |
-| COIN-06 | Gói nạp không hợp lệ | TB | Gói 15 coin | Từ chối | `err=invalid_pack` | **Pass** |
-| COIN-07 | Mua chương trừ coin | Cao | Mua chương 4 | Coin -3; ghi purchased | Transaction OK | **Pass** |
-| COIN-08 | Mua khi thiếu coin | Cao | 0 coin mua chương 4 | Redirect nạp | OK | **Pass** |
-| COIN-09 | Mua chương miễn phí | TB | Buy chương ≤3 | Không trừ coin | OK | **Pass** |
-| COIN-10 | Lịch sử giao dịch | TB | `taikhoan.php` | Hiện topup/spend | OK | **Pass** |
+
+| ID      | Tên test case            | Ưu tiên | Các bước                 | Kết quả mong đợi                    | Kết quả thực tế                                         | Trạng thái |
+| ------- | ------------------------ | ------- | ------------------------ | ----------------------------------- | ------------------------------------------------------- | ---------- |
+| COIN-01 | Nạp coin — chưa login    | Cao     | Mở `napcoin.php`         | Redirect login                      | Redirect về modal đăng nhập                             | **Pass**   |
+| COIN-02 | Tạo đơn nạp hợp lệ       | Cao     | Chọn gói 30 coin         | Chuyển `thanhtoan.php`, đơn pending | Đơn tạo trong `topup_orders`, status=pending            | **Pass**   |
+| COIN-03 | Hiển thị QR VietQR       | TB      | Ở trang thanh toán       | Hiện QR, số tiền = coin×10 VND      | Ảnh QR từ `img.vietqr.io` hiển thị đúng                 | **Pass**   |
+| COIN-04 | Xác nhận thanh toán demo | Cao     | Bấm "Tôi đã thanh toán"  | Coin tăng; đơn paid                 | Coin +30; `coin_transactions` type=topup                | **Pass**   |
+| COIN-05 | Xác nhận lại đơn paid    | TB      | POST lại cùng order_id   | Không cộng coin lần 2               | Redirect success; coin không đổi                        | **Pass**   |
+| COIN-06 | Gói nạp không hợp lệ     | TB      | Gửi gói 15 coin          | Từ chối                             | Redirect `napcoin.php?err=invalid_pack`                 | **Pass**   |
+| COIN-07 | Mua chương trừ coin      | Cao     | Mua chương 4 (≥3 coin)   | Coin -3; ghi purchased              | Transaction OK: coin -3, `purchased_chapters` + lịch sử | **Pass**   |
+| COIN-08 | Mua khi thiếu coin       | Cao     | User 0 coin mua chương 4 | Redirect nạp coin                   | Chuyển `napcoin.php?need=3`                             | **Pass**   |
+| COIN-09 | Mua chương miễn phí      | TB      | POST buy chương ≤3       | Không trừ coin                      | Redirect đọc chương, coin không đổi                     | **Pass**   |
+| COIN-10 | Lịch sử giao dịch        | TB      | `taikhoan.php` → Lịch sử | Hiện topup/spend                    | Bảng lịch sử hiển thị đúng giao dịch                    | **Pass**   |
+
 
 ---
 
 ## 5. Tủ sách (SHELF)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| SHELF-01 | Lưu truyện | Cao | Bấm tim Lưu | Ghi `user_stories` | Toast "Lưu truyện thành công!" | **Pass** |
-| SHELF-02 | Lưu trùng | TB | Lưu lại cùng truyện | "Đã có trong tủ sách" | Toast đúng | **Pass** |
-| SHELF-03 | Lưu — chưa login | Cao | POST `luutruyen.php` | Yêu cầu login | Redirect login | **Pass** |
-| SHELF-04 | Admin không lưu | TB | Admin POST lưu | Redirect home | OK | **Pass** |
-| SHELF-05 | Xem tủ sách | Cao | Mở `tusach.php` | Đã lưu + đã mua | HTTP 200 | **Pass** |
-| SHELF-06 | Bỏ lưu truyện | Thấp | Tim đã lưu hoặc xóa tủ | Xóa khỏi tủ | `action=unsave` + `remove_story` | **Pass** |
+
+| ID       | Tên test case         | Ưu tiên | Các bước                                  | Kết quả mong đợi              | Kết quả thực tế                                                         | Trạng thái |
+| -------- | --------------------- | ------- | ----------------------------------------- | ----------------------------- | ----------------------------------------------------------------------- | ---------- |
+| SHELF-01 | Lưu truyện thành công | Cao     | User bấm Lưu                              | Alert thành công; ghi DB      | "Lưu truyện thành công!"; có trong `user_stories`                       | **Pass**   |
+| SHELF-02 | Lưu truyện đã lưu     | TB      | Lưu lại cùng truyện                       | "Truyện đã có trong tủ sách!" | Thông báo đúng, không duplicate                                         | **Pass**   |
+| SHELF-03 | Lưu — chưa login      | Cao     | POST `luutruyen.php`                      | Yêu cầu đăng nhập             | Redirect login                                                          | **Pass**   |
+| SHELF-04 | Admin không lưu được  | TB      | Admin POST lưu truyện                     | Redirect home                 | Redirect về `home.php`                                                  | **Pass**   |
+| SHELF-05 | Xem tủ sách           | Cao     | Mở `tusach.php`                           | Truyện đã lưu + chương đã mua | HTTP 200; hiển thị tủ sách                                              | **Pass**   |
+| SHELF-06 | Bỏ lưu truyện         | Thấp    | Bấm tim đã lưu hoặc xóa trên `tusach.php` | Xóa khỏi tủ sách              | Toggle `action=unsave` trên grid; xóa qua `tusach.php` (`remove_story`) | **Pass**   |
+
 
 ---
 
 ## 6. Tìm kiếm (SEARCH)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| SRCH-01 | AJAX có kết quả | Cao | Gõ "truyen" header | Dropdown gợi ý | JSON count>0 | **Pass** |
-| SRCH-02 | AJAX không kết quả | TB | Chuỗi không tồn tại | count=0 | OK | **Pass** |
-| SRCH-03 | AJAX từ khóa rỗng | TB | `search_ajax.php?q=` | JSON hợp lệ | OK | **Pass** |
-| SRCH-04 | Trang tìm kiếm | Cao | `timkiem.php?q=` | Danh sách kết quả | HTTP 200 | **Pass** |
-| SRCH-05 | Limit API | Thấp | `limit=50` | Tối đa 50 item | OK | **Pass** |
+
+| ID      | Tên test case      | Ưu tiên | Các bước                | Kết quả mong đợi  | Kết quả thực tế                           | Trạng thái |
+| ------- | ------------------ | ------- | ----------------------- | ----------------- | ----------------------------------------- | ---------- |
+| SRCH-01 | AJAX có kết quả    | Cao     | Gõ "truyen" trên header | Dropdown gợi ý    | JSON count=2, 2 truyện khớp               | **Pass**   |
+| SRCH-02 | AJAX không kết quả | TB      | Gõ chuỗi không tồn tại  | count=0           | JSON count=0, không lỗi                   | **Pass**   |
+| SRCH-03 | AJAX từ khóa rỗng  | TB      | `search_ajax.php?q=`    | JSON hợp lệ       | Trả về `[]` hoặc `{success:true,count:0}` | **Pass**   |
+| SRCH-04 | Trang tìm kiếm     | Cao     | `timkiem.php?q=truyen`  | Danh sách kết quả | HTTP 200, kết quả hiển thị                | **Pass**   |
+| SRCH-05 | Giới hạn limit API | Thấp    | `limit=50`              | Tối đa 50 kết quả | API trả tối đa 50 item                    | **Pass**   |
+
 
 ---
 
 ## 7. Bình luận (CMT)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| CMT-01 | Gửi bình luận | Cao | Comment `read_story.php` | Hiện comment mới | OK | **Pass** |
-| CMT-02 | Trả lời | Cao | Reply comment | Reply lồng dưới gốc | `parent_id` đúng | **Pass** |
-| CMT-03 | Xóa của mình | TB | User xóa comment | Biến mất | OK | **Pass** |
-| CMT-04 | Comment — chưa login | Cao | Chưa login | Yêu cầu login | OK | **Pass** |
-| CMT-05 | Admin xóa | TB | `admin/comments.php` | Xóa DB | OK | **Pass** |
-| CMT-06 | Admin khóa user | TB | Khóa từ comments | status=banned | OK | **Pass** |
+
+| ID     | Tên test case              | Ưu tiên | Các bước                           | Kết quả mong đợi    | Kết quả thực tế                 | Trạng thái |
+| ------ | -------------------------- | ------- | ---------------------------------- | ------------------- | ------------------------------- | ---------- |
+| CMT-01 | Gửi bình luận gốc          | Cao     | User comment trên `read_story.php` | Hiện bình luận mới  | Bình luận hiển thị với username | **Pass**   |
+| CMT-02 | Trả lời bình luận          | Cao     | Bấm Trả lời → gửi                  | Reply lồng dưới gốc | Reply hiển thị đúng `parent_id` | **Pass**   |
+| CMT-03 | Xóa bình luận của mình     | TB      | User xóa comment của mình          | Comment biến mất    | Xóa thành công trên trang đọc   | **Pass**   |
+| CMT-04 | Comment — chưa login       | Cao     | Chưa login gửi comment             | Yêu cầu đăng nhập   | Không gửi được; yêu cầu login   | **Pass**   |
+| CMT-05 | Admin xóa bình luận        | TB      | `admin/comments.php` → Xóa         | Comment mất         | Xóa vĩnh viễn khỏi DB           | **Pass**   |
+| CMT-06 | Admin khóa user từ comment | TB      | Admin khóa user                    | status=banned       | User không đăng nhập được       | **Pass**   |
+
 
 ---
 
 ## 8. Tài khoản (ACC)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| ACC-01 | Xem thông tin TK | Cao | `taikhoan.php` | Username, coin | HTTP 200 | **Pass** |
-| ACC-02 | Lịch sử giao dịch | TB | Link Lịch sử | Anchor `#giao-dich` | OK | **Pass** |
-| ACC-03 | TK — chưa login | Cao | Chưa login | Redirect login | OK | **Pass** |
+
+| ID     | Tên test case     | Ưu tiên | Các bước                     | Kết quả mong đợi      | Kết quả thực tế                             | Trạng thái |
+| ------ | ----------------- | ------- | ---------------------------- | --------------------- | ------------------------------------------- | ---------- |
+| ACC-01 | Xem thông tin TK  | Cao     | Mở `taikhoan.php`            | Username, email, coin | HTTP 200; hiển thị đúng username và số coin | **Pass**   |
+| ACC-02 | Lịch sử giao dịch | TB      | Bấm Lịch sử giao dịch        | Anchor `#giao-dich`   | Cuộn tới mục lịch sử; bảng hiển thị         | **Pass**   |
+| ACC-03 | TK — chưa login   | Cao     | Mở `taikhoan.php` chưa login | Redirect login        | Redirect về đăng nhập                       | **Pass**   |
+
 
 ---
 
 ## 9. Quản trị viên (ADMIN)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| ADM-01 | User vào admin | Cao | User → `admin/index.php` | Bị chặn | HTTP 302 | **Pass** |
-| ADM-02 | Dashboard | Cao | Admin dashboard | Thống kê tổng quan | OK | **Pass** |
-| ADM-03 | Thống kê | TB | `admin/thongke.php` | Biểu đồ/thống kê | OK | **Pass** |
-| ADM-04 | Thêm truyện | Cao | Upload JPG/PNG | Truyện mới frontend | OK | **Pass** |
-| ADM-05 | Upload sai MIME | Cao | Upload `.pdf` | Từ chối | Validate MIME OK | **Pass** |
-| ADM-06 | Sửa truyện | TB | Sửa title/status | DB cập nhật | OK | **Pass** |
-| ADM-07 | Xóa truyện | Cao | Xóa có chương | Cascade xóa | OK | **Pass** |
-| ADM-08 | Thêm chương | Cao | Thêm chương mới | Hiện read_story | OK | **Pass** |
-| ADM-09 | Sửa/xóa chương | TB | CRUD chương | Trang đọc cập nhật | OK | **Pass** |
-| ADM-10 | Thêm user | TB | Admin thêm user | User mới DB | OK | **Pass** |
-| ADM-11 | Khóa/mở khóa | Cao | banned/active | Login chặn/mở | OK | **Pass** |
-| ADM-12 | Xóa user | TB | Xóa (không admin cuối) | User bị xóa | Guard OK | **Pass** |
-| ADM-13 | API không session | Cao | POST `add_story.php` | JSON 403 | OK | **Pass** |
+
+| ID     | Tên test case           | Ưu tiên | Các bước                         | Kết quả mong đợi         | Kết quả thực tế                              | Trạng thái |
+| ------ | ----------------------- | ------- | -------------------------------- | ------------------------ | -------------------------------------------- | ---------- |
+| ADM-01 | User vào admin          | Cao     | User mở `admin/index.php`        | Bị chặn                  | HTTP 302 redirect                            | **Pass**   |
+| ADM-02 | Dashboard               | Cao     | Admin mở dashboard               | Thống kê tổng quan       | Hiển thị user, truyện, lượt xem, comment     | **Pass**   |
+| ADM-03 | Trang thống kê          | TB      | `admin/thongke.php`              | Top truyện, % active     | Biểu đồ/thống kê hiển thị                    | **Pass**   |
+| ADM-04 | Thêm truyện             | Cao     | Thêm + upload JPG/PNG            | Truyện mới trên frontend | CRUD thành công; ảnh lưu `uploads/`          | **Pass**   |
+| ADM-05 | Upload ảnh sai MIME     | Cao     | Upload file `.pdf`               | Từ chối                  | Validate MIME từ chối file không phải ảnh    | **Pass**   |
+| ADM-06 | Sửa truyện              | TB      | Sửa title/status                 | Cập nhật DB              | Frontend phản ánh thay đổi                   | **Pass**   |
+| ADM-07 | Xóa truyện              | Cao     | Xóa truyện có chương             | Cascade xóa              | Chapters, comments, user_stories bị xóa theo | **Pass**   |
+| ADM-08 | Thêm chương             | Cao     | Thêm chương mới                  | Hiện trên read_story     | Chương mới đọc được                          | **Pass**   |
+| ADM-09 | Sửa/xóa chương          | TB      | CRUD chương                      | DB cập nhật              | Trang đọc cập nhật đúng                      | **Pass**   |
+| ADM-10 | Thêm user               | TB      | Thêm user từ admin               | User mới trong DB        | Tạo user thành công                          | **Pass**   |
+| ADM-11 | Khóa/mở khóa user       | Cao     | Đặt banned/active                | Login bị chặn/mở         | Khóa: không login; mở: login OK              | **Pass**   |
+| ADM-12 | Xóa user                | TB      | Xóa user (không phải admin cuối) | User bị xóa              | Xóa OK; guard admin cuối hoạt động           | **Pass**   |
+| ADM-13 | Admin API không session | Cao     | POST `add_story.php` không login | JSON 403                 | Từ chối truy cập API                         | **Pass**   |
+
 
 ---
 
 ## 10. Giao diện (UI)
 
-| ID | Tên test case | Ưu tiên | Các bước | Kết quả mong đợi | Kết quả thực tế | Trạng thái |
-|----|---------------|---------|----------|------------------|-----------------|------------|
-| UI-01 | Responsive mobile | TB | Viewport 375px | Layout không vỡ | OK | **Pass** |
-| UI-02 | Ảnh bìa upload | TB | Cover uploads | `cover_url()` đúng | OK | **Pass** |
-| UI-03 | Ảnh bìa mặc định | TB | `code/images/` | Ảnh hiển thị | OK | **Pass** |
-| UI-04 | Toast thông báo | Thấp | Đăng ký/login/lưu truyện | Toast thay alert | `includes/toast.php` + `?toast=` | **Pass** |
+
+| ID    | Tên test case     | Ưu tiên | Các bước                               | Kết quả mong đợi           | Kết quả thực tế                                                                                      | Trạng thái |
+| ----- | ----------------- | ------- | -------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------- | ---------- |
+| UI-01 | Responsive mobile | TB      | Viewport 375px                         | Layout không vỡ            | Header, grid hiển thị ổn trên mobile                                                                 | **Pass**   |
+| UI-02 | Ảnh bìa upload    | TB      | Truyện có cover uploads                | Load từ `backend/uploads/` | `cover_url()` trả đúng đường dẫn                                                                     | **Pass**   |
+| UI-03 | Ảnh bìa mặc định  | TB      | Truyện `code/images/`                  | Ảnh hiển thị               | Ảnh mặc định load đúng                                                                               | **Pass**   |
+| UI-04 | Toast thông báo   | Thấp    | Đăng ký/đăng nhập/lưu truyện trên home | Toast thay alert           | `includes/toast.php` trên home, danh mục, tatca, timkiem, tusach; `luutruyen.php` redirect `?toast=` | **Pass**   |
+
 
 ---
 
-## 11. Tổng hợp theo module
+## 11. Kết luận kiểm thử
 
-| Module | Số case | Pass |
-|--------|---------|------|
-| AUTH | 12 | 12 |
-| HOME / CAT | 10 | 10 |
-| READ | 10 | 10 |
-| COIN | 10 | 10 |
-| SHELF | 6 | 6 |
-| SEARCH | 5 | 5 |
-| CMT | 6 | 6 |
-| ACC | 3 | 3 |
-| ADMIN | 13 | 13 |
-| UI | 4 | 4 |
-| **Tổng** | **62** | **62** |
+### Điểm mạnh đã xác nhận
 
+- Luồng **đăng ký / đăng nhập / phân quyền** hoạt động đúng, kể cả user bị `banned`.
+- **Paywall** đúng quy tắc 3 chương miễn phí + 3 coin/chương; admin bypass OK.
+- **Nạp coin demo** (VietQR) và **mua chương** dùng transaction, ghi lịch sử.
+- **Admin panel** chặn user thường; CRUD truyện/chương/user/comment hoạt động.
+- **Tìm kiếm AJAX** trả JSON đúng; trang danh mục và trang chủ ổn định.
 ---
 
-## 12. Kết luận
+## Tài liệu liên quan
 
-- Luồng đăng nhập, paywall, nạp coin, mua chương hoạt động đúng.
-- Tủ sách hỗ trợ **lưu / bỏ lưu** (toggle tim + xóa trên `tusach.php`).
-- Thông báo dùng **toast** thống nhất trên trang user.
-- Admin panel chặn user thường; CRUD đầy đủ.
+- `[README.md]` — Hướng dẫn cài đặt và mô tả hệ thống
 
-### Smoke test
 
-```powershell
-C:\xampp\php\php.exe C:\xampp\htdocs\chuyende\tests\run_smoke_test.php
-```
+|             |                   |
+| ----------- | ----------------- |
+| **GVHD**    | Ths. Ngô Ngọc Anh |
+| **Năm học** | 2025 – 2026       |
 
-### Tài liệu liên quan
 
-- [`README.md`](README.md)
-
----
-
-## Tác giả
-
-| | |
-|---|---|
-| **GVHD** | Ths. Ngô Ngọc Anh |
-| **Nhóm** | Nhóm 1 |
-| **Năm học** | 2025 – 2026 |
