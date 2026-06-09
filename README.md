@@ -445,6 +445,16 @@ Phản hồi JSON: `{ success, count, keyword, items: [{id, title, cover, catego
 
 ---
 
+## Báo cáo test case
+
+Bộ test case đã kiểm thử (**62 case**, **100% Pass**):
+
+- [`TESTCASE.md`](TESTCASE.md) — Báo cáo đầy đủ kèm kết quả thực tế
+- [`TESTCASE.csv`](TESTCASE.csv) — Import Excel/Google Sheets
+- [`tests/run_smoke_test.php`](tests/run_smoke_test.php) — Script kiểm thử tự động
+
+---
+
 ## Tác giả
 
 | | |

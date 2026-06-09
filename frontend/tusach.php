@@ -545,5 +545,6 @@ $avatar_letter = mb_strtoupper(mb_substr($username, 0, 1));
     <?php endif; ?>
 
 </div>
+<?php include __DIR__ . '/includes/toast.php'; ?>
 </body>
 </html>

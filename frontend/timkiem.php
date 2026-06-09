@@ -17,6 +17,14 @@ if ($keyword !== '') {
 }
 
 $user_id = $_SESSION['user_id'] ?? null;
+
+$saved_story_ids = [];
+if (isset($_SESSION['user_id'])) {
+    $sv_q = mysqli_query($con, 'SELECT story_id FROM user_stories WHERE user_id=' . intval($_SESSION['user_id']));
+    while ($sv = mysqli_fetch_assoc($sv_q)) {
+        $saved_story_ids[] = $sv['story_id'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -251,12 +259,16 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'):
+                        $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
                     <form action="luutruyen.php" method="POST">
                         <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <button type="submit" class="btn-save" title="Lưu vào tủ sách">
-                            <i class="fa-solid fa-heart"></i>
+                        <input type="hidden" name="action" value="<?= $is_saved_book ? 'unsave' : 'save' ?>">
+                        <button type="submit" class="btn-save <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Bỏ lưu' : 'Lưu vào tủ sách' ?>">
+                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                         </button>
                     </form>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -296,5 +308,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
 
 </div>
 
+<?php include __DIR__ . '/includes/toast.php'; ?>
 </body>
 </html>

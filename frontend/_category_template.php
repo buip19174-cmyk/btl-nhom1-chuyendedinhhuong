@@ -343,10 +343,12 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
             <a href="<?= $first_book ? '../backend/read_story.php?story_id=' . $first_book['id'] : '#' ?>" class="slide-btn" id="heroReadBtn">
                 <i class="fa-solid fa-book-open"></i> Đọc ngay
             </a>
-            <?php if ($first_book): ?>
+            <?php if ($first_book):
+                $is_saved_hero = in_array($first_book['id'], $saved_story_ids); ?>
             <form method="POST" action="luutruyen.php" style="display:inline">
                 <input type="hidden" name="story_id" value="<?= $first_book['id'] ?>" id="heroSaveId">
-                <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
+                <input type="hidden" name="action" value="<?= $is_saved_hero ? 'unsave' : 'save' ?>" id="heroSaveAction">
+                <button type="submit" class="slide-btn-outline"><i class="fa-<?= $is_saved_hero ? 'solid' : 'regular' ?> fa-heart"></i> <?= $is_saved_hero ? 'Bỏ lưu' : 'Lưu' ?></button>
             </form>
             <?php endif; ?>
         </div>
@@ -406,7 +408,8 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
                         $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
                         <form action="luutruyen.php" method="POST">
                             <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
+                            <input type="hidden" name="action" value="<?= $is_saved_book ? 'unsave' : 'save' ?>">
+                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Bỏ lưu' : 'Lưu' ?>">
                                 <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                             </button>
                         </form>
@@ -460,25 +463,7 @@ footer { background:#0d0d0d; border-top:1px solid var(--border); padding:48px 36
 <div id="registerModal" class="modal" style="display:none"><?php include 'dangky_form.php'; ?></div>
 <div id="loginModal" class="modal" style="display:none"><?php include 'dangnhap_form.php'; ?></div>
 
-<div id="site-toast" style="display:none;position:fixed;top:20px;right:20px;z-index:9999;padding:14px 20px;border-radius:8px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;font-size:14px"></div>
-<script>
-(function(){
-    function showToast(msg, isError) {
-        var t = document.getElementById('site-toast');
-        t.textContent = msg;
-        t.style.background = isError ? '#e74c3c' : '#1ed760';
-        t.style.color = isError ? '#fff' : '#000';
-        t.style.display = 'block';
-        setTimeout(function(){ t.style.display = 'none'; }, 4000);
-    }
-    <?php if (!empty($register_message)): ?>
-    showToast("<?= addslashes($register_message) ?>", <?= strpos(strtolower($register_message), 'thành công') !== false ? 'false' : 'true' ?>);
-    <?php endif; ?>
-    <?php if (!empty($message)): ?>
-    showToast("<?= addslashes($message) ?>", <?= strpos(strtolower($message), 'thành công') !== false ? 'false' : 'true' ?>);
-    <?php endif; ?>
-})();
-</script>
+<?php include __DIR__ . '/includes/toast.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>

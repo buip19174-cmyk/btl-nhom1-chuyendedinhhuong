@@ -1,7 +1,5 @@
 <?php
-/**
- * Tính base path của project trên localhost (vd: /btl-nhom1-chuyendedinhhuong).
- */
+
 function app_project_base(): string
 {
     $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
@@ -32,11 +30,6 @@ function app_login_url(?string $redirect = null): string
     return $url;
 }
 
-/**
- * Trả về URL ảnh bìa sách.
- * - Nếu cover bắt đầu bằng "uploads/" → file do admin upload → trong backend/uploads/
- * - Ngược lại → ảnh tĩnh trong code/images/
- */
 function cover_url(string $cover): string
 {
     if ($cover === '') return '';
@@ -64,4 +57,21 @@ function app_safe_redirect(?string $target): string
         return $target;
     }
     return app_url('frontend/home.php') . '?login=success';
+}
+
+/** Loại bỏ tham số toast khỏi URL redirect */
+function app_strip_toast_param(string $url): string
+{
+    $url = preg_replace('/([?&])toast=[^&]*(&|$)/', '$1', $url);
+    $url = rtrim(preg_replace('/\?&/', '?', $url), '?&');
+    return $url;
+}
+
+/** Redirect kèm mã toast (saved, exists, unsaved, not_saved) */
+function app_redirect_with_toast(string $url, string $toastCode): void
+{
+    $url = app_strip_toast_param($url);
+    $sep = (strpos($url, '?') !== false) ? '&' : '?';
+    header('Location: ' . $url . $sep . 'toast=' . rawurlencode($toastCode));
+    exit();
 }
