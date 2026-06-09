@@ -1,5 +1,3 @@
-
-<div id="loginModal" class="modal" style="display:none"> 
     <div class="modal-content-inner">
         <span class="close-btn">&times;</span> 
 
@@ -51,4 +49,3 @@
             }
         })();
     </script>
-</div>

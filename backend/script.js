@@ -58,6 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'login') {
+        openModal(loginModal);
+    }
+    if (params.get('open') === 'register') {
+        openModal(regModal);
+    }
+
     // --- [MỚI] 4.1. GÁN SỰ KIỆN CHO MENU DROP-DOWN ---
     if (userProfile && userDropdown) {
         userProfile.addEventListener('click', (e) => {

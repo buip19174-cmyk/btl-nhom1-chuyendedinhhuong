@@ -2,9 +2,10 @@
 // topup_coin.php - Xử lý nạp coin
 if (session_status() === PHP_SESSION_NONE) session_start();
 include_once '../database/connect.php';
+require_once __DIR__ . '/../frontend/includes/paths.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../frontend/dangnhap_form.php");
+    header("Location: " . app_login_url($_SERVER['REQUEST_URI'] ?? ''));
     exit();
 }
 

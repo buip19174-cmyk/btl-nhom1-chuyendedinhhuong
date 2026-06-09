@@ -515,8 +515,12 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
 
 </div><!-- /reader-wrap -->
 <?php if (!$user_id): ?>
-        <?php include '../frontend/dangnhap_form.php'; ?>
-         <?php include '../frontend/dangky_form.php'; ?>
+        <div id="loginModal" class="modal" style="display:none">
+            <?php include '../frontend/dangnhap_form.php'; ?>
+        </div>
+        <div id="registerModal" class="modal" style="display:none">
+            <?php include '../frontend/dangky_form.php'; ?>
+        </div>
 <?php endif; ?>
 
 <!-- FLOATING TOOLBAR -->
