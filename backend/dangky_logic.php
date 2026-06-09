@@ -3,19 +3,13 @@ include_once '../database/connect.php';
 $register_message = ''; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    // Lấy và làm sạch dữ liệu đầu vào
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $sdt = trim($_POST['sdt'] ?? '');
     $password = $_POST['password'] ?? '';
-
-    // --- 2. XÁC THỰC DỮ LIỆU ĐẦU VÀO ---
-    
-    // Kiểm tra mật khẩu ≥6 ký tự
-    if(strlen($password) < 6){
+if(strlen($password) < 6){
         $register_message = "Mật khẩu phải có ít nhất 6 ký tự!";
     } 
-    // Kiểm tra số điện thoại đúng 10 chữ số
     else if(!preg_match('/^\d{10}$/', $sdt)){
         $register_message = "Số điện thoại phải gồm đúng 10 chữ số!";
     } 

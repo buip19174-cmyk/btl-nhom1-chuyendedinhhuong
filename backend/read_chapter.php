@@ -17,7 +17,6 @@ if (!$chapter) die("Chương không tồn tại");
 $story_id   = $chapter['story_id'];
 $current_no = $chapter['chapter_number'];
 
-// Paywall
 $is_free   = ($current_no <= FREE_CHAPTERS);
 $is_locked = false;
 $user_id   = $_SESSION['user_id'] ?? null;
@@ -41,15 +40,14 @@ if ($is_admin) {
     $is_locked = false;
 }
 
-// Nav
+
 $prev_chap = mysqli_fetch_assoc(mysqli_query($con, "SELECT id,chapter_number,title FROM chapters WHERE story_id=$story_id AND chapter_number < $current_no ORDER BY chapter_number DESC LIMIT 1"));
 $next_chap = mysqli_fetch_assoc(mysqli_query($con, "SELECT id,chapter_number,title FROM chapters WHERE story_id=$story_id AND chapter_number > $current_no ORDER BY chapter_number ASC LIMIT 1"));
 
-// Tổng số chương
 $total_q = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) as cnt FROM chapters WHERE story_id=$story_id"));
 $total_chapters = $total_q['cnt'] ?? 0;
 
-// Coin hiển thị
+
 $display_coins = 0;
 if ($user_id) {
     $uc = mysqli_fetch_assoc(mysqli_query($con, "SELECT coins FROM users WHERE id=$user_id"));
@@ -65,7 +63,7 @@ if ($user_id) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="../frontend/css/style.css">
 <style>
-/* ── THEMES ── */
+
 :root {
     --bg:        #0f0f0f;
     --surface:   #161616;
@@ -96,7 +94,7 @@ body {
     min-height: 100vh;
 }
 
-/* ── READING PROGRESS BAR ── */
+
 #progress-bar {
     position: fixed; top: 0; left: 0; z-index: 9999;
     height: 3px; width: 0%; background: var(--green);
@@ -104,7 +102,7 @@ body {
     box-shadow: 0 0 8px rgba(0,208,132,.6);
 }
 
-/* ── TOP NAV ── */
+
 .top-nav {
     position: sticky; top: 0; z-index: 100;
     background: rgba(15,15,15,.92);
@@ -135,14 +133,14 @@ body.theme-sepia .top-nav  { background: rgba(245,239,224,.92); }
 }
 .coin-pill:hover { border-color: var(--gold); background: rgba(245,197,24,.15); color: var(--gold) !important; }
 
-/* ── READER WRAPPER ── */
+
 .reader-wrap {
     max-width: var(--max-w);
     margin: 0 auto;
     padding: 48px 24px 80px;
 }
 
-/* ── CHAPTER HEADER ── */
+
 .chap-header { text-align: center; margin-bottom: 48px; }
 .chap-story-title {
     font-size: 13px; font-weight: 700; text-transform: uppercase;
@@ -178,7 +176,7 @@ body.theme-sepia .top-nav  { background: rgba(245,239,224,.92); }
 }
 .chap-divider span { color: var(--text-dim); font-size: 18px; }
 
-/* ── CHAPTER CONTENT ── */
+
 .chapter-content {
     font-size: var(--font-size);
     line-height: var(--line-h);
@@ -188,7 +186,6 @@ body.theme-sepia .top-nav  { background: rgba(245,239,224,.92); }
 }
 .chapter-content p { margin-bottom: 1.4em; }
 
-/* ── NAV BUTTONS ── */
 .nav-row {
     display: flex; justify-content: center; align-items: center;
     gap: 12px; margin: 48px 0 0;
@@ -209,7 +206,6 @@ body.theme-sepia .top-nav  { background: rgba(245,239,224,.92); }
 }
 .btn-nav-primary:hover { background: #00b872; color: #000; border-color: #00b872; }
 
-/* ── FLOATING TOOLBAR ── */
 .toolbar {
     position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
     z-index: 200;
@@ -243,7 +239,6 @@ body.theme-light .tb-sep { background: rgba(0,0,0,.12); }
 .tb-label { font-size: 12px; color: #888; padding: 0 6px; min-width: 32px; text-align: center; }
 body.theme-light .tb-label { color: #555; }
 
-/* Settings panel */
 .settings-panel {
     position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%);
     z-index: 199;
@@ -264,7 +259,6 @@ body.theme-sepia .settings-panel { background: rgba(237,227,204,.97); border-col
 .sp-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
 .sp-row { margin-bottom: 18px; }
 
-/* Theme buttons */
 .theme-btns { display: flex; gap: 8px; }
 .theme-btn {
     flex: 1; padding: 8px; border-radius: 8px; border: 2px solid transparent;
@@ -275,7 +269,6 @@ body.theme-sepia .settings-panel { background: rgba(237,227,204,.97); border-col
 .theme-btn.light { background: #fff;    color: #1a1a1a; border-color: #ddd; }
 .theme-btn.active { border-color: var(--green) !important; }
 
-/* Font family */
 .font-btns { display: flex; gap: 8px; }
 .font-btn {
     flex: 1; padding: 8px; border-radius: 8px; border: 2px solid #333;
@@ -285,7 +278,6 @@ body.theme-light .font-btn { background: #f0f0f0; border-color: #ddd; color: #55
 body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: #5a3e28; }
 .font-btn.active { border-color: var(--green) !important; color: var(--green) !important; }
 
-/* ── PAYWALL ── */
 .paywall-wrap {
     font-family: 'Segoe UI', sans-serif;
 }
@@ -358,7 +350,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
 <body class="theme-dark" id="readerBody">
 <div id="progress-bar"></div>
 
-<!-- TOP NAV -->
+
 <nav class="top-nav">
     <a href="../frontend/home.php"><i class="fa-solid fa-house"></i></a>
     <span class="sep">/</span>
@@ -379,10 +371,9 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     <?php endif; ?>
 </nav>
 
-<!-- READER -->
 <div class="reader-wrap">
 
-    <!-- Chapter header -->
+
     <div class="chap-header">
         <a href="read_story.php?story_id=<?= $story_id ?>" class="chap-story-title">
             <?= htmlspecialchars($chapter['story_title']) ?>
@@ -400,7 +391,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     </div>
 
     <?php if (!$is_locked): ?>
-    <!-- Nav top -->
+
     <div class="nav-row" style="margin-top:0;margin-bottom:40px">
         <a href="<?= $prev_chap ? 'read_chapter.php?chapter_id='.$prev_chap['id'] : '#' ?>"
            class="btn-nav <?= !$prev_chap ? 'disabled' : '' ?>">
@@ -417,7 +408,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
 
     <div class="chap-divider"><span>✦</span></div>
 
-    <!-- Content -->
+
     <div class="chapter-content" id="chapterContent">
         <?php
         $paragraphs = explode("\n", $chapter['content']);
@@ -429,8 +420,6 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     </div>
 
     <div class="chap-divider" style="margin-top:48px"><span>✦</span></div>
-
-    <!-- Nav bottom -->
     <div class="nav-row">
         <a href="<?= $prev_chap ? 'read_chapter.php?chapter_id='.$prev_chap['id'] : '#' ?>"
            class="btn-nav <?= !$prev_chap ? 'disabled' : '' ?>">
@@ -448,7 +437,6 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     </div>
 
     <?php else: ?>
-    <!-- PAYWALL -->
     <div class="paywall-wrap">
         <div class="content-preview">
             <?php
@@ -512,7 +500,7 @@ body.theme-sepia .font-btn { background: #ede3cc; border-color: #c4b490; color: 
     </div>
     <?php endif; ?>
 
-</div><!-- /reader-wrap -->
+</div>
 
 <?php if (!$user_id): ?>
 <div id="loginModal" class="modal" style="display:none">

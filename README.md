@@ -1,22 +1,27 @@
 # KEWE — Nền tảng đọc sách & truyện online
 
-Website đọc sách/truyện trực tuyến xây dựng bằng **PHP thuần** và **MySQL**, phục vụ đồ án môn **Chuyên đề định hướng**. Hệ thống cho phép người dùng đọc truyện theo chương, mua chương trả phí bằng coin, nạp coin qua QR (demo), lưu truyện vào tủ sách, bình luận; quản trị viên quản lý truyện, chương, người dùng và xem thống kê.
+Website đọc sách/truyện trực tuyến xây dựng bằng **PHP thuần** và **MySQL**, phục vụ đồ án môn **Chuyên đề định hướng**. Hệ thống cho phép người dùng đọc truyện theo chương, mua chương trả phí bằng coin, nạp coin qua QR (demo), lưu truyện vào tủ sách, bình luận; quản trị viên quản lý truyện, chương, người dùng, bình luận và xem thống kê.
+
+**Chạy nhanh:** Bật Apache + MySQL (XAMPP) → mở `[http://localhost/chuyende/frontend/home.php](http://localhost/chuyende/frontend/home.php)`
 
 ---
 
 ## Mục lục
 
 1. [Tính năng](#tính-năng)
-2. [Công nghệ](#công-nghệ)
-3. [Cấu trúc thư mục](#cấu-trúc-thư-mục)
-4. [Cơ sở dữ liệu](#cơ-sở-dữ-liệu)
-5. [Luồng nghiệp vụ](#luồng-nghiệp-vụ)
-6. [Cài đặt & chạy](#cài-đặt--chạy)
-7. [Tài khoản & phân quyền](#tài-khoản--phân-quyền)
-8. [Cấu hình](#cấu-hình)
-9. [API & endpoint chính](#api--endpoint-chính)
-10. [Hạn chế & ghi chú](#hạn-chế--ghi-chú)
-11. [Kiểm thử nhanh](#kiểm-thử-nhanh)
+2. [Mô hình kinh doanh](#mô-hình-kinh-doanh)
+3. [Công nghệ](#công-nghệ)
+4. [Cấu trúc thư mục](#cấu-trúc-thư-mục)
+5. [Cơ sở dữ liệu](#cơ-sở-dữ-liệu)
+6. [Luồng nghiệp vụ](#luồng-nghiệp-vụ)
+7. [Cài đặt & chạy](#cài-đặt--chạy)
+8. [Tài khoản & phân quyền](#tài-khoản--phân-quyền)
+9. [Cấu hình](#cấu-hình)
+10. [API & endpoint chính](#api--endpoint-chính)
+11. [Hạn chế & ghi chú](#hạn-chế--ghi-chú)
+12. [Kiểm thử nhanh](#kiểm-thử-nhanh)
+13. [Test case](#test-case)
+14. [Tác giả](#tác-giả)
 
 ---
 
@@ -24,43 +29,83 @@ Website đọc sách/truyện trực tuyến xây dựng bằng **PHP thuần** 
 
 ### Người đọc (`role = user`)
 
-| Chức năng | Mô tả |
-|-----------|--------|
+
+| Chức năng                       | Mô tả                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------ |
 | Đăng ký / đăng nhập / đăng xuất | Mật khẩu mã hóa `password_hash`; tài khoản `banned` không đăng nhập được |
-| Trang chủ & danh mục | Banner slider, lọc theo 24 thể loại sách/truyện |
-| Đọc truyện | Trang chi tiết (`read_story.php`) + đọc chương (`read_chapter.php`) |
-| Paywall | **3 chương đầu miễn phí**, từ chương 4 mua bằng **3 coin/chương** |
-| Nạp coin | Chọn gói → tạo đơn → quét QR VietQR (demo) → xác nhận cộng coin |
-| Tủ sách | Lưu / bỏ lưu truyện yêu thích |
-| Tìm kiếm | Gợi ý AJAX real-time trên header + trang `timkiem.php` |
-| Bình luận | Bình luận gốc & trả lời (reply); xóa comment của chính mình |
-| Tài khoản | Xem số dư coin, lịch sử giao dịch, thông tin cá nhân |
+| Trang chủ & danh mục            | Banner slider (Swiper), lọc theo 24 thể loại sách/truyện                 |
+| Đọc truyện                      | Trang chi tiết (`read_story.php`) + đọc chương (`read_chapter.php`)      |
+| Paywall                         | **3 chương đầu miễn phí**, từ chương 4 mua bằng **3 coin/chương**        |
+| Nạp coin                        | Chọn gói → tạo đơn → quét QR VietQR (demo) → xác nhận cộng coin          |
+| Tủ sách                         | Xem truyện đã lưu và chương đã mua; lưu truyện yêu thích                 |
+| Tìm kiếm                        | Gợi ý AJAX real-time trên header + trang `timkiem.php`                   |
+| Bình luận                       | Bình luận gốc & trả lời (reply); xóa comment của chính mình              |
+| Tài khoản                       | Xem số dư coin, lịch sử giao dịch, thông tin cá nhân                     |
+
 
 ### Quản trị viên (`role = admin`)
 
-| Chức năng | Mô tả |
-|-----------|--------|
-| Dashboard | Tổng user, truyện, lượt xem, bình luận |
-| Thống kê | Top truyện theo `luot_xem`, % user active, cơ cấu thể loại |
-| Quản lý truyện | CRUD, upload ảnh bìa (validate MIME), lọc theo tên/trạng thái |
-| Quản lý chương | Thêm/sửa/xóa chương theo truyện |
-| Quản lý user | CRUD, khóa (`banned`) / mở khóa, phân quyền |
-| Bypass paywall | Admin đọc mọi chương trả phí không cần mua (chỉ để kiểm duyệt nội dung) |
 
-> **Lưu ý:** Admin **không** có Nạp coin / Tủ sách — dropdown chỉ hiển thị link Quản trị viên.
+| Chức năng         | Mô tả                                                            |
+| ----------------- | ---------------------------------------------------------------- |
+| Dashboard         | Tổng user, truyện, lượt xem, bình luận                           |
+| Thống kê          | Top truyện theo `luot_xem`, % user active, cơ cấu thể loại       |
+| Quản lý truyện    | CRUD, upload ảnh bìa (validate MIME), lọc theo tên/trạng thái    |
+| Quản lý chương    | Thêm/sửa/xóa chương theo truyện                                  |
+| Quản lý user      | CRUD, khóa (`banned`) / mở khóa, phân quyền                      |
+| Quản lý bình luận | Xem, xóa bình luận; khóa/mở khóa user từ trang bình luận         |
+| Bypass paywall    | Admin đọc mọi chương trả phí không cần mua (kiểm duyệt nội dung) |
+
+
+> **Lưu ý UI:** Admin **không** có Nạp coin / Tủ sách — dropdown chỉ hiển thị link **Quản trị viên**. Nút **Lưu truyện** cũng bị ẩn trên các trang danh mục.
+
+---
+
+## Mô hình kinh doanh
+
+Hệ thống dùng mô hình **freemium** kết hợp **coin nội bộ**:
+
+
+| Thành phần         | Giá trị mặc định               |
+| ------------------ | ------------------------------ |
+| Chương miễn phí    | 3 chương đầu mỗi truyện        |
+| Giá chương trả phí | 3 coin / chương                |
+| Tỷ giá nạp (demo)  | 1 coin = 10 VND                |
+| Gói nạp            | 10, 30, 50, 100, 200, 500 coin |
+
+
+```mermaid
+flowchart LR
+    A[Đọc truyện] --> B{Chương ≤ 3?}
+    B -->|Có| C[Đọc miễn phí]
+    B -->|Không| D{Đã mua?}
+    D -->|Có| C
+    D -->|Không| E[Paywall]
+    E --> F{Nạp coin}
+    F --> G[Mua chương]
+    G --> C
+```
+
+
+
+**Điểm mạnh logic:** Paywall tập trung tại `read_chapter.php`; mua chương dùng **transaction** (trừ coin + ghi `purchased_chapters` + lịch sử); admin bypass rõ ràng; user bị ban bị chặn qua `require_active_user()`.
+
+**Điểm cần cải thiện (nếu triển khai thật):** Thanh toán chỉ là demo (không xác minh chuyển khoản); chưa có CSRF token; `luutruyen.php` chỉ **lưu** truyện, chưa có chức năng **bỏ lưu**.
 
 ---
 
 ## Công nghệ
 
-| Thành phần | Công nghệ |
-|------------|-----------|
-| Backend | PHP 7.4+ (mysqli, prepared statements, transactions) |
-| Database | MySQL / MariaDB, `utf8mb4` |
-| Frontend | HTML5, CSS3, JavaScript (Fetch API) |
-| Thư viện JS | Swiper.js 11 (banner/hero carousel) |
-| Icon | Font Awesome 6.5 |
-| Thanh toán demo | VietQR (`img.vietqr.io`) — không tích hợp cổng thật |
+
+| Thành phần      | Công nghệ                                            |
+| --------------- | ---------------------------------------------------- |
+| Backend         | PHP 7.4+ (mysqli, prepared statements, transactions) |
+| Database        | MySQL / MariaDB, `utf8mb4`                           |
+| Frontend        | HTML5, CSS3, JavaScript (Fetch API)                  |
+| Thư viện JS     | Swiper.js 11 (banner/hero carousel)                  |
+| Icon            | Font Awesome 6.5                                     |
+| Thanh toán demo | VietQR (`img.vietqr.io`) — không tích hợp cổng thật  |
+
 
 ---
 
@@ -73,6 +118,7 @@ chuyende/
 │   ├── require_auth.php          # Guard user đăng nhập + status active
 │   ├── story_config.php          # FREE_CHAPTERS, COINS_PER_CHAPTER, mã danh mục
 │   ├── payment_config.php        # Cấu hình VietQR, gói nạp coin
+│   ├── connect.php               # Kết nối DB (mysqli) — dùng ở một số backend file
 │   ├── dangnhap_logic.php        # Xử lý đăng nhập (prepared statement)
 │   ├── dangky_logic.php          # Xử lý đăng ký (prepared statement)
 │   ├── logout.php                # Hủy session, redirect home
@@ -103,30 +149,12 @@ chuyende/
 │   ├── thanhtoan.php             # Trang QR thanh toán
 │   ├── taikhoan.php              # Thông tin tài khoản, lịch sử giao dịch
 │   ├── tusach.php                # Tủ sách cá nhân (đã lưu + đã mua)
-│   ├── luutruyen.php             # API lưu/bỏ lưu truyện (POST)
-│   ├── dangnhap_form.php         # Fragment form đăng nhập (dùng trong modal)
-│   ├── dangky_form.php           # Fragment form đăng ký (dùng trong modal)
-│   ├── _category_template.php   # Template danh mục dùng chung (hero + grid)
+│   ├── luutruyen.php             # API lưu truyện (POST, chỉ INSERT)
+│   ├── dangnhap_form.php         # Fragment form đăng nhập (modal)
+│   ├── dangky_form.php           # Fragment form đăng ký (modal)
+│   ├── _category_template.php    # Template danh mục dùng chung (hero + grid)
 │   │
-│   ├── [thể loại sách]
-│   │   ├── taichinhcanhan.php    # Tài chính cá nhân
-│   │   ├── pt_canhan.php         # Phát triển cá nhân
-│   │   ├── doanh_nhan.php        # Doanh nhân
-│   │   ├── khoahoc_congnghe.php  # Khoa học - Công nghệ
-│   │   ├── suckhoe_lamdep.php    # Sức khỏe - Làm đẹp
-│   │   ├── tuduy_sangtao.php     # Tư duy sáng tạo
-│   │   ├── giaoduc_vanhoa.php    # Giáo dục - Văn hóa
-│   │   ├── nghe_thuat_song.php   # Nghệ thuật sống
-│   │   ├── tamlinh.php           # Tâm linh - Tôn giáo
-│   │   ├── chungkhoan_bds_dautu.php  # Chứng khoán - BĐS
-│   │   ├── sach_ngoai_van.php    # Sách Ngoại văn
-│   │   └── mkt_banhang.php       # Marketing - Bán hàng
-│   │
-│   ├── [thể loại truyện]
-│   │   ├── tinhcam.php, trinhtham.php, xuyenkhong.php
-│   │   ├── tho_tanvan.php, codai.php, hanhdong.php
-│   │   ├── nam.php, nu.php, ngungon.php
-│   │   ├── haihuoc.php, thieunhi.php, truyenma.php
+│   ├── [24 trang thể loại]       # taichinhcanhan.php, tinhcam.php, …
 │   │
 │   ├── includes/
 │   │   └── paths.php             # app_url(), cover_url(), app_login_url(), app_safe_redirect()
@@ -137,14 +165,10 @@ chuyende/
 │   │   ├── stories.php           # Quản lý truyện
 │   │   ├── chapter.php           # Quản lý chương
 │   │   ├── users.php             # Quản lý người dùng
+│   │   ├── comments.php          # Quản lý bình luận
 │   │   └── sidebar.php           # Sidebar admin (shared)
 │   │
-│   ├── css/
-│   │   ├── style.css, d.css      # Style chung
-│   │   ├── user.css              # Header, dropdown user
-│   │   ├── category.css          # Trang danh mục
-│   │   └── search-ajax.css       # Dropdown tìm kiếm AJAX
-│   │
+│   ├── css/                      # style.css, user.css, category.css, …
 │   └── js/
 │       └── search-ajax.js        # Client-side AJAX search
 │
@@ -165,16 +189,28 @@ chuyende/
 
 ### Bảng chính
 
-| Bảng | Mô tả |
-|------|--------|
-| `users` | Tài khoản: username, email, sdt, password (bcrypt), coins, role, status |
-| `stories` | Truyện: title, description (mã danh mục), cover, status, luot_xem |
-| `chapters` | Chương: story_id, title, content, chapter_number |
-| `user_stories` | Truyện đã lưu vào tủ sách |
-| `purchased_chapters` | Chương đã mua bằng coin |
-| `coin_transactions` | Lịch sử nạp/tiêu coin (type: topup/spend) |
-| `topup_orders` | Đơn nạp coin (status: pending / paid) |
-| `comments` | Bình luận (hỗ trợ parent_id cho reply) |
+
+| Bảng                 | Mô tả                                                                   |
+| -------------------- | ----------------------------------------------------------------------- |
+| `users`              | Tài khoản: username, email, sdt, password (bcrypt), coins, role, status |
+| `stories`            | Truyện: title, description (mã danh mục), cover, status, luot_xem       |
+| `chapters`           | Chương: story_id, title, content, chapter_number                        |
+| `user_stories`       | Truyện đã lưu vào tủ sách                                               |
+| `purchased_chapters` | Chương đã mua bằng coin                                                 |
+| `coin_transactions`  | Lịch sử nạp/tiêu coin (type: topup/spend)                               |
+| `topup_orders`       | Đơn nạp coin (status: pending / paid)                                   |
+| `comments`           | Bình luận (hỗ trợ parent_id cho reply)                                  |
+
+
+### Quan hệ (tóm tắt)
+
+```
+users ──┬── user_stories ── stories ── chapters
+        ├── purchased_chapters ── chapters
+        ├── coin_transactions
+        ├── topup_orders
+        └── comments ── stories
+```
 
 ### Auto-migration
 
@@ -198,7 +234,7 @@ Trang yêu cầu đăng nhập dùng `require_active_user()` — user bị ban g
 ### Đọc & mua chương
 
 ```
-read_story.php  → tăng luot_xem (mỗi lần GET)
+read_story.php   → tăng luot_xem (mỗi lần GET)
 read_chapter.php → chương ≤ FREE_CHAPTERS (3): miễn phí
                  → chương > 3 + đã mua (purchased_chapters): cho đọc
                  → chương > 3 + chưa mua: hiển thị paywall
@@ -231,6 +267,16 @@ napcoin.php → POST topup_create_order.php
 ```
 
 > Đây là **mô phỏng**: người dùng bấm "Tôi đã thanh toán", hệ thống cộng coin — không có webhook ngân hàng thật.
+
+### Lưu truyện & tủ sách
+
+```
+POST luutruyen.php (story_id)
+  → INSERT user_stories (bỏ qua nếu đã lưu)
+  → redirect về trang trước + thông báo
+
+tusach.php → hiển thị truyện đã lưu + chương đã mua
+```
 
 ### Admin CRUD
 
@@ -271,22 +317,28 @@ XAMPP Control Panel → **Start Apache** và **MySQL**.
 
 **Cấu hình mặc định** (`database/connect.php`):
 
-| Tham số | Giá trị |
-|---------|---------|
-| Host | `localhost` |
-| User | `root` |
-| Password | *(trống)* |
-| Database | `db_BTL5` |
+
+| Tham số  | Giá trị     |
+| -------- | ----------- |
+| Host     | `localhost` |
+| User     | `root`      |
+| Password | *(trống)*   |
+| Database | `db_BTL5`   |
+
 
 ### Bước 4 — Truy cập
 
-| Trang | URL |
-|-------|-----|
-| Trang chủ | `http://localhost/chuyende/frontend/home.php` |
-| Tất cả sách | `http://localhost/chuyende/frontend/tatca.php` |
-| Tìm kiếm | `http://localhost/chuyende/frontend/timkiem.php` |
-| Nạp coin | `http://localhost/chuyende/frontend/napcoin.php` |
-| Admin | `http://localhost/chuyende/frontend/admin/index.php` |
+
+| Trang       | URL                                                  |
+| ----------- | ---------------------------------------------------- |
+| Trang chủ   | `http://localhost/chuyende/frontend/home.php`        |
+| Tất cả sách | `http://localhost/chuyende/frontend/tatca.php`       |
+| Tìm kiếm    | `http://localhost/chuyende/frontend/timkiem.php`     |
+| Nạp coin    | `http://localhost/chuyende/frontend/napcoin.php`     |
+| Tủ sách     | `http://localhost/chuyende/frontend/tusach.php`      |
+| Tài khoản   | `http://localhost/chuyende/frontend/taikhoan.php`    |
+| Admin       | `http://localhost/chuyende/frontend/admin/index.php` |
+
 
 ---
 
@@ -305,14 +357,16 @@ Form **Đăng ký** trên trang chủ (modal) hoặc admin thêm user tại `adm
 UPDATE users SET role = 'admin' WHERE username = 'ten_tai_khoan';
 ```
 
-3. Đăng xuất → Đăng nhập lại
+1. Đăng xuất → Đăng nhập lại
 
 ### Phân quyền
 
-| Role | Quyền |
-|------|--------|
-| `user` | Đọc, mua chương, nạp coin, tủ sách, bình luận |
-| `admin` | Toàn bộ panel quản trị; **không** nạp coin / tủ sách |
+
+| Role    | Quyền                                                             |
+| ------- | ----------------------------------------------------------------- |
+| `user`  | Đọc, mua chương, nạp coin, tủ sách, bình luận                     |
+| `admin` | Toàn bộ panel quản trị; **không** nạp coin / tủ sách / lưu truyện |
+
 
 ### Khóa tài khoản
 
@@ -341,35 +395,44 @@ Gói nạp hợp lệ: **10, 30, 50, 100, 200, 500** coin. Tỷ giá demo: **1 c
 
 ### Mã danh mục — `stories.description`
 
-Cột `description` lưu **mã thể loại** (không phải mô tả dài):
+Cột `description` lưu **mã thể loại** (không phải mô tả dài). Danh sách đầy đủ nằm trong `story_category_labels()` tại `backend/story_config.php`.
 
-| Mã | Tên hiển thị | Trang frontend |
-|----|-------------|----------------|
-| `home` | Trang chủ / nổi bật | `home.php` |
-| `tho` | Thơ - Tản văn | `tho_tanvan.php` |
-| `trinhtham` | Trinh thám - Kinh dị | `trinhtham.php` |
-| `taichinh` | Tài chính cá nhân | `taichinhcanhan.php` |
-| `ptcanhan` | Phát triển cá nhân | `pt_canhan.php` |
-| `doanh_nhan` | Doanh nhân | `doanh_nhan.php` |
-| `suckhoe` | Sức khỏe - Làm đẹp | `suckhoe_lamdep.php` |
-| `khoahoc` | Khoa học - Công nghệ | `khoahoc_congnghe.php` |
-| `tuduy` | Tư duy sáng tạo | `tuduy_sangtao.php` |
-| `giaoduc` | Giáo dục - Văn hóa | `giaoduc_vanhoa.php` |
-| `nghethuat` | Nghệ thuật sống | `nghe_thuat_song.php` |
-| `tamlinh` | Tâm linh - Tôn giáo | `tamlinh.php` |
-| `chungkhoan` | Chứng khoán - BĐS | `chungkhoan_bds_dautu.php` |
-| `mkt` | Marketing - Bán hàng | `mkt_banhang.php` |
-| `ngoai_van` | Sách Ngoại văn | `sach_ngoai_van.php` |
-| `nam` | Truyện Nam | `nam.php` |
-| `nu` | Truyện Nữ | `nu.php` |
-| `tinhcam` | Tình cảm | `tinhcam.php` |
-| `xuyenkhong` | Xuyên không | `xuyenkhong.php` |
-| `truyenma` | Truyện ma | `truyenma.php` |
-| `codai` | Cổ đại | `codai.php` |
-| `ngungon` | Ngụ ngôn | `ngungon.php` |
-| `haihuoc` | Hài hước | `haihuoc.php` |
-| `hanhdong` | Hành động | `hanhdong.php` |
-| `thieunhi` | Thiếu nhi | `thieunhi.php` |
+
+| Mã           | Tên hiển thị         | Trang frontend             |
+| ------------ | -------------------- | -------------------------- |
+| `home`       | Trang chủ / nổi bật  | `home.php`                 |
+| `tho`        | Thơ - Tản văn        | `tho_tanvan.php`           |
+| `trinhtham`  | Trinh thám - Kinh dị | `trinhtham.php`            |
+| `taichinh`   | Tài chính cá nhân    | `taichinhcanhan.php`       |
+| `ptcanhan`   | Phát triển cá nhân   | `pt_canhan.php`            |
+| `doanh_nhan` | Doanh nhân           | `doanh_nhan.php`           |
+| `suckhoe`    | Sức khỏe - Làm đẹp   | `suckhoe_lamdep.php`       |
+| `khoahoc`    | Khoa học - Công nghệ | `khoahoc_congnghe.php`     |
+| `tuduy`      | Tư duy sáng tạo      | `tuduy_sangtao.php`        |
+| `giaoduc`    | Giáo dục - Văn hóa   | `giaoduc_vanhoa.php`       |
+| `nghethuat`  | Nghệ thuật sống      | `nghe_thuat_song.php`      |
+| `tamlinh`    | Tâm linh - Tôn giáo  | `tamlinh.php`              |
+| `chungkhoan` | Chứng khoán - BĐS    | `chungkhoan_bds_dautu.php` |
+| `mkt`        | Marketing - Bán hàng | `mkt_banhang.php`          |
+| `ngoai_van`  | Sách Ngoại văn       | `sach_ngoai_van.php`       |
+| `nam`        | Truyện Nam           | `nam.php`                  |
+| `nu`         | Truyện Nữ            | `nu.php`                   |
+| `tinhcam`    | Tình cảm             | `tinhcam.php`              |
+| `xuyenkhong` | Xuyên không          | `xuyenkhong.php`           |
+| `truyenma`   | Truyện ma            | `truyenma.php`             |
+| `codai`      | Cổ đại               | `codai.php`                |
+| `ngungon`    | Ngụ ngôn             | `ngungon.php`              |
+| `haihuoc`    | Hài hước             | `haihuoc.php`              |
+| `hanhdong`   | Hành động            | `hanhdong.php`             |
+| `thieunhi`   | Thiếu nhi            | `thieunhi.php`             |
+
+
+### Ảnh bìa — `frontend/includes/paths.php`
+
+Hàm `cover_url($cover)` tự xử lý đường dẫn:
+
+- Ảnh upload admin → `backend/uploads/…`
+- Ảnh mặc định → `code/images/…`
 
 ---
 
@@ -385,44 +448,64 @@ Phản hồi JSON: `{ success, count, keyword, items: [{id, title, cover, catego
 
 ### Nạp coin
 
-| Method | File | Mô tả |
-|--------|------|--------|
-| POST | `topup_create_order.php` | Tạo đơn, redirect `thanhtoan.php?order_id=…` |
-| POST | `topup_confirm_paid.php` | Xác nhận demo, cộng coin vào tài khoản |
+
+| Method | File                     | Mô tả                                        |
+| ------ | ------------------------ | -------------------------------------------- |
+| POST   | `topup_create_order.php` | Tạo đơn, redirect `thanhtoan.php?order_id=…` |
+| POST   | `topup_confirm_paid.php` | Xác nhận demo, cộng coin vào tài khoản       |
+
 
 ### Mua chương
 
-| Method | File | Mô tả |
-|--------|------|--------|
-| POST | `buy_chapter.php` | Trừ coin (transaction), ghi `purchased_chapters` |
+
+| Method | File              | Mô tả                                            |
+| ------ | ----------------- | ------------------------------------------------ |
+| POST   | `buy_chapter.php` | Trừ coin (transaction), ghi `purchased_chapters` |
+
+
+### Lưu truyện
+
+
+| Method | File            | Mô tả                                             |
+| ------ | --------------- | ------------------------------------------------- |
+| POST   | `luutruyen.php` | Lưu truyện vào `user_stories` (yêu cầu đăng nhập) |
+
 
 ### Admin API (JSON — yêu cầu session admin)
 
-| File | Chức năng |
-|------|-----------|
-| `add_story.php` / `edit_story.php` / `delete_story.php` | CRUD truyện |
-| `add_chapter.php` / `edit_chapter.php` / `delete_chapter.php` | CRUD chương |
-| `add_user.php` / `edit_user.php` / `delete_user.php` | CRUD người dùng |
+
+| File                                                          | Chức năng       |
+| ------------------------------------------------------------- | --------------- |
+| `add_story.php` / `edit_story.php` / `delete_story.php`       | CRUD truyện     |
+| `add_chapter.php` / `edit_chapter.php` / `delete_chapter.php` | CRUD chương     |
+| `add_user.php` / `edit_user.php` / `delete_user.php`          | CRUD người dùng |
+
 
 ### Helper functions — `frontend/includes/paths.php`
 
-| Hàm | Mô tả |
-|-----|--------|
-| `app_url($path)` | URL tuyệt đối từ root project |
-| `cover_url($cover)` | URL ảnh bìa (tự xử lý `uploads/` vs `code/images/`) |
-| `app_login_url($redirect)` | URL home với `?open=login&redirect=…` |
-| `app_safe_redirect($target)` | Validate & trả URL redirect an toàn |
+
+| Hàm                          | Mô tả                                 |
+| ---------------------------- | ------------------------------------- |
+| `app_url($path)`             | URL tuyệt đối từ root project         |
+| `cover_url($cover)`          | URL ảnh bìa (uploads vs code/images)  |
+| `app_login_url($redirect)`   | URL home với `?open=login&redirect=…` |
+| `app_safe_redirect($target)` | Validate & trả URL redirect an toàn   |
+
 
 ---
 
 ## Hạn chế & ghi chú
 
-| Hạng mục | Ghi chú |
-|----------|---------|
-| Thanh toán | Demo VietQR — không xác minh chuyển khoản thật |
-| CSRF | Chưa có CSRF token; phù hợp môi trường đồ án / localhost |
+
+| Hạng mục          | Ghi chú                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| Thanh toán        | Demo VietQR — không xác minh chuyển khoản thật                       |
+| CSRF              | Chưa có CSRF token; phù hợp môi trường đồ án / localhost             |
+| Bỏ lưu truyện     | `luutruyen.php` chỉ INSERT; chưa có API/UI bỏ lưu                    |
 | `add_chapter.php` | `story_id` không cast `intval()` trước SQL (admin-only, rủi ro thấp) |
-| `topup_coin.php` | File legacy, chỉ redirect sang `napcoin.php` |
+| `topup_coin.php`  | File legacy, chỉ redirect sang `napcoin.php`                         |
+| Toast vs alert    | Một số trang vẫn dùng `alert()` (vd. `luutruyen.php`)                |
+
 
 ---
 
@@ -433,11 +516,11 @@ Phản hồi JSON: `{ success, count, keyword, items: [{id, title, cover, catego
 - [ ] Đọc 3 chương đầu miễn phí; chương 4 yêu cầu coin
 - [ ] Nạp coin qua QR → số dư tăng
 - [ ] Mua chương → đọc được nội dung
-- [ ] Lưu truyện vào tủ sách / bỏ lưu
+- [ ] Lưu truyện vào tủ sách
 - [ ] Bình luận & trả lời bình luận
 - [ ] Tìm kiếm theo tên truyện (AJAX dropdown + trang kết quả)
 - [ ] Admin: CRUD truyện, chương, user
-- [ ] Admin: xem dashboard và thống kê
+- [ ] Admin: quản lý bình luận, xem dashboard và thống kê
 - [ ] Admin: bypass đọc chương trả phí không cần mua
 - [ ] Admin: dropdown chỉ hiển thị "Quản trị viên" (không có Tủ sách / Nạp Coin)
 - [ ] User bị `banned` không đăng nhập được
@@ -445,6 +528,7 @@ Phản hồi JSON: `{ success, count, keyword, items: [{id, title, cover, catego
 
 ---
 
+<<<<<<< HEAD
 ## Báo cáo test case
 
 Bộ test case đã kiểm thử (**62 case**, **100% Pass**):
@@ -456,17 +540,27 @@ Bộ test case đã kiểm thử (**62 case**, **100% Pass**):
 ---
 
 ## Tác giả
+=======
+## Test case
+>>>>>>> origin/main
 
-| | |
-|---|---|
-| **Đề tài** | Xây dựng website đọc sách/truyện online KEWE |
-| **Môn học** | Chuyên đề định hướng |
-| **Nhóm** | Nhóm 1 |
-| **Giảng viên hướng dẫn** | Ths. Ngô Ngọc Anh |
-| **Năm học** | 2025 – 2026 |
+Bộ test case chi tiết (**79 case**) theo module:
+
+- [`TESTCASE.md`](TESTCASE.md) — bảng đầy đủ, dùng khi viết báo cáo
+- [`TESTCASE.csv`](TESTCASE.csv) — import Excel/Google Sheets để điền Pass/Fail
 
 ---
 
-## Giấy phép
+## Tác giả
 
-Dự án phục vụ mục đích **học tập / đồ án chuyên đề**. Không khuyến khích triển khai production khi chưa hoàn thiện bảo mật và tích hợp thanh toán thật.
+
+|                          |                                              |
+| ------------------------ | -------------------------------------------- |
+| **Đề tài**               | Xây dựng website đọc sách/truyện online KEWE |
+| **Môn học**              | Chuyên đề định hướng                         |
+| **Nhóm**                 | Nhóm 1                                       |
+| **Giảng viên hướng dẫn** | Ths. Ngô Ngọc Anh                            |
+| **Năm học**              | 2025 – 2026                                  |
+
+
+---

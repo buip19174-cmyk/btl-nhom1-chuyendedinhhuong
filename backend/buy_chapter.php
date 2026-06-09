@@ -1,5 +1,4 @@
 <?php
-// buy_chapter.php - Xử lý mua chương bằng coin
 if (session_status() === PHP_SESSION_NONE) session_start();
 include_once '../database/connect.php';
 require_once __DIR__ . '/story_config.php';
