@@ -502,10 +502,12 @@ $categories = [
                         <p class="slide-desc">Khám phá ngay câu chuyện hấp dẫn này trên KEWE — đọc miễn phí 3 chương đầu.</p>
                         <div class="slide-actions">
                             <a href="<?= $url ?>" class="slide-btn"><i class="fa-solid fa-book-open"></i> Đọc ngay</a>
-                            <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                            <?php if (($_SESSION['role'] ?? '') !== 'admin'):
+                                $is_saved_banner = in_array($b['id'], $saved_story_ids); ?>
                                 <form method="POST" action="luutruyen.php" style="display:inline">
                                     <input type="hidden" name="story_id" value="<?= $b['id'] ?>">
-                                    <button type="submit" class="slide-btn-outline"><i class="fa-solid fa-heart"></i> Lưu</button>
+                                    <input type="hidden" name="action" value="<?= $is_saved_banner ? 'unsave' : 'save' ?>">
+                                    <button type="submit" class="slide-btn-outline"><i class="fa-<?= $is_saved_banner ? 'solid' : 'regular' ?> fa-heart"></i> <?= $is_saved_banner ? 'Bỏ lưu' : 'Lưu' ?></button>
                                 </form>
                             <?php endif; ?>
                         </div>
@@ -571,11 +573,12 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
-                    <?php if (($_SESSION['role'] ?? '') !== 'admin'): ?>
+                    <?php if (($_SESSION['role'] ?? '') !== 'admin'):
+                        $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
                         <form action="luutruyen.php" method="POST">
                             <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                            <?php $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
-                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
+                            <input type="hidden" name="action" value="<?= $is_saved_book ? 'unsave' : 'save' ?>">
+                            <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Bỏ lưu' : 'Lưu vào tủ sách' ?>">
                                 <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                             </button>
                         </form>
@@ -638,21 +641,7 @@ $categories = [
 <div id="registerModal" class="modal" style="display:none"><?php include 'dangky_form.php'; ?></div>
 <div id="loginModal"   class="modal" style="display:none"><?php include 'dangnhap_form.php'; ?></div>
 
-<?php if (!empty($register_message)): ?>
-<script>alert("<?= addslashes($register_message) ?>");</script>
-<?php endif; ?>
-
-<?php if (!empty($login_message)): ?>
-<script>alert("<?= addslashes($login_message) ?>");</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['banned']) && $_GET['banned'] === '1'): ?>
-<script>alert("Tài khoản đã bị khóa.");</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['login']) && $_GET['login'] === 'success'): ?>
-<script>alert("Đăng nhập thành công!");</script>
-<?php endif; ?>
+<?php include __DIR__ . '/includes/toast.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>

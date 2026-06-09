@@ -6,59 +6,58 @@ require_once __DIR__ . '/../backend/require_auth.php';
 require_active_user();
 /** @var mysqli $con */
 
-/* Admin chỉ quản lý: không dùng tủ sách */
 if (($_SESSION['role'] ?? '') === 'admin') {
-    header("Location: home.php");
+    header('Location: home.php');
     exit();
 }
 
-/* Thiếu story_id */
 if (!isset($_POST['story_id'])) {
-    die("Thiếu ID truyện");
+    die('Thiếu ID truyện');
 }
 
-$story_id = (int)$_POST['story_id'];
+$story_id = (int) $_POST['story_id'];
+$action   = ($_POST['action'] ?? 'save') === 'unsave' ? 'unsave' : 'save';
 $username = $_SESSION['username'];
 
-/* Lấy user_id */
-$sqlUser = "SELECT id FROM users WHERE username = ?";
-$stmtUser = mysqli_prepare($con, $sqlUser);
-mysqli_stmt_bind_param($stmtUser, "s", $username);
+$stmtUser = mysqli_prepare($con, 'SELECT id FROM users WHERE username = ?');
+mysqli_stmt_bind_param($stmtUser, 's', $username);
 mysqli_stmt_execute($stmtUser);
 mysqli_stmt_bind_result($stmtUser, $user_id);
 mysqli_stmt_fetch($stmtUser);
 mysqli_stmt_close($stmtUser);
 
 if (!$user_id) {
-    die("User không tồn tại");
+    die('User không tồn tại');
 }
 
-/* Lưu truyện – không trùng */
-$sqlSave = "
-    INSERT INTO user_stories (user_id, story_id)
-    SELECT ?, ?
-    WHERE NOT EXISTS (
-        SELECT 1 FROM user_stories WHERE user_id = ? AND story_id = ?
-    )
-";
-$stmtSave = mysqli_prepare($con, $sqlSave);
-mysqli_stmt_bind_param($stmtSave, "iiii", $user_id, $story_id, $user_id, $story_id);
-mysqli_stmt_execute($stmtSave);
-$affected = mysqli_stmt_affected_rows($stmtSave);
-mysqli_stmt_close($stmtSave);
+$affected = 0;
 
-// Quay lại trang trước + thông báo
-$referer = $_SERVER['HTTP_REFERER'] ?? 'home.php';
-?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Lưu truyện</title>
-    <script>
-        alert("<?= $affected > 0 ? 'Lưu truyện thành công!' : 'Truyện đã có trong tủ sách!' ?>");
-        window.location.href = "<?= htmlspecialchars($referer) ?>";
-    </script>
-</head>
-<body></body>
-</html>
+if ($action === 'unsave') {
+    $stmt = mysqli_prepare($con, 'DELETE FROM user_stories WHERE user_id = ? AND story_id = ?');
+    mysqli_stmt_bind_param($stmt, 'ii', $user_id, $story_id);
+    mysqli_stmt_execute($stmt);
+    $affected = mysqli_stmt_affected_rows($stmt);
+    mysqli_stmt_close($stmt);
+    $toast = $affected > 0 ? 'unsaved' : 'not_saved';
+} else {
+    $sqlSave = '
+        INSERT INTO user_stories (user_id, story_id)
+        SELECT ?, ?
+        WHERE NOT EXISTS (
+            SELECT 1 FROM user_stories WHERE user_id = ? AND story_id = ?
+        )
+    ';
+    $stmtSave = mysqli_prepare($con, $sqlSave);
+    mysqli_stmt_bind_param($stmtSave, 'iiii', $user_id, $story_id, $user_id, $story_id);
+    mysqli_stmt_execute($stmtSave);
+    $affected = mysqli_stmt_affected_rows($stmtSave);
+    mysqli_stmt_close($stmtSave);
+    $toast = $affected > 0 ? 'saved' : 'exists';
+}
+
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+if ($referer === '' || !preg_match('#/frontend/#i', $referer)) {
+    $referer = app_url('frontend/home.php');
+}
+
+app_redirect_with_toast($referer, $toast);

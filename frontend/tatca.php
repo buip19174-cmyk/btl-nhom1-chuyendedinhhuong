@@ -173,7 +173,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
                     $is_saved_book = in_array($book['id'], $saved_story_ids); ?>
                     <form action="luutruyen.php" method="POST">
                         <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <button type="submit" class="btn-save <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu' ?>">
+                        <input type="hidden" name="action" value="<?= $is_saved_book ? 'unsave' : 'save' ?>">
+                        <button type="submit" class="btn-save <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Bỏ lưu' : 'Lưu' ?>">
                             <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
                         </button>
                     </form>
@@ -224,5 +225,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
     <?php endif; ?>
 
 </div>
+<?php include __DIR__ . '/includes/toast.php'; ?>
 </body>
 </html>
