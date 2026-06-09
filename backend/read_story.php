@@ -32,11 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $chapters = mysqli_query($con, "SELECT * FROM chapters WHERE story_id = $story_id ORDER BY chapter_number ASC");
 $total    = mysqli_num_rows($chapters);
 
-// Chương đầu để nút "Bắt đầu đọc"
+
 mysqli_data_seek($chapters, 0);
 $first_chap = mysqli_fetch_assoc($chapters);
 
-// Kiểm tra đã lưu chưa
+
 $user_id    = $_SESSION['user_id'] ?? null;
 $username   = $_SESSION['username'] ?? null;
 $is_admin   = (($_SESSION['role'] ?? '') === 'admin');
@@ -53,7 +53,7 @@ if ($user_id) {
     while ($br = mysqli_fetch_assoc($bq)) $bought_ids[] = $br['chapter_id'];
 }
 
-// Tìm chương đang đọc dở
+
 $continue_chap = $first_chap;
 if ($user_id && !empty($bought_ids)) {
     $last_bought = mysqli_fetch_assoc(mysqli_query($con,
@@ -64,7 +64,7 @@ if ($user_id && !empty($bought_ids)) {
     if ($last_bought) $continue_chap = $last_bought;
 }
 
-// ── XỬ LÝ BÌNH LUẬN ──────────────────────────────────────────
+
 $comment_error   = '';
 $comment_success = false;
 
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_action'])) {
     }
 }
 
-// Lấy tất cả comment (kể cả reply), sắp xếp theo thời gian
+
 $comments_q = mysqli_query($con,
     "SELECT c.*, u.username
      FROM comments c
@@ -130,14 +130,14 @@ $comments_q = mysqli_query($con,
      ORDER BY c.created_at ASC"
 );
 $all_comments = [];
-$comment_map  = []; // id => index
+$comment_map  = []; 
 while ($cm = mysqli_fetch_assoc($comments_q)) {
     $all_comments[] = $cm;
     $comment_map[$cm['id']] = $cm;
 }
 $comment_count = count($all_comments);
 
-// Nhóm: root comments và replies
+
 $roots   = array_filter($all_comments, fn($c) => $c['parent_id'] === null);
 $replies = [];
 foreach ($all_comments as $c) {

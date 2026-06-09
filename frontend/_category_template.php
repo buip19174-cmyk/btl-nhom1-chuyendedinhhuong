@@ -1,18 +1,12 @@
 ﻿<?php
-/**
- * Template dùng chung cho tất cả trang danh mục
- * Biến cần khai báo trước khi include:
- *   $page_title   — tiêu đề trang
- *   $category_key — giá trị description trong DB
- *   $hero_desc    — mô tả ngắn hiển thị trong hero
- */
+
 session_start();
 include '../backend/dangky_logic.php';
 include '../backend/dangnhap_logic.php';
 
 $adminUrl = app_url('frontend/admin/index.php');
 
-// Đồng bộ role từ DB nếu session chưa có (tránh session cũ thiếu role)
+
 if (isset($_SESSION['user_id']) && !isset($_SESSION['role'])) {
     $r_sync = mysqli_fetch_assoc(mysqli_query($con, "SELECT role FROM users WHERE id=" . intval($_SESSION['user_id'])));
     if ($r_sync) $_SESSION['role'] = $r_sync['role'];
