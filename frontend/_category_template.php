@@ -287,6 +287,37 @@ new Swiper(".heroSwiper", {
 </script>
 
 <script src="js/search-ajax.js"></script>
+<script>
+// Toggle lưu/bỏ lưu truyện bằng AJAX
+function toggleSave(btn) {
+    const storyId = btn.dataset.storyId;
+    if (!storyId) return;
+    fetch('../backend/toggle_save.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'story_id=' + storyId
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'error') {
+            alert('Bạn cần đăng nhập để lưu truyện!');
+            return;
+        }
+        const icon = btn.querySelector('i');
+        if (data.status === 'saved') {
+            btn.classList.add('saved');
+            icon.className = 'fa-solid fa-heart';
+            btn.title = 'Bỏ lưu';
+        } else {
+            btn.classList.remove('saved');
+            icon.className = 'fa-regular fa-heart';
+            btn.title = 'Lưu';
+        }
+    })
+    .catch(() => alert('Có lỗi xảy ra!'));
+}
+</script>
+<script src="js/search-ajax.js"></script>
 <script src="../backend/script.js"></script>
 </body>
 </html>
