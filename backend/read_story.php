@@ -647,7 +647,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Robot
         <div class="coin-card">
             <div class="coin-card-lbl"><i class="fa-solid fa-coins"></i> Số dư coin</div>
             <div class="coin-amount"><i class="fa-solid fa-coins"></i> <?= number_format($user_coins) ?></div>
-            <div class="coin-sub">≈ <?= number_format($user_coins * 10) ?> VND</div>
+            <div class="coin-sub">≈ <?= number_format($user_coins * 100) ?> VND</div>
             <a href="../frontend/napcoin.php" class="btn-topup"><i class="fa-solid fa-plus"></i> Nạp coin</a>
         </div>
         <?php endif; ?>

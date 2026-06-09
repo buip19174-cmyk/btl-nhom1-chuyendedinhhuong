@@ -8,7 +8,7 @@ $banner_result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE 
 $banner_books  = [];
 while ($r = mysqli_fetch_assoc($banner_result)) $banner_books[] = $r;
 
-// Grid sách — 18 cuốn
+// Grid sách — 21 cuốn
 $result = mysqli_query($con, "SELECT id, title, cover FROM stories WHERE description = 'home' LIMIT 21");
 $books  = [];
 while ($r = mysqli_fetch_assoc($result)) $books[] = $r;
@@ -228,13 +228,14 @@ $categories = [
                     <a href="../backend/read_story.php?story_id=<?= $book['id'] ?>" class="btn-read-sm">
                         <i class="fa-solid fa-book-open"></i> Đọc
                     </a>
-                    <form action="luutruyen.php" method="POST">
-                        <input type="hidden" name="story_id" value="<?= $book['id'] ?>">
-                        <?php $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
-                        <button type="submit" class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>" title="<?= $is_saved_book ? 'Đã lưu' : 'Lưu vào tủ sách' ?>">
-                            <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
-                        </button>
-                    </form>
+                    <?php $is_saved_book = in_array($book['id'], $saved_story_ids ?? []); ?>
+                    <button type="button"
+                            class="btn-save-sm <?= $is_saved_book ? 'saved' : '' ?>"
+                            data-story-id="<?= $book['id'] ?>"
+                            onclick="toggleSave(this)"
+                            title="<?= $is_saved_book ? 'Bỏ lưu' : 'Lưu' ?>">
+                        <i class="fa-<?= $is_saved_book ? 'solid' : 'regular' ?> fa-heart"></i>
+                    </button>
                 </div>
             </div>
             
@@ -317,7 +318,29 @@ new Swiper(".bannerSwiper", {
 });
 </script>
 <script src="js/search-ajax.js"></script>
+<script>
+// Toggle save AJAX
+function toggleSave(btn) {
+    const storyId = btn.dataset.storyId;
+    if (!storyId) return;
+    fetch('../backend/toggle_save.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'story_id=' + storyId
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'error') { alert('Bạn cần đăng nhập để lưu truyện!'); return; }
+        const icon = btn.querySelector('i');
+        if (data.status === 'saved') {
+            btn.classList.add('saved'); icon.className = 'fa-solid fa-heart'; btn.title = 'Bỏ lưu';
+        } else {
+            btn.classList.remove('saved'); icon.className = 'fa-regular fa-heart'; btn.title = 'Lưu';
+        }
+    })
+    .catch(() => alert('Có lỗi xảy ra!'));
+}
+</script>
 <script src="../backend/script.js"></script>
 </body>
 </html>
-

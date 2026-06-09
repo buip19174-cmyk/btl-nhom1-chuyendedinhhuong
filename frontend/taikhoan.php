@@ -357,7 +357,7 @@ $avatar_letter = mb_strtoupper(mb_substr($user['username'], 0, 1));
                     <i class="fa-solid fa-coins"></i>
                     <?php echo number_format($coins); ?>
                 </div>
-                <div class="coin-vnd">≈ <?php echo number_format($coins * 10); ?> VND &nbsp;·&nbsp; 1 coin = 10 VND</div>
+                <div class="coin-vnd">≈ <?php echo number_format($coins * 100); ?> VND &nbsp;·&nbsp; 1 coin = 100 VND</div>
                 <a href="napcoin.php" class="btn-topup">
                     <i class="fa-solid fa-plus"></i> Nạp coin
                 </a>

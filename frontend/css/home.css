@@ -41,7 +41,7 @@ nav ul li > a:hover { color: #fff; background: #1a1a1a; }
     box-shadow: 0 20px 60px rgba(0,0,0,.6);
     padding-top: 28px;
 }
-/* Táº¡o vÃ¹ng hover liá»n máº¡ch giá»¯a link vÃ  menu */
+/* Tạo vùng hover liền mạch giữa link và menu */
 nav ul li { position: relative; }
 nav ul li::after {
     content: ''; position: absolute;
@@ -97,7 +97,7 @@ nav ul li:hover .mega-menu { display: grid; }
 }
 .btn-dangnhap:hover { background: rgba(0,208,132,.08); }
 
-/* â”€â”€ BANNER â”€â”€ */
+/* BANNER */
 .banner { width: 100%; position: relative; }
 .banner .swiper { width: 100%; height: 520px; }
 .banner .swiper-slide { position: relative; overflow: hidden; }
@@ -156,7 +156,7 @@ nav ul li:hover .mega-menu { display: grid; }
 .banner-pagination .swiper-pagination-bullet { width: 8px; height: 8px; background: rgba(255,255,255,.35); border-radius: 4px; transition: .3s; opacity: 1; }
 .banner-pagination .swiper-pagination-bullet-active { width: 28px; background: var(--green); }
 
-/* â”€â”€ CATEGORIES STRIP â”€â”€ */
+/* CATEGORIES STRIP */
 .categories-strip {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -176,7 +176,7 @@ nav ul li:hover .mega-menu { display: grid; }
 .cat-chip i { font-size: 12px; color: var(--green); }
 .cat-chip:hover { background: #222; color: #fff; border-color: #333; }
 
-/* â”€â”€ SECTION WRAPPER â”€â”€ */
+/* SECTION WRAPPER */
 .home-section { padding: 40px 36px; }
 .section-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -193,7 +193,7 @@ nav ul li:hover .mega-menu { display: grid; }
 }
 .section-header a:hover { text-decoration: underline; }
 
-/* â”€â”€ BOOK GRID â”€â”€ */
+/* BOOK GRID */
 .book-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
@@ -241,11 +241,8 @@ nav ul li:hover .mega-menu { display: grid; }
 }
 .btn-save-sm.saved:hover { background: #c0392b; }
 
-/* â”€â”€ EMPTY â”€â”€ */
-.empty-books { grid-column: 1/-1; text-align: center; padding: 60px; color: var(--dim); }
-.empty-books i { font-size: 48px; display: block; margin-bottom: 12px; opacity: .2; }
 
-/* â”€â”€ FOOTER â”€â”€ */
+/* FOOTER */
 footer {
     background: #0d0d0d; border-top: 1px solid var(--border);
     padding: 48px 36px 24px;
@@ -270,7 +267,7 @@ footer {
 }
 .footer-bottom span { color: var(--green); }
 
-/* â”€â”€ SEARCH DROPDOWN â”€â”€ */
+/* SEARCH DROPDOWN */
 .search-form { position: relative; }
 .search-dropdown {
     position: absolute;
