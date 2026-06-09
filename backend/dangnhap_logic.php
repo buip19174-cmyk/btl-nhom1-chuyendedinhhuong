@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $result = $stmt->get_result();
 
 
+
     if ($user = $result->fetch_assoc()) {
 
         if (password_verify($password, $user['password'])) {
@@ -58,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 exit();
 
             }
+
         } else {
 
             $login_message = "Sai mật khẩu, vui lòng thử lại!";
